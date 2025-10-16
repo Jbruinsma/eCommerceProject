@@ -28,7 +28,7 @@
         <button type="submit" class="submit-button">Login</button>
       </form>
       <div class="extra-links">
-        <a href="#">Forgot Password?</a>
+        <a href="/account-recovery">Forgot Password?</a>
         <a href="/register">Create Account</a>
       </div>
     </div>
