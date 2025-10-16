@@ -1,6 +1,7 @@
 CREATE SCHEMA eCommerce;
 USE eCommerce;
 
+
 DROP TABLE IF EXISTS Transactions;
 DROP TABLE IF EXISTS Orders;
 DROP TABLE IF EXISTS Listings;
