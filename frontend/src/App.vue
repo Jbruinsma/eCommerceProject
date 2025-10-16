@@ -1,14 +1,10 @@
 <script setup>
-import HomePage from '@/views/HomePage.vue'
 </script>
 
 <template>
-  <HomePage />
+  <RouterView />
 </template>
 
 <style scoped>
-* {
-  margin: 0;
-  padding: 0;
-}
+body, html { background-color: #121212; margin: 0; padding: 0; width: 100%; }
 </style>
