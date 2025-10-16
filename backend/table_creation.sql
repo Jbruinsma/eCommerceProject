@@ -1,7 +1,6 @@
 CREATE DATABASE eCommerce;
 USE eCommerce;
 
-
 CREATE TABLE Users(
     uuid CHAR(36) PRIMARY KEY NOT NULL,
     email VARCHAR(225) NOT NULL UNIQUE,
