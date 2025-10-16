@@ -1,5 +1,16 @@
-CREATE DATABASE eCommerce;
+CREATE SCHEMA eCommerce;
 USE eCommerce;
+
+DROP TABLE IF EXISTS Transactions;
+DROP TABLE IF EXISTS Orders;
+DROP TABLE IF EXISTS Listings;
+DROP TABLE IF EXISTS Addresses;
+DROP TABLE IF EXISTS ProductSizes;
+DROP TABLE IF EXISTS Products;
+DROP TABLE IF EXISTS Users;
+DROP TABLE IF EXISTS Brands;
+DROP TABLE IF EXISTS Sizes;
+
 
 CREATE TABLE Users(
     uuid CHAR(36) PRIMARY KEY NOT NULL,
@@ -62,17 +73,6 @@ CREATE TABLE Listings(
     FOREIGN KEY (size_id) REFERENCES Sizes(size_id)
 );
 
-CREATE TABLE Transactions(
-    transaction_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    order_id INT UNSIGNED,
-    amount DECIMAL(10, 2),
-    transaction_status ENUM('pending', 'completed', 'failed', 'refunded'),
-    payment_gateway_id VARCHAR(100),
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (order_id) REFERENCES Orders(order_id)
-);
-
 CREATE TABLE Orders(
     order_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
     buyer_id CHAR(36),
@@ -90,6 +90,17 @@ CREATE TABLE Orders(
     FOREIGN KEY (seller_id) REFERENCES Users(uuid),
     FOREIGN KEY (product_id) REFERENCES Products(product_id),
     FOREIGN KEY (size_id) REFERENCES Sizes(size_id)
+);
+
+CREATE TABLE Transactions(
+    transaction_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    order_id INT UNSIGNED,
+    amount DECIMAL(10, 2),
+    transaction_status ENUM('pending', 'completed', 'failed', 'refunded'),
+    payment_gateway_id VARCHAR(100),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (order_id) REFERENCES Orders(order_id)
 );
 
 CREATE TABLE Addresses(
