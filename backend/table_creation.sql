@@ -1,18 +1,19 @@
-CREATE SCHEMA eCommerce;
-USE eCommerce;
+DROP SCHEMA IF EXISTS ecommerce;
+CREATE SCHEMA ecommerce;
+USE ecommerce;
 
-DROP TABLE IF EXISTS Transactions;
-DROP TABLE IF EXISTS Orders;
-DROP TABLE IF EXISTS Listings;
-DROP TABLE IF EXISTS Addresses;
-DROP TABLE IF EXISTS ProductSizes;
-DROP TABLE IF EXISTS Products;
-DROP TABLE IF EXISTS Users;
-DROP TABLE IF EXISTS Brands;
-DROP TABLE IF EXISTS Sizes;
+DROP TABLE IF EXISTS transactions;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS listings;
+DROP TABLE IF EXISTS addresses;
+DROP TABLE IF EXISTS products_sizes;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS brands;
+DROP TABLE IF EXISTS sizes;
 
 
-CREATE TABLE Users(
+CREATE TABLE users(
     uuid CHAR(36) PRIMARY KEY NOT NULL,
     email VARCHAR(225) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
@@ -24,12 +25,12 @@ CREATE TABLE Users(
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE Brands(
+CREATE TABLE brands(
   brand_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   brand_name VARCHAR(250)
 );
 
-CREATE TABLE Products(
+CREATE TABLE products(
     product_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
     brand_id INT UNSIGNED,
     name VARCHAR(255),
@@ -39,24 +40,24 @@ CREATE TABLE Products(
     release_date DATE,
     image_url VARCHAR(2083),
 
-    FOREIGN KEY (brand_id) REFERENCES Brands(brand_id)
+    FOREIGN KEY (brand_id) REFERENCES brands(brand_id)
 );
 
-CREATE TABLE Sizes(
+CREATE TABLE sizes(
   size_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   size_value VARCHAR(50)
 );
 
-CREATE TABLE ProductSizes(
+CREATE TABLE products_sizes(
     product_id INT UNSIGNED,
     size_id INT UNSIGNED,
 
-    FOREIGN KEY (product_id) REFERENCES Products(product_id),
-    FOREIGN KEY (size_id) REFERENCES Sizes(size_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (size_id) REFERENCES sizes(size_id),
     PRIMARY KEY(product_id, size_id)
 );
 
-CREATE TABLE Listings(
+CREATE TABLE listings(
     listing_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
     user_id CHAR(36),
     product_id INT UNSIGNED,
@@ -68,12 +69,12 @@ CREATE TABLE Listings(
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (user_id) REFERENCES Users(uuid),
-    FOREIGN KEY (product_id) REFERENCES Products(product_id),
-    FOREIGN KEY (size_id) REFERENCES Sizes(size_id)
+    FOREIGN KEY (user_id) REFERENCES users(uuid),
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (size_id) REFERENCES sizes(size_id)
 );
 
-CREATE TABLE Orders(
+CREATE TABLE orders(
     order_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
     buyer_id CHAR(36),
     seller_id CHAR(36),
@@ -86,13 +87,13 @@ CREATE TABLE Orders(
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (buyer_id) REFERENCES Users(uuid),
-    FOREIGN KEY (seller_id) REFERENCES Users(uuid),
-    FOREIGN KEY (product_id) REFERENCES Products(product_id),
-    FOREIGN KEY (size_id) REFERENCES Sizes(size_id)
+    FOREIGN KEY (buyer_id) REFERENCES users(uuid),
+    FOREIGN KEY (seller_id) REFERENCES users(uuid),
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (size_id) REFERENCES sizes(size_id)
 );
 
-CREATE TABLE Transactions(
+CREATE TABLE transactions(
     transaction_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
     order_id INT UNSIGNED,
     amount DECIMAL(10, 2),
@@ -100,10 +101,10 @@ CREATE TABLE Transactions(
     payment_gateway_id VARCHAR(100),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (order_id) REFERENCES Orders(order_id)
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
 );
 
-CREATE TABLE Addresses(
+CREATE TABLE addresses(
     address_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
     user_id CHAR(36),
     purpose ENUM('billing', 'shipping', 'both'),
@@ -115,5 +116,5 @@ CREATE TABLE Addresses(
     zip_code VARCHAR(20),
     country VARCHAR(100),
 
-    FOREIGN KEY (user_id) REFERENCES Users(uuid)
+    FOREIGN KEY (user_id) REFERENCES users(uuid)
 );
