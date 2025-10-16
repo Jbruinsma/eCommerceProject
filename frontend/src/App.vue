@@ -6,4 +6,9 @@ import HomePage from '@/views/HomePage.vue'
   <HomePage />
 </template>
 
-<style scoped></style>
+<style scoped>
+* {
+  margin: 0;
+  padding: 0;
+}
+</style>
