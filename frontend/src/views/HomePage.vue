@@ -12,8 +12,6 @@
 </script>
 
 <style scoped>
-// ALL CSS STYLES GO HERE
-
 .main-container { max-width: 800px; margin: 40px auto; padding: 20px; text-align: center; font-family: 'Avenir', Helvetica, Arial, sans-serif; color: #2c3e50; }
 h1 { color: #42b983; }
 </style>
