@@ -67,6 +67,10 @@ const featuredProducts = ref([
   { id: 2, name: 'Streetwise Hoodie "Carbon"', price: 120, imageUrl: 'https://placehold.co/400x300/1a1a1a/ffffff?text=Sneaker+2' },
   { id: 3, name: 'Retro Dunk "Obsidian"', price: 310, imageUrl: 'https://placehold.co/400x300/1a1a1a/ffffff?text=Sneaker+3' },
   { id: 4, name: 'Vapor Max "Midnight"', price: 190, imageUrl: 'https://placehold.co/400x300/1a1a1a/ffffff?text=Sneaker+4' },
+  { id: 5, name: 'Classic Tee "Onyx"', price: 35, imageUrl: 'https://placehold.co/400x300/1a1a1a/ffffff?text=Apparel+1' },
+  { id: 6, name: 'Jogger Pants "Slate"', price: 60, imageUrl: 'https://placehold.co/400x300/1a1a1a/ffffff?text=Apparel+2' },
+  { id: 7, name: 'Beanie "Shadow"', price: 25, imageUrl: 'https://placehold.co/400x300/1a1a1a/ffffff?text=Apparel+3' },
+  { id: 8, name: 'Wristwatch "Eclipse"', price: 450, imageUrl: 'https://placehold.co/400x300/1a1a1a/ffffff?text=Collectible+1' },
 ]);
 </script>
 
