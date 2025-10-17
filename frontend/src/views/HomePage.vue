@@ -3,9 +3,9 @@
     <nav class="navbar">
       <div class="logo">NAME</div>
       <ul class="nav-links">
-        <li><a href="#">Sneakers</a></li>
-        <li><a href="#">Apparel</a></li>
-        <li><a href="#">Collectibles</a></li>
+        <li class ="nav-customization"><a href="#">Sneakers</a></li>
+        <li class ="nav-customization"><a href="#">Apparel</a></li>
+        <li class ="nav-customization"><a href="#">Collectibles</a></li>
       </ul>
       <div class="nav-icons">
         <div class="search-bar">
@@ -61,8 +61,10 @@
 
     <header class="hero-section">
       <div class="hero-content">
-        <h1>Latest Drop: The "Chrono-Glide"</h1>
-        <p>Experience the future of footwear. Limited stock available.</p>
+        <h1>Latest Drop: "Future Sneaker"</h1>
+        <!-- <img class ="featured-product-img" src="/images/MaisonMargielaFutureBlack.png"></img> -->
+        <p class = hero-info>Experience the future of footwear. Reintroducing the Future Sneaker, originally launched in the SS11 collection, the Future Sneaker is making its way back onto the shelves this season.</p>
+        <p class = hero-info>Featured Collection by Maison Margiela</p>
         <button class="cta-button">Shop Now</button>
       </div>
     </header>
@@ -123,6 +125,11 @@ const featuredProducts = ref([
 </script>
 
 <style>
+/*Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Abel&family=Bodoni+Moda+SC:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inclusive+Sans&family=Inconsolata:wght@200;300;400;500;600&family=Manrope:wght@600;700;800&family=Mulish:ital,wght@0,300;0,400;0,700;1,200;1,400;1,600&family=Nanum+Myeongjo&family=Quicksand:wght@300..700&family=Scope+One&family=Sono:wght@200;300;400&family=Spectral:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&family=Zeyada&display=swap');
+</style>
+
+<style>
 /* Global styles for body and html to ensure full dark background */
 body,
 html {
@@ -134,7 +141,7 @@ html {
 </style>
 
 <style scoped>
-.home-container { color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; width: 100%; }
+.home-container { color: #ffffff; font-family: Spectral, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; width: 100%; }
 h1, h2, h3 { font-weight: 600; }
 h1 { font-size: 3rem; margin-bottom: 1rem; }
 h2 { border-bottom: 1px solid #333; font-size: 1.8rem; margin-bottom: 2rem; padding-bottom: 1rem; text-align: center; }
@@ -146,17 +153,19 @@ a { color: #ffffff; text-decoration: none; }
 .nav-links { align-items: center; display: flex; gap: 2rem; list-style: none; }
 .nav-links a { transition: color 0.3s ease; }
 .nav-links a:hover { color: #bbbbbb; }
+.nav-customization { font-size: 20px; font-weight: 500; display: inline-flex; }
 .nav-icons { align-items: center; display: flex; gap: 1.5rem; }
 .account-icon { cursor: pointer; height: 28px; width: 28px; }
 .cart-icon { cursor: pointer; height: 28px; width: 28px; }
-.search-bar { align-items: center; background-color: #2c2c2c; border-radius: 20px; display: flex; padding: 0.3rem 0.8rem; }
-.search-icon { fill: #888; height: 20px; margin-right: 0.5rem; width: 20px; }
+.search-bar { align-items: center; background-color: #2c2c2c; border-radius: 12px; display: flex; padding: 0.3rem 0.8rem; }
+.search-icon { fill: #888; height: 30px; margin-right: 0.5rem; width: 15px; }
 .search-input { background-color: transparent; border: none; color: #ffffff; font-size: 0.9rem; outline: none; width: 200px; }
 .search-input::placeholder { color: #888; }
-.hero-section { background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://placehold.co/1920x600/111/333?text=Featured+Banner') no-repeat center center/cover; min-height: 60vh; padding: 5rem 5%; text-align: center; }
-.hero-content { margin: 0 auto; max-width: 800px; }
-.cta-button { background-color: #ffffff; border: none; color: #121212; cursor: pointer; font-size: 1rem; font-weight: bold; margin-top: 2rem; padding: 1rem 2rem; transition: background-color 0.3s ease; }
-.cta-button:hover { background-color: #dddddd; }
+.hero-section { background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.2)), url('/images/MaisonMargielaBanner.png') no-repeat center center/cover; min-height: 60vh; padding: 5rem 5%; text-align: center; }
+.hero-content { margin: 0 auto; max-width: 800px; text-shadow: 2px 2px 2px black;}
+.hero-info { font-size: 1.2rem; margin-bottom: 1rem; color: white; text-shadow: 1px 1px 1px black;}
+.cta-button { background-color:#ffffff;  border:1px solid #000000; border-radius: 10px; color:#121212; cursor:pointer; font-size:1rem; font-weight:bold; margin-top:2rem; padding:1rem 2rem; transition:background-color 0.7s ease,color 0.7s ease,border-color 0.7s ease; } 
+.cta-button:hover { background-color:#000000; color:#ffffff; border-color:#ffffff; }
 .featured-products { padding: 4rem 5%; }
 .product-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
 .product-card { background-color: #1a1a1a; border: 1px solid #2a2a2a; cursor: pointer; padding: 1.5rem; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease; }
