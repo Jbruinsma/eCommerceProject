@@ -85,9 +85,8 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import router from '@/router/index.js'
-import { fetchFromAPI } from '@/utils/index.js'
 
 const searchQuery = ref('')
 
@@ -135,178 +134,34 @@ html {
 </style>
 
 <style scoped>
-/* General Styles */
-.home-container {
-  color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  min-height: 100vh;
-  width: 100%;
-}
-h1,
-h2,
-h3 {
-  font-weight: 600;
-}
-h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-h2 {
-  border-bottom: 1px solid #333;
-  font-size: 1.8rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  text-align: center;
-}
-h3 {
-  font-size: 1.1rem;
-  margin-top: 1rem;
-}
-p {
-  color: #cccccc;
-  line-height: 1.6;
-}
-a {
-  color: #ffffff;
-  text-decoration: none;
-}
-
-/* Navigation Bar */
-.navbar {
-  align-items: center;
-  background-color: #1a1a1a;
-  display: flex;
-  justify-content: space-between;
-  padding: 1rem 5%;
-}
-.logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-  letter-spacing: 2px;
-}
-.nav-links {
-  align-items: center;
-  display: flex;
-  gap: 2rem;
-  list-style: none;
-}
-.nav-links a {
-  transition: color 0.3s ease;
-}
-.nav-links a:hover {
-  color: #bbbbbb;
-}
-.nav-icons {
-  align-items: center;
-  display: flex;
-  gap: 1.5rem;
-}
-.account-icon {
-  cursor: pointer;
-  height: 28px;
-  width: 28px;
-}
-.cart-icon {
-  cursor: pointer;
-  height: 28px;
-  width: 28px;
-}
-
-/* Search Bar Styles */
-.search-bar {
-  align-items: center;
-  background-color: #2c2c2c;
-  border-radius: 20px;
-  display: flex;
-  padding: 0.3rem 0.8rem;
-}
-.search-icon {
-  fill: #888;
-  height: 20px;
-  margin-right: 0.5rem;
-  width: 20px;
-}
-.search-input {
-  background-color: transparent;
-  border: none;
-  color: #ffffff;
-  font-size: 0.9rem;
-  outline: none;
-  width: 200px;
-}
-.search-input::placeholder {
-  color: #888;
-}
-
-/* Hero Section */
-.hero-section {
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-    url('https://placehold.co/1920x600/111/333?text=Featured+Banner') no-repeat center center/cover;
-  min-height: 60vh;
-  padding: 5rem 5%;
-  text-align: center;
-}
-.hero-content {
-  margin: 0 auto;
-  max-width: 800px;
-}
-.cta-button {
-  background-color: #ffffff;
-  border: none;
-  color: #121212;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  margin-top: 2rem;
-  padding: 1rem 2rem;
-  transition: background-color 0.3s ease;
-}
-.cta-button:hover {
-  background-color: #dddddd;
-}
-
-/* Featured Products */
-.featured-products {
-  padding: 4rem 5%;
-}
-.product-grid {
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-}
-.product-card {
-  background-color: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  cursor: pointer;
-  padding: 1.5rem;
-  text-align: center;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-.product-card:hover {
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
-  transform: translateY(-5px);
-}
-.product-image {
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  width: 100%;
-}
-.product-price {
-  color: #ffffff;
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-top: 0.5rem;
-}
-
-/* Footer */
-.site-footer {
-  background-color: #1a1a1a;
-  border-top: 1px solid #333;
-  color: #888;
-  padding: 2rem 5%;
-  text-align: center;
-}
+.home-container { color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; min-height: 100vh; width: 100%; }
+h1, h2, h3 { font-weight: 600; }
+h1 { font-size: 3rem; margin-bottom: 1rem; }
+h2 { border-bottom: 1px solid #333; font-size: 1.8rem; margin-bottom: 2rem; padding-bottom: 1rem; text-align: center; }
+h3 { font-size: 1.1rem; margin-top: 1rem; }
+p { color: #cccccc; line-height: 1.6; }
+a { color: #ffffff; text-decoration: none; }
+.navbar { align-items: center; background-color: #1a1a1a; display: flex; justify-content: space-between; padding: 1rem 5%; }
+.logo { font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; }
+.nav-links { align-items: center; display: flex; gap: 2rem; list-style: none; }
+.nav-links a { transition: color 0.3s ease; }
+.nav-links a:hover { color: #bbbbbb; }
+.nav-icons { align-items: center; display: flex; gap: 1.5rem; }
+.account-icon { cursor: pointer; height: 28px; width: 28px; }
+.cart-icon { cursor: pointer; height: 28px; width: 28px; }
+.search-bar { align-items: center; background-color: #2c2c2c; border-radius: 20px; display: flex; padding: 0.3rem 0.8rem; }
+.search-icon { fill: #888; height: 20px; margin-right: 0.5rem; width: 20px; }
+.search-input { background-color: transparent; border: none; color: #ffffff; font-size: 0.9rem; outline: none; width: 200px; }
+.search-input::placeholder { color: #888; }
+.hero-section { background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://placehold.co/1920x600/111/333?text=Featured+Banner') no-repeat center center/cover; min-height: 60vh; padding: 5rem 5%; text-align: center; }
+.hero-content { margin: 0 auto; max-width: 800px; }
+.cta-button { background-color: #ffffff; border: none; color: #121212; cursor: pointer; font-size: 1rem; font-weight: bold; margin-top: 2rem; padding: 1rem 2rem; transition: background-color 0.3s ease; }
+.cta-button:hover { background-color: #dddddd; }
+.featured-products { padding: 4rem 5%; }
+.product-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.product-card { background-color: #1a1a1a; border: 1px solid #2a2a2a; cursor: pointer; padding: 1.5rem; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.product-card:hover { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); transform: translateY(-5px); }
+.product-image { aspect-ratio: 4 / 3; object-fit: cover; width: 100%; }
+.product-price { color: #ffffff; font-size: 1.2rem; font-weight: bold; margin-top: 0.5rem; }
+.site-footer { background-color: #1a1a1a; border-top: 1px solid #333; color: #888; padding: 2rem 5%; text-align: center; }
 </style>
