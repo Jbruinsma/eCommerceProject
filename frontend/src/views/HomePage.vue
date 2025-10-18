@@ -72,11 +72,16 @@
     <main class="featured-products">
       <h2>Featured Items</h2>
       <div class="product-grid">
-        <div v-for="product in featuredProducts" :key="product.id" class="product-card">
+        <router-link
+          v-for="product in featuredProducts"
+          :key="product.id"
+          :to="{ name: 'product-detail', params: { id: product.id } }"
+          class="product-card"
+        >
           <img :src="product.imageUrl" :alt="product.name" class="product-image" />
           <h3>{{ product.name }}</h3>
           <p class="product-price">${{ product.price }}</p>
-        </div>
+        </router-link>
       </div>
     </main>
 
