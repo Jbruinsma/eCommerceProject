@@ -91,7 +91,31 @@ async function fetchFromAPI(endpoint, options = {}) {
     }
 
     if (!res.ok) {
-      const message = (data && data.message) || res.statusText || 'Request failed';
+      // Prefer structured error messages when available (FastAPI validation errors use `detail`)
+      let message = res.statusText || 'Request failed';
+      if (data) {
+        if (data.message) message = data.message;
+        else if (data.detail) {
+          if (Array.isArray(data.detail)) {
+            // Format each validation error to a short message: "loc: msg"
+            try {
+              message = data.detail
+                .map((d) => {
+                  const loc = Array.isArray(d.loc) ? d.loc.join('.') : d.loc || '';
+                  return loc ? `${loc}: ${d.msg}` : d.msg;
+                })
+                .join('; ');
+            } catch (e) {
+              message = JSON.stringify(data.detail);
+            }
+          } else {
+            message = String(data.detail);
+          }
+        } else {
+          // Fallback to stringifying the data object
+          try { message = JSON.stringify(data) } catch (e) { /* ignore */ }
+        }
+      }
       const err = new Error(message);
       err.status = res.status;
       err.data = data;
@@ -163,7 +187,29 @@ async function postToAPI(endpoint, body = {}, options = {}) {
     }
 
     if (!res.ok) {
-      const message = (data && data.message) || res.statusText || 'Request failed';
+      // Prefer structured error messages when available (FastAPI validation errors use `detail`)
+      let message = res.statusText || 'Request failed';
+      if (data) {
+        if (data.message) message = data.message;
+        else if (data.detail) {
+          if (Array.isArray(data.detail)) {
+            try {
+              message = data.detail
+                .map((d) => {
+                  const loc = Array.isArray(d.loc) ? d.loc.join('.') : d.loc || '';
+                  return loc ? `${loc}: ${d.msg}` : d.msg;
+                })
+                .join('; ');
+            } catch (e) {
+              message = JSON.stringify(data.detail);
+            }
+          } else {
+            message = String(data.detail);
+          }
+        } else {
+          try { message = JSON.stringify(data) } catch (e) { /* ignore */ }
+        }
+      }
       const err = new Error(message);
       err.status = res.status;
       err.data = data;

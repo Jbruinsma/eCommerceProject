@@ -111,7 +111,7 @@
             <p>Manage your items for sale.</p>
           </a>
 
-          <a href="#" class="nav-card">
+          <a href="/settings" class="nav-card">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
