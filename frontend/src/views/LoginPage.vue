@@ -2,6 +2,11 @@
   <div class="login-container">
     <div class="login-form-container">
       <h2>Login to Your Account</h2>
+
+      <!-- Success and error banners -->
+      <div v-if="successMessage" class="message-banner success">{{ successMessage }}</div>
+      <div v-if="errorMessage" class="message-banner error">{{ errorMessage }}</div>
+
       <form @submit.prevent="handleLogin">
         <div class="form-group">
           <label for="email">Email Address</label>
@@ -25,7 +30,7 @@
             required
           >
         </div>
-        <button type="submit" class="submit-button">Login</button>
+        <button :disabled="loading" type="submit" class="submit-button">{{ loading ? 'Logging in...' : 'Login' }}</button>
       </form>
       <div class="extra-links">
         <a href="/account-recovery">Forgot Password?</a>
@@ -38,32 +43,47 @@
 <script setup>
 import { ref } from 'vue';
 import { postToAPI } from '@/utils/index.js'
-// If you're using a router, you might import it here
-// import { useRouter } from 'vue-router';
-
-// const router = useRouter();
+import router from '@/router/index.js'
 
 const email = ref('');
 const password = ref('');
 
+const loading = ref(false);
+const errorMessage = ref('');
+const successMessage = ref('');
+
+const clearMessages = (timeout = 5000) => {
+  if (timeout <= 0) return;
+  setTimeout(() => {
+    errorMessage.value = '';
+    successMessage.value = '';
+  }, timeout);
+}
+
 const handleLogin = async () => {
-  // 1. --- FORM VALIDATION ---
-  // You can add more complex validation logic here if needed.
-  // For example, checking if the password meets certain criteria.
+  errorMessage.value = '';
+  successMessage.value = '';
+
   if (!email.value || !password.value) {
-    console.error('Email and password are required.');
-    // You could also set an error message in a ref to display in the template
+    errorMessage.value = 'Email and password are required.';
+    clearMessages();
     return;
   }
 
-  // 2. --- API CALL ---
-  // This is where you would make a call to your backend authentication endpoint.
-  console.log('Submitting login request for:', email.value);
-  console.log('Password:', password.value);
-  
-  console.log(await postToAPI('/auth/login', { email: email.value, password: password.value }))
+  loading.value = true;
+  try {
+    const data = await postToAPI('/auth/login', { email: email.value, password: password.value });
+    successMessage.value = (data && (data.message || data.detail)) || 'Login successful.';
+    clearMessages();
+    await router.push('/')
 
-};
+  } catch (err) {
+    errorMessage.value = (err && err.data && (err.data.message || err.data.detail)) || err.message || 'An unexpected error occurred.';
+    clearMessages();
+  } finally {
+    loading.value = false;
+  }
+}
 </script>
 
 <style scoped>
@@ -75,6 +95,11 @@ const handleLogin = async () => {
 
 /* Header style consistent with the homepage */
 h2 { color: #ffffff; font-size: 1.8rem; font-weight: 600; margin-bottom: 2rem; margin-top: 0; text-align: center; }
+
+/* Message banners */
+.message-banner { text-align: center; border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.95rem; }
+.message-banner.success { background-color: #113322; color: #b7f2c1; border: 1px solid #225533; }
+.message-banner.error { background-color: #3b1212; color: #ffd1d1; border: 1px solid #7a1b1b; }
 
 /* Styling for each label + input group */
 .form-group { margin-bottom: 1.5rem; }
@@ -89,6 +114,7 @@ label { color: #cccccc; display: block; font-size: 0.9rem; margin-bottom: 0.5rem
 /* Login button, styled like your "Shop Now" button */
 .submit-button { background-color: #ffffff; border: none; border-radius: 4px; color: #121212; cursor: pointer; font-size: 1rem; font-weight: bold; margin-top: 1rem; padding: 1rem; transition: background-color 0.3s ease; width: 100%; }
 .submit-button:hover { background-color: #dddddd; }
+.submit-button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* Container for "Forgot Password" and "Create Account" links */
 .extra-links { display: flex; justify-content: space-between; margin-top: 1.5rem; }

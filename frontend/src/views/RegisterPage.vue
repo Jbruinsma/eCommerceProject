@@ -2,6 +2,11 @@
   <div class="register-container">
     <div class="register-form-container">
       <h2>Create Your Account</h2>
+
+      <!-- Success and error banners -->
+      <div v-if="successMessage" class="message-banner success">{{ successMessage }}</div>
+      <div v-if="errorMessage" class="message-banner error">{{ errorMessage }}</div>
+
       <form @submit.prevent="handleRegister">
         <div class="form-group">
           <label for="email">Email Address</label>
@@ -36,10 +41,10 @@
             required
           >
         </div>
-        <button type="submit" class="submit-button">Create Account</button>
+        <button :disabled="loading" type="submit" class="submit-button">{{ loading ? 'Creating...' : 'Create Account' }}</button>
       </form>
       <div class="extra-links">
-        <a href="/login">Login</a>
+        <a href="/login">Back to Login</a>
       </div>
     </div>
   </div>
@@ -47,29 +52,58 @@
 
 <script setup>
 import { ref } from 'vue';
-// If you're using a router, you might import it here
-// import { useRouter } from 'vue-router';
-
-// const router = useRouter();
+import { postToAPI } from '@/utils/index.js'
+import router from '@/router/index.js'
 
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
 
-const handleRegister = () => {
-  // 1. --- FORM VALIDATION ---
-  // Check if passwords match.
+const loading = ref(false);
+const errorMessage = ref('');
+const successMessage = ref('');
+
+const clearMessages = (timeout = 5000) => {
+  if (timeout <= 0) return;
+  setTimeout(() => {
+    errorMessage.value = '';
+    successMessage.value = '';
+  }, timeout);
+}
+
+const handleRegister = async () => {
+  errorMessage.value = '';
+  successMessage.value = '';
+
   if (password.value !== confirmPassword.value) {
-    console.error('Passwords do not match.');
-    // You could set an error message in a ref to display in the template
+    errorMessage.value = 'Passwords do not match.';
+    clearMessages();
     return;
   }
 
-  // Add any other validation, e.g., password complexity.
+  loading.value = true;
+  try {
+    const data = await postToAPI('/auth/register', {
+      email: email.value,
+      password: password.value,
+      password_confirmation: confirmPassword.value
+    });
 
-  // 2. --- API CALL ---
-  // This is where you would make a call to your backend registration endpoint.
-  console.log('Submitting registration request for:', email.value);
+    successMessage.value = (data && (data.message || data.detail)) || 'Registration successful.';
+    email.value = '';
+    password.value = '';
+    confirmPassword.value = '';
+
+    clearMessages();
+    await router.push('/login');
+
+  } catch (err) {
+    errorMessage.value = (err && err.data && (err.data.message || err.data.detail)) || err.message || 'An unexpected error occurred.';
+    clearMessages();
+  } finally {
+    loading.value = false;
+  }
+
 };
 </script>
 
@@ -82,6 +116,11 @@ const handleRegister = () => {
 
 /* Header style consistent with the homepage */
 h2 { color: #ffffff; font-size: 1.8rem; font-weight: 600; margin-bottom: 2rem; margin-top: 0; text-align: center; }
+
+/* Message banners */
+.message-banner { text-align: center; border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.95rem; }
+.message-banner.success { background-color: #113322; color: #b7f2c1; border: 1px solid #225533; }
+.message-banner.error { background-color: #3b1212; color: #ffd1d1; border: 1px solid #7a1b1b; }
 
 /* Styling for each label + input group */
 .form-group { margin-bottom: 1.5rem; }
@@ -96,6 +135,7 @@ label { color: #cccccc; display: block; font-size: 0.9rem; margin-bottom: 0.5rem
 /* Login button, styled like your "Shop Now" button */
 .submit-button { background-color: #ffffff; border: none; border-radius: 4px; color: #121212; cursor: pointer; font-size: 1rem; font-weight: bold; margin-top: 1rem; padding: 1rem; transition: background-color 0.3s ease; width: 100%; }
 .submit-button:hover { background-color: #dddddd; }
+.submit-button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* Container for "Forgot Password" and "Create Account" links */
 .extra-links { margin-top: 1.5rem; text-align: center; }

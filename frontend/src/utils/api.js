@@ -26,7 +26,7 @@ function getAuthHeader() {
   try {
     const token = localStorage.getItem('token');
     return token ? { Authorization: `Bearer ${token}` } : {};
-  } catch (e) {
+  } catch {
     return {};
   }
 }
@@ -45,6 +45,20 @@ function makeTimeoutController(timeout, externalSignal) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   return { signal: controller.signal, cancel: () => clearTimeout(id) };
+}
+
+function isApiErrorPayload(data) {
+  // Detect known API error shapes even when HTTP status is 200.
+  // Your backend returns ErrorMessage(message, error) on auth failures.
+  if (!data || typeof data !== 'object') return false;
+  // Common patterns:
+  // - { error: 'InvalidCredentials', message: '...' }
+  // - { success: false, message: '...' }
+  // - { status: 'error', message: '...' }
+  if (data.error) return true;
+  if (data.success === false) return true;
+  if (typeof data.status === 'string' && data.status.toLowerCase() === 'error') return true;
+  return false;
 }
 
 async function fetchFromAPI(endpoint, options = {}) {
@@ -66,6 +80,16 @@ async function fetchFromAPI(endpoint, options = {}) {
     });
 
     const data = await parseResponseBody(res);
+
+    // If server returned an API-level error payload (but still 200), treat it as an error
+    if (isApiErrorPayload(data)) {
+      const message = (data && (data.message || data.detail)) || res.statusText || 'Request failed';
+      const err = new Error(message);
+      err.status = res.status;
+      err.data = data;
+      throw err;
+    }
+
     if (!res.ok) {
       const message = (data && data.message) || res.statusText || 'Request failed';
       const err = new Error(message);
@@ -128,6 +152,16 @@ async function postToAPI(endpoint, body = {}, options = {}) {
     });
 
     const data = await parseResponseBody(res);
+
+    // If server returned an API-level error payload (but still 200), treat it as an error
+    if (isApiErrorPayload(data)) {
+      const message = (data && (data.message || data.detail)) || res.statusText || 'Request failed';
+      const err = new Error(message);
+      err.status = res.status;
+      err.data = data;
+      throw err;
+    }
+
     if (!res.ok) {
       const message = (data && data.message) || res.statusText || 'Request failed';
       const err = new Error(message);

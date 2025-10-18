@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
 
 
@@ -15,6 +15,5 @@ class UserRead(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
 
-    class Config:
-        orm_mode = True
-
+    # Pydantic v2: replace `orm_mode` with `from_attributes` via ConfigDict
+    model_config = ConfigDict(from_attributes=True)
