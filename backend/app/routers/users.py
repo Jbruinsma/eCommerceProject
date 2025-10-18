@@ -30,3 +30,31 @@ async def profile(user_uuid: str, session: AsyncSession = Depends(get_session)):
         "activeListings": row.activeListings,
         "openOrders": row.openOrders
     }
+
+@router.get("/{user_uuid}/portfolio")
+async def portfolio(user_uuid: str, session: AsyncSession = Depends(get_session)):
+    pass
+
+@router.get("/{user_uuid}/orders")
+async def orders(user_uuid: str, session: AsyncSession = Depends(get_session)):
+    pass
+
+@router.get("/{user_uuid}/transactions")
+async def transactions(user_uuid: str, session: AsyncSession = Depends(get_session)):
+
+    if not user_uuid:
+        return ErrorMessage(message="Invalid user UUID", error="InvalidUserUUID")
+
+    statement = text("CALL retrieveUserTransactionsById(:input_uuid);")
+    result = await session.execute(statement, {"input_uuid": user_uuid})
+    rows = result.mappings().all()
+
+    return [dict(row) for row in rows]
+
+@router.get("/{user_uuid}/listings")
+async def listings(user_uuid: str, session: AsyncSession = Depends(get_session)):
+    pass
+
+@router.get("/{user_uuid}/settings")
+async def settings(user_uuid: str, session: AsyncSession = Depends(get_session)):
+    pass

@@ -96,12 +96,14 @@ CREATE TABLE orders(
 
 CREATE TABLE transactions(
     transaction_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    user_id CHAR(36) NOT NULL,
     order_id INT UNSIGNED,
     amount DECIMAL(10, 2),
     transaction_status ENUM('pending', 'completed', 'failed', 'refunded'),
     payment_gateway_id VARCHAR(100),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (user_id) REFERENCES users(uuid),
     FOREIGN KEY (order_id) REFERENCES orders(order_id)
 );
 

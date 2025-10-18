@@ -4,6 +4,7 @@ import LoginPage from '@/views/LoginPage.vue'
 import RegisterPage from '@/views/RegisterPage.vue'
 import ForgotPassword from '@/views/ForgotPassword.vue'
 import ProfilePage from '@/views/ProfilePage.vue'
+import TransactionsPage from '@/views/TransactionsPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,7 +13,8 @@ const router = createRouter({
     { name: 'Login', path: '/login', component: LoginPage },
     { name: 'Register', path: '/register', component: RegisterPage },
     { name: 'ForgotPassword', path: '/account-recovery', component: ForgotPassword },
-    { name: 'Profile', path: '/profile', component: ProfilePage }
+    { name: 'Profile', path: '/profile', component: ProfilePage },
+    { name: 'Transactions', path: '/transactions', component: TransactionsPage },
   ],
 })
 
