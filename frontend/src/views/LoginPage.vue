@@ -44,6 +44,7 @@
 import { ref } from 'vue';
 import { postToAPI } from '@/utils/index.js'
 import router from '@/router/index.js'
+import { useAuthStore } from '@/stores/authStore.js'
 
 const email = ref('');
 const password = ref('');
@@ -51,6 +52,8 @@ const password = ref('');
 const loading = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
+
+const authStore = useAuthStore();
 
 const clearMessages = (timeout = 5000) => {
   if (timeout <= 0) return;
@@ -75,6 +78,9 @@ const handleLogin = async () => {
     const data = await postToAPI('/auth/login', { email: email.value, password: password.value });
     successMessage.value = (data && (data.message || data.detail)) || 'Login successful.';
     clearMessages();
+
+    const userData = data.extra;
+    await authStore.login(userData);
     await router.push('/')
 
   } catch (err) {

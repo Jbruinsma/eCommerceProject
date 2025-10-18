@@ -28,7 +28,7 @@
           />
         </div>
         <svg
-          @click="router.push('/login')"
+          @click="redirectToProfile"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -89,8 +89,11 @@
 <script setup>
 import { ref } from 'vue'
 import router from '@/router/index.js'
+import { useAuthStore } from '@/stores/authStore.js'
 
 const searchQuery = ref('')
+
+const authStore = useAuthStore();
 
 const handleSearch = () => {
   console.log(`Searching for: ${searchQuery.value}`)
@@ -122,6 +125,12 @@ const featuredProducts = ref([
     imageUrl: 'https://placehold.co/400x300/1a1a1a/ffffff?text=Sneaker+4',
   },
 ])
+
+function redirectToProfile() {
+  if (authStore.isLoggedIn) { router.push('/profile') }
+  else { router.push('/login') }
+}
+
 </script>
 
 <style>
@@ -164,7 +173,7 @@ a { color: #ffffff; text-decoration: none; }
 .hero-section { background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.2)), url('/images/MaisonMargielaBanner.png') no-repeat center center/cover; min-height: 60vh; padding: 5rem 5%; text-align: center; }
 .hero-content { margin: 0 auto; max-width: 800px; text-shadow: 2px 2px 2px black;}
 .hero-info { font-size: 1.2rem; margin-bottom: 1rem; color: white; text-shadow: 1px 1px 1px black;}
-.cta-button { background-color:#ffffff;  border:1px solid #000000; border-radius: 10px; color:#121212; cursor:pointer; font-size:1rem; font-weight:bold; margin-top:2rem; padding:1rem 2rem; transition:background-color 0.7s ease,color 0.7s ease,border-color 0.7s ease; } 
+.cta-button { background-color:#ffffff;  border:1px solid #000000; border-radius: 10px; color:#121212; cursor:pointer; font-size:1rem; font-weight:bold; margin-top:2rem; padding:1rem 2rem; transition:background-color 0.7s ease,color 0.7s ease,border-color 0.7s ease; }
 .cta-button:hover { background-color:#000000; color:#ffffff; border-color:#ffffff; }
 .featured-products { padding: 4rem 5%; }
 .product-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }

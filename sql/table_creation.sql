@@ -19,6 +19,7 @@ CREATE TABLE users(
     password VARCHAR(255) NOT NULL,
     first_name VARCHAR(100),
     last_name VARCHAR(100),
+    location VARCHAR(255),
     birth_date DATE,
     role ENUM('user', 'admin'),
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

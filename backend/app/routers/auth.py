@@ -29,7 +29,10 @@ async def login(login_credentials: LoginCredentials, session: AsyncSession = Dep
     if not user or not verify_password(login_credentials.password, user.password):
         return error_message
 
-    return Message(message="Login Successful")
+    return Message(message="Login Successful", extra= {
+        "uuid": user.uuid,
+        "email": user.email
+    })
 
 @router.post("/register")
 async def register(registration_credentials: RegisterCredentials, session: AsyncSession = Depends(get_session)):
