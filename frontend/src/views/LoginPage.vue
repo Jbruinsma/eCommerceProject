@@ -37,6 +37,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import { postToAPI } from '@/utils/index.js'
 // If you're using a router, you might import it here
 // import { useRouter } from 'vue-router';
 
@@ -45,7 +46,7 @@ import { ref } from 'vue';
 const email = ref('');
 const password = ref('');
 
-const handleLogin = () => {
+const handleLogin = async () => {
   // 1. --- FORM VALIDATION ---
   // You can add more complex validation logic here if needed.
   // For example, checking if the password meets certain criteria.
@@ -58,6 +59,9 @@ const handleLogin = () => {
   // 2. --- API CALL ---
   // This is where you would make a call to your backend authentication endpoint.
   console.log('Submitting login request for:', email.value);
+  console.log('Password:', password.value);
+  
+  console.log(await postToAPI('/auth/login', { email: email.value, password: password.value }))
 
 };
 </script>
