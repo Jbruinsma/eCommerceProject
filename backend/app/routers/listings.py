@@ -12,7 +12,7 @@ router = APIRouter(prefix="/listings", tags=["listings"])
 
 @router.post("/{user_uuid}/create")
 async def create_listing(user_uuid: str, new_listing_info: NewListingInfo, session: AsyncSession = Depends(get_session)):
-    statement = text("CALL addListing(:input_user_id, :input_product_id, :input_size_id, :input_listing_type, :input_price, :input_condition);")
+    statement = text("CALL createListing(:input_user_id, :input_product_id, :input_size_id, :input_listing_type, :input_price, :input_condition);")
     result = await session.execute(statement, {
         "input_user_id": user_uuid,
         "input_product_id": new_listing_info.product_id,
@@ -26,5 +26,34 @@ async def create_listing(user_uuid: str, new_listing_info: NewListingInfo, sessi
     row = result.mappings().first()
     if not row:
         return ErrorMessage(message="Your item could not be listed successfully", error="ListingNotFound")
+
+    return dict(row)
+
+@router.get("/{user_uuid}")
+async def listings(user_uuid: str, session: AsyncSession = Depends(get_session)):
+    if not user_uuid:
+        return ErrorMessage(message="User UUID is required", error="MissingUserUUID")
+
+    statement = text("CALL retrieveAllListingsByUserId(:input_user_id);")
+    result = await session.execute(statement, {"input_user_id": user_uuid})
+    rows = result.mappings().all()
+
+    if not rows: return []
+    return list(rows)
+
+@router.get("/{user_uuid}/{listing_id}")
+async def listing(user_uuid: str, listing_id: str, session: AsyncSession = Depends(get_session)):
+    if not user_uuid:
+        return ErrorMessage(message="User UUID is required", error="MissingUserUUID")
+
+    if not listing_id:
+        return ErrorMessage(message="Listing ID is required", error="MissingListingID")
+
+    statement = text("CALL retrieveListingById(:input_listing_id, :input_user_id);")
+    result = await session.execute(statement, {"input_listing_id": listing_id, "input_user_id": user_uuid})
+    row = result.mappings().first()
+
+    if not row:
+        return ErrorMessage(message="Listing not found", error="ListingNotFound")
 
     return dict(row)

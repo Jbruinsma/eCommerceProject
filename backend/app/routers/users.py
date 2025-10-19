@@ -48,9 +48,24 @@ async def transactions(user_uuid: str, session: AsyncSession = Depends(get_sessi
 
     statement = text("CALL retrieveUserTransactionsById(:input_uuid);")
     result = await session.execute(statement, {"input_uuid": user_uuid})
-    rows = result.mappings().all()
+    transaction_rows = result.mappings().all()
 
-    return [dict(row) for row in rows]
+    statement = text("CALL retrieveUserBalanceById(:input_uuid);")
+    result = await session.execute(statement, {"input_uuid": user_uuid})
+    current_balance_row = result.mappings().first()
+
+    statement = text("CALL calculateLifetimeEarnings(:input_uuid);")
+    result = await session.execute(statement, {"input_uuid": user_uuid})
+    lifetime_earnings_row = result.mappings().first()
+
+    return {
+        "transactions": [
+            dict(row) for row in transaction_rows
+        ],
+        "totalTransactions": len(transaction_rows),
+        "currentBalance": round(float(current_balance_row.balance), 2),
+        "lifetimeEarnings": round(float(lifetime_earnings_row.lifetime_earnings), 2)
+    }
 
 @router.get("/{user_uuid}/listings")
 async def listings(user_uuid: str, session: AsyncSession = Depends(get_session)):

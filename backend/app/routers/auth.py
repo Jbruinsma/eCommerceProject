@@ -6,6 +6,7 @@ from app.pydantic_models.error_message import ErrorMessage
 
 from app.models import User
 from app.db import get_session
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.security import verify_password, get_password_hash
@@ -49,9 +50,19 @@ async def register(registration_credentials: RegisterCredentials, session: Async
     user = await find_user_by_email(session, user_provided_email)
     if not user:
         hashed_password = get_password_hash(user_provided_unhashed_password)
-        new_user = User(email=user_provided_email, password=hashed_password, role="user")
-        session.add(new_user)
+
+        statement = text("CALL createUser(:input_email, :input_hashed_password, :input_role);")
+        result = await session.execute(statement, {
+            "input_email": user_provided_email,
+            "input_hashed_password": hashed_password,
+            "input_role": "user"
+        })
         await session.commit()
-        return {"message": "Registration successful"}
+
+        row = result.mappings().first()
+        if not row:
+            return ErrorMessage(message="User could not be registered", error="UserRegistrationFailed")
+
+        return dict(row)
 
     return ErrorMessage(message="The email provided is already associated with another account.", error="UserAlreadyExists")

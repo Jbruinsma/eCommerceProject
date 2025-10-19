@@ -90,7 +90,7 @@
               />
             </svg>
             <h3>Transactions</h3>
-            <p>Review your payment history.</p>
+            <p>Review your payment history & balance.</p>
           </a>
 
           <a href="/my-listings" class="nav-card">
@@ -203,7 +203,7 @@ onMounted(async() => {
     if (err && err.data && err.data.message) errMsg = err.data.message
     message.value = errMsg
     messageType.value = 'error'
-    router.push('/login')
+    await router.push('/login')
     return
 
   } finally {

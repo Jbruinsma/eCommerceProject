@@ -1,11 +1,9 @@
 <template>
   <div class="transactions-container">
-    <nav class="navbar">
-    </nav>
+    <nav class="navbar"></nav>
 
     <header class="page-header">
       <a href="/" class="logo">NAME</a>
-      <!-- added profile and cart icons (same visuals as HomePage) -->
       <div class="nav-icons">
         <svg
           @click="onProfileClick"
@@ -42,6 +40,19 @@
     </header>
 
     <main class="transactions-content">
+      <section class="overview-section">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>{{ formatCurrency(currentBalance) }}</h3>
+            <p>Current Balance</p>
+          </div>
+          <div class="stat-card">
+            <h3>{{ formatCurrency(lifetimeEarnings) }}</h3>
+            <p>Lifetime Earnings</p>
+          </div>
+        </div>
+      </section>
+
       <h2>Transaction History</h2>
       <div class="table-wrapper">
         <table class="transactions-table">
@@ -55,10 +66,10 @@
           </tr>
           </thead>
           <tbody>
-          <tr v-if="transactions.length === 0">
+          <tr v-if="transactionsList.length === 0">
             <td colspan="5">You have no transactions yet.</td>
           </tr>
-          <tr v-for="tx in transactions" :key="tx.transaction_id">
+          <tr v-for="tx in transactionsList" :key="tx.transaction_id">
             <td>#{{ tx.transaction_id }}</td>
             <td><a href="#">{{ tx.order_id }}</a></td>
             <td>{{ formatDate(tx.created_at) }}</td>
@@ -74,22 +85,22 @@
       </div>
     </main>
 
-    <footer class="site-footer">
-    </footer>
+    <footer class="site-footer"></footer>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue'
 import { useAuthStore } from '@/stores/authStore.js'
 import router from '@/router/index.js'
 import { fetchFromAPI } from '@/utils/index.js'
 
-const authStore = useAuthStore();
+const authStore = useAuthStore()
+const transactionsList = ref([])
 
-const transactions = ref([])
+const currentBalance = ref('DNE')
+const lifetimeEarnings = ref('DNE')
 
-// Redirect helpers for header icons
 function onProfileClick() {
   if (authStore.isLoggedIn) router.push('/profile')
   else router.push('/login')
@@ -107,36 +118,25 @@ onMounted(async () => {
   try {
     const response = await fetchFromAPI(`/users/${authStore.uuid}/transactions`)
 
-    // Normalise several possible response shapes into an array of transactions
-    let items = []
-    if (Array.isArray(response)) {
-      items = response
-    } else if (response && Array.isArray(response.data)) {
-      items = response.data
-    } else if (response && Array.isArray(response.transactions)) {
-      items = response.transactions
-    } else if (response && typeof response === 'object') {
-      // If backend returns a single object (or a keyed object), try to extract array-like values
-      // Example: { transactions: [...]} handled above; otherwise if object looks like a single transaction convert to array
-      const maybeTx = response
-      if (maybeTx.transaction_id || maybeTx.id) items = [maybeTx]
-    }
+    const { transactions, currentBalance, lifetimeEarnings } = response
 
-    // Defensive mapping so template fields always exist
-    transactions.value = items.map((tx) => ({
+    transactionsList.value = transactions.map((tx) => ({
       transaction_id: tx.transaction_id ?? tx.id ?? tx.tx_id ?? '',
       order_id: tx.order_id ?? tx.orderId ?? (tx.order && (tx.order.id ?? tx.order_id)) ?? '',
       created_at: tx.created_at ?? tx.createdAt ?? tx.date ?? '',
       amount: tx.amount ?? tx.total ?? 0,
       transaction_status: (tx.transaction_status ?? tx.transactionStatus ?? tx.status ?? 'pending').toString(),
     }))
+
+    currentBalance.value = currentBalance ?? 0
+    lifetimeEarnings.value = lifetimeEarnings ?? 0
+
   } catch (err) {
     console.error('Failed to load transactions:', err)
-    transactions.value = []
+    transactionsList.value = []
   }
 })
 
-// Helper function to format currency
 const formatCurrency = (amount) => {
   const n = Number(amount)
   if (!Number.isFinite(n)) return '$0.00'
@@ -144,16 +144,15 @@ const formatCurrency = (amount) => {
     style: 'currency',
     currency: 'USD',
   }).format(n)
-};
+}
 
-// Helper function to format dates
 const formatDate = (dateString) => {
   if (!dateString) return ''
   const d = new Date(dateString)
   if (Number.isNaN(d.getTime())) return dateString
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  return d.toLocaleDateString('en-US', options);
-};
+  const options = { year: 'numeric', month: 'long', day: 'numeric' }
+  return d.toLocaleDateString('en-US', options)
+}
 </script>
 
 <style scoped>
@@ -161,7 +160,7 @@ h2 { border-bottom: 1px solid #333; font-size: 1.8rem; margin-bottom: 2rem; padd
 a { color: #ffffff; text-decoration: none; }
 a:hover { text-decoration: underline; }
 .logo { font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; }
-.page-header { border-bottom: 1px solid #2a2a2a; padding: 1.5rem 5%; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.page-header { align-items: center; border-bottom: 1px solid #2a2a2a; display: flex; gap: 1rem; justify-content: space-between; padding: 1.5rem 5%; }
 .transactions-container { color: #ffffff; font-family: Spectral, sans-serif; }
 .transactions-content { margin: 0 auto; max-width: 1200px; padding: 4rem 5%; }
 .table-wrapper { overflow-x: auto; }
@@ -176,15 +175,18 @@ tbody td a { font-weight: bold; }
 .status-pending { background-color: #4a411a; color: #f0d56e; }
 .status-failed { background-color: #4a1a1a; color: #f06e6e; }
 .status-refunded { background-color: #2c2c2c; color: #aaaaaa; }
-
-/* Header icon styles (new) */
-.nav-icons { display: flex; gap: 1rem; align-items: center; }
-.account-icon, .cart-icon { cursor: pointer; height: 28px; width: 28px; color: inherit; transition: transform 0.12s ease, opacity 0.12s ease; opacity: 0.95; }
-.account-icon:hover, .cart-icon:hover { transform: translateY(-2px); opacity: 1; }
+.nav-icons { align-items: center; display: flex; gap: 1rem; }
+.account-icon, .cart-icon { color: inherit; cursor: pointer; height: 28px; opacity: 0.95; transition: transform 0.12s ease, opacity 0.12s ease; width: 28px; }
+.account-icon:hover, .cart-icon:hover { opacity: 1; transform: translateY(-2px); }
 .account-icon:focus, .cart-icon:focus { outline: none; }
-.account-icon:focus-visible, .cart-icon:focus-visible { box-shadow: 0 0 0 3px rgba(255,255,255,0.06); border-radius: 4px; }
+.account-icon:focus-visible, .cart-icon:focus-visible { border-radius: 4px; box-shadow: 0 0 0 3px rgba(255,255,255,0.06); }
+/* New Styles for Overview Section */
+.overview-section { margin-bottom: 4rem; }
+.stats-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.stat-card { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 2rem; text-align: center; }
+.stat-card h3 { color: #ffffff; font-size: 2.2rem; margin: 0 0 0.5rem 0; }
+.stat-card p { color: #888; font-size: 0.9rem; margin: 0; }
 
-/* Small responsive tweak: collapse header spacing on narrow screens */
 @media (max-width: 640px) {
   .page-header { padding: 1rem 3%; }
   .account-icon, .cart-icon { height: 24px; width: 24px; }

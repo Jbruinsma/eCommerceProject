@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS listings;
 DROP TABLE IF EXISTS addresses;
 DROP TABLE IF EXISTS products_sizes;
 DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS account_balance;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS brands;
 DROP TABLE IF EXISTS sizes;
@@ -24,6 +25,13 @@ CREATE TABLE users(
     role ENUM('user', 'admin'),
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE account_balance(
+    user_id CHAR(36) PRIMARY KEY,
+    balance DECIMAL(15, 2) DEFAULT 0.00,
+
+    FOREIGN KEY (user_id) REFERENCES users(uuid)
 );
 
 CREATE TABLE brands(
@@ -101,7 +109,9 @@ CREATE TABLE transactions(
     order_id INT UNSIGNED,
     amount DECIMAL(10, 2),
     transaction_status ENUM('pending', 'completed', 'failed', 'refunded'),
-    payment_gateway_id VARCHAR(100),
+    payment_origin ENUM('account_balance', 'credit_card', 'other'),
+    payment_destination ENUM('account_balance', 'bank_transfer', 'other'),
+    payment_purpose ENUM('sale_proceeds', 'purchase_funds', 'refund', 'fee'),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (user_id) REFERENCES users(uuid),
@@ -121,4 +131,18 @@ CREATE TABLE addresses(
     country VARCHAR(100),
 
     FOREIGN KEY (user_id) REFERENCES users(uuid)
+);
+
+CREATE TABLE portfolio_items(
+    portfolio_item_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    user_id CHAR(36),
+    product_id INT UNSIGNED,
+    size_id INT UNSIGNED,
+    acquisition_date DATE,
+    acquisition_price DECIMAL(10, 2),
+    item_condition ENUM('new', 'used', 'worn'),
+
+    FOREIGN KEY (user_id) REFERENCES users(uuid),
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (size_id) REFERENCES sizes(size_id)
 );
