@@ -27,8 +27,9 @@ CREATE TABLE users(
 );
 
 CREATE TABLE brands(
-  brand_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  brand_name VARCHAR(250)
+    brand_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    brand_name VARCHAR(250),
+    brand_logo_url VARCHAR(2083)
 );
 
 CREATE TABLE products(

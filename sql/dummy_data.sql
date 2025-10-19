@@ -35,10 +35,27 @@ START TRANSACTION;
 -- =============================================
 --  1. STATIC DATA: BRANDS & SIZES
 -- =============================================
-INSERT INTO brands (brand_id, brand_name) VALUES
-(1, 'Nike'), (2, 'Jordan'), (3, 'adidas'), (4, 'New Balance'), (5, 'ASICS'),
-(6, 'Puma'), (7, 'Reebok'), (8, 'Converse'), (9, 'Vans'), (10, 'Salomon'),
-(11, 'Crocs'), (12, 'UGG');
+INSERT INTO brands (brand_name, brand_logo_url) VALUES
+('Adidas', '/images/adidasLogo.png'),
+('ASICS', '/images/AsicsLogo.png'),
+('Balenciaga', '/images/BalenciagaLogo.png'),
+('BAPE (A Bathing Ape)', '/images/BapeLogo.webp'),
+('Converse', '/images/ConverseLogo.png'),
+('Dior', '/images/DiorLogo.png'),
+('Fear of God', '/images/FearOfGodLogo.png'),
+('Jordan Brand', '/images/JordanLogo.png'),
+('Kith', '/images/KithLogo.png'),
+('Maison Margiela', '/images/MaisonMargielaLogo.png'),
+('New Balance', '/images/NewBalanceLogo.png'),
+('Nike', '/images/NikeLogo.svg'),
+('Off-White', '/images/OffWhiteLogo.svg'),
+('Palace', '/images/PalaceLogo.webp'),
+('Puma', '/images/PumaLogo.svg'),
+('Reebok', '/images/ReebokLogo.png'),
+('Salomon', '/images/SalomonLogo.svg'),
+('Stüssy', '/images/StussyLogo.png'),
+('Supreme', '/images/SupremeLogo.png'),
+('Vans', '/images/VansLogo.png');
 
 INSERT INTO sizes (size_id, size_value) VALUES
 (1, '7'), (2, '7.5'), (3, '8'), (4, '8.5'), (5, '9'), (6, '9.5'),

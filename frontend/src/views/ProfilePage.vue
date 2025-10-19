@@ -93,7 +93,7 @@
             <p>Review your payment history.</p>
           </a>
 
-          <a href="#" class="nav-card">
+          <a href="/my-listings" class="nav-card">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
