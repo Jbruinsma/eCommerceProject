@@ -64,7 +64,7 @@ CREATE TABLE listings(
     user_id CHAR(36),
     product_id INT UNSIGNED,
     size_id INT UNSIGNED,
-    listing_type ENUM('sale', 'bid', 'ask'),
+    listing_type ENUM('sale', 'ask'),
     price DECIMAL(10, 2),
     item_condition ENUM('new', 'used', 'worn'),
     status ENUM('active', 'sold', 'canceled', 'pending'),
