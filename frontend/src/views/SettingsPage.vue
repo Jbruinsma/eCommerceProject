@@ -1,45 +1,5 @@
 <template>
   <div class="settings-container">
-    <nav class="navbar"></nav>
-
-    <header class="page-header">
-      <a href="/" class="logo">NAME</a>
-      <!-- added profile and cart icons like HomePage -->
-      <div class="nav-icons">
-        <svg
-          @click="redirectToProfile"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="account-icon"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-          />
-        </svg>
-        <svg
-          @click="redirectToCart"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="cart-icon"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-          />
-        </svg>
-      </div>
-    </header>
-
-    <!-- API message area -->
     <div v-if="message" :class="['api-message', messageType]">{{ message }}</div>
 
     <main class="settings-content">
@@ -234,17 +194,6 @@ const handleSaveChanges = () => openConfirm('save')
 const handleCancel = () => openConfirm('cancel')
 
 
-function redirectToProfile() {
-  if (authStore.isLoggedIn) {
-    router.push('/profile')
-  } else {
-    router.push('/login')
-  }
-}
-function redirectToCart() {
-  router.push('/cart')
-}
-
 const message = ref('')
 const messageType = ref('')
 </script>
@@ -254,9 +203,6 @@ const messageType = ref('')
 .page-header { align-items: center; border-bottom: 1px solid #2a2a2a; display: flex; justify-content: space-between; padding: 1.5rem 5%; }
 .settings-container { color: #ffffff; font-family: Spectral, sans-serif; }
 .settings-content { margin: 0 auto; max-width: 900px; padding: 4rem 5%; }
-
-/* Logo (top-left NAME) */
-.logo { color: #ffffff; font-size: 1.5rem; font-weight: 700; letter-spacing: 2px; text-decoration: none; }
 
 /* Headings */
 h2 { border-bottom: 1px solid #333; font-size: 1.8rem; margin-bottom: 0.5rem; padding-bottom: 1rem; text-align: left; }
@@ -283,10 +229,6 @@ label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5r
 .btn-secondary { background-color: #2c2c2c; border-color: #444; color: #ffffff; }
 .btn-secondary:hover { background-color: #383838; border-color: #666; }
 
-/* Header icons */
-.nav-icons { align-items: center; display: flex; gap: 1.5rem; }
-.account-icon, .cart-icon { cursor: pointer; height: 28px; width: 28px; }
-
 /* Modal */
 .modal-overlay { align-items: center; background: rgba(0,0,0,0.6); display: flex; inset: 0; justify-content: center; position: fixed; z-index: 1000; }
 .modal { background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); max-width: 520px; padding: 1.5rem; width: 92%; }
@@ -304,6 +246,5 @@ label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5r
 
 @media (max-width: 640px) {
   .page-header { padding: 1rem 3%; }
-  .account-icon, .cart-icon { height: 24px; width: 24px; }
 }
 </style>

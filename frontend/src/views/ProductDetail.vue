@@ -1,51 +1,5 @@
 <template>
   <div class="product-container">
-    <nav class="navbar"></nav>
-
-    <header class="page-header">
-      <a href="/" class="logo">NAME</a>
-      <div class="nav-icons">
-        <svg
-          @click="redirectToProfile"
-          @keydown.enter.prevent="redirectToProfile"
-          @keydown.space.prevent="redirectToProfile"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="account-icon"
-          role="button"
-          tabindex="0"
-          aria-label="Account"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-          />
-        </svg>
-        <svg
-          @click="redirectToCart"
-          @keydown.enter.prevent="redirectToCart"
-          @keydown.space.prevent="redirectToCart"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="cart-icon"
-          role="button"
-          tabindex="0"
-          aria-label="Cart"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-          />
-        </svg>
-      </div>
-    </header>
-
     <main class="product-content">
       <div class="product-grid">
         <div class="product-image-container">
@@ -108,7 +62,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import router from '@/router/index.js'
-import { useAuthStore } from '@/stores/authStore.js'
 import { fetchFromAPI } from '@/utils/index.js'
 
 const product_id = router.currentRoute.value.params.id
@@ -164,25 +117,10 @@ onMounted(async () => {
 
 })
 
-// Header icon handlers (use authStore to decide where to route)
-const authStore = useAuthStore()
-function redirectToProfile() {
-  if (authStore.isLoggedIn) {
-    router.push('/profile')
-  } else {
-    router.push('/login')
-  }
-}
-function redirectToCart() {
-  router.push('/cart')
-}
+// Nav handled by NavBar component globally (header handlers removed)
 </script>
 
 <style scoped>
-a {
-  color: #ffffff;
-  text-decoration: none;
-}
 h1,
 h2,
 h3 {
@@ -213,29 +151,6 @@ label {
 ul {
   list-style: none;
   padding: 0;
-}
-.logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-  letter-spacing: 2px;
-}
-.page-header {
-  border-bottom: 1px solid #2a2a2a;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem 5%;
-}
-.nav-icons {
-  align-items: center;
-  display: flex;
-  gap: 1.5rem;
-}
-.account-icon,
-.cart-icon {
-  cursor: pointer;
-  height: 28px;
-  width: 28px;
 }
 .product-container {
   color: #ffffff;

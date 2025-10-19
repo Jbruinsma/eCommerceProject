@@ -1,12 +1,5 @@
 <template>
   <div class="order-detail-container">
-    <nav class="navbar">
-    </nav>
-
-    <header class="page-header">
-      <a href="/" class="logo">NAME</a>
-    </header>
-
     <main class="order-content">
       <div class="order-header">
         <div class="header-info">
@@ -118,8 +111,6 @@ h1 { font-size: 2.2rem; margin: 0; }
 h3 { border-bottom: 1px solid #333; font-size: 1.2rem; margin-bottom: 1rem; padding-bottom: 1rem; }
 ul { list-style: none; padding: 0; }
 address { font-style: normal; line-height: 1.6; }
-.logo { font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; }
-.page-header { border-bottom: 1px solid #2a2a2a; padding: 1.5rem 5%; }
 .order-detail-container { color: #ffffff; font-family: Spectral, sans-serif; }
 .order-content { margin: 0 auto; max-width: 1200px; padding: 4rem 5%; }
 .order-header { align-items: flex-start; border-bottom: 1px solid #333; display: flex; justify-content: space-between; margin-bottom: 2.5rem; padding-bottom: 1.5rem; }

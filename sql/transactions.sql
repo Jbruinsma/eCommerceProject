@@ -15,4 +15,18 @@ BEGIN
 
 END//
 
+DROP PROCEDURE IF EXISTS retrieveTransactionsByOrderId;
+
+CREATE PROCEDURE retrieveTransactionsByOrderId(
+    IN input_order_id INT UNSIGNED
+)
+
+BEGIN
+
+    SELECT * FROM transactions
+    WHERE order_id = input_order_id
+    ORDER BY created_at DESC;
+
+end //
+
 DELIMITER ;

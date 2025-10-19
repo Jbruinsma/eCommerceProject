@@ -1,11 +1,5 @@
 <template>
   <div class="profile-container">
-    <nav class="navbar"></nav>
-
-    <header class="page-header">
-      <a href="/" class="logo">NAME</a>
-    </header>
-
     <!-- API message area -->
     <div v-if="message" :class="['api-message', messageType]">{{ message }}</div>
 
@@ -39,7 +33,7 @@
       <section class="navigation-section">
         <h2>Manage Your Account</h2>
         <div class="nav-grid">
-          <a href="#" class="nav-card">
+          <a href="/portfolio" class="nav-card">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -214,157 +208,35 @@ onMounted(async() => {
 
 <style scoped>
 /* Inherit global styles from your main CSS file for fonts, colors, etc. */
-h1,
-h2,
-h3 {
-  font-family: Spectral, sans-serif;
-  font-weight: 600;
-}
-h1 {
-  font-size: 2.8rem;
-  margin-bottom: 0.5rem;
-}
-h2 {
-  border-bottom: 1px solid #333;
-  font-size: 1.8rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  text-align: left;
-}
-h3 {
-  color: #ffffff;
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-p {
-  color: #cccccc;
-  line-height: 1.6;
-}
-a {
-  color: #ffffff;
-  text-decoration: none;
-}
-.logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-  letter-spacing: 2px;
-}
-.page-header {
-  border-bottom: 1px solid #2a2a2a;
-  padding: 1.5rem 5%;
-}
-.profile-container {
-  color: #ffffff;
-}
-.profile-content {
-  margin: 0 auto;
-  max-width: 1200px;
-  padding: 4rem 5%;
-}
-.profile-header {
-  background-color: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  border-radius: 12px;
-  margin-bottom: 4rem;
-  padding: 2rem;
-}
-.user-info .user-detail {
-  color: #888;
-  font-size: 1rem;
-  margin: 0;
-}
-.overview-section,
-.navigation-section {
-  margin-bottom: 4rem;
-}
-.stats-grid {
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-}
+h1,h2,h3 { font-family: Spectral, sans-serif; font-weight: 600; }
+h1 { font-size: 2.8rem; margin-bottom: 0.5rem; }
+h2 { border-bottom: 1px solid #333; font-size: 1.8rem; margin-bottom: 2rem; padding-bottom: 1rem; text-align: left; }
+h3 { color: #ffffff; font-size: 1.5rem; margin-bottom: 0.5rem; }
+p { color: #cccccc; line-height: 1.6; }
+a { color: #ffffff; text-decoration: none; }
+.logo { font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; }
+.page-header { border-bottom: 1px solid #2a2a2a; padding: 1.5rem 5%; }
+.profile-container { color: #ffffff; }
+.profile-content { margin: 0 auto; max-width: 1200px; padding: 4rem 5%; }
+.profile-header { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; margin-bottom: 4rem; padding: 2rem; }
+.user-info .user-detail { color: #888; font-size: 1rem; margin: 0; }
+.overview-section,.navigation-section { margin-bottom: 4rem; }
+.stats-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
 /* Updated nav-grid for 5 cards in one row or responsive wrapping */
-.nav-grid {
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Adjusted minmax for 5 cards */
-}
-@media (min-width: 1200px) {
-  /* For larger screens, ensure 5 columns */
-  .nav-grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
+.nav-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); } /* Adjusted minmax for 5 cards */
+@media (min-width: 1200px) { /* For larger screens, ensure 5 columns */ .nav-grid { grid-template-columns: repeat(5, 1fr); } }
 /* End Updated nav-grid */
-.stat-card {
-  background-color: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  border-radius: 8px;
-  padding: 2rem;
-  text-align: center;
-}
-.stat-card h3 {
-  color: #ffffff;
-  font-size: 2.2rem;
-  margin: 0 0 0.5rem 0;
-}
-.stat-card p {
-  color: #888;
-  font-size: 0.9rem;
-  margin: 0;
-}
-.nav-card {
-  align-items: center;
-  background-color: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  justify-content: center;
-  padding: 2rem;
-  text-align: center;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-.nav-card:hover {
-  border-color: #444;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-  transform: translateY(-5px);
-}
-.nav-card svg {
-  height: 48px;
-  margin-bottom: 1rem;
-  stroke: #ffffff;
-  width: 48px;
-}
-.nav-card h3 {
-  font-size: 1.2rem;
-  margin: 0;
-}
-.nav-card p {
-  color: #888;
-  font-size: 0.9rem;
-  margin: 0;
-}
+.stat-card { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 2rem; text-align: center; }
+.stat-card h3 { color: #ffffff; font-size: 2.2rem; margin: 0 0 0.5rem 0; }
+.stat-card p { color: #888; font-size: 0.9rem; margin: 0; }
+.nav-card { align-items: center; background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; display: flex; flex-direction: column; gap: 0.5rem; justify-content: center; padding: 2rem; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.nav-card:hover { border-color: #444; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); transform: translateY(-5px); }
+.nav-card svg { height: 48px; margin-bottom: 1rem; stroke: #ffffff; width: 48px; }
+.nav-card h3 { font-size: 1.2rem; margin: 0; }
+.nav-card p { color: #888; font-size: 0.9rem; margin: 0; }
 
 /* API message styles */
-.api-message {
-  max-width: 1200px;
-  margin: 1rem auto;
-  padding: 0.75rem 1rem;
-  border-radius: 6px;
-  font-weight: 600;
-  text-align: center;
-}
-.api-message.success {
-  background: #0f5132;
-  color: #d1e7dd;
-  border: 1px solid #0b2f1f;
-}
-.api-message.error {
-  background: #5a1414;
-  color: #f8d7da;
-  border: 1px solid #3e0b0b;
-}
+.api-message { border-radius: 6px; font-weight: 600; margin: 1rem auto; max-width: 1200px; padding: 0.75rem 1rem; text-align: center; }
+.api-message.success { background: #0f5132; border: 1px solid #0b2f1f; color: #d1e7dd; }
+.api-message.error { background: #5a1414; border: 1px solid #3e0b0b; color: #f8d7da; }
 </style>

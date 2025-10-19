@@ -1,51 +1,5 @@
 <template>
   <div class="listings-container">
-    <nav class="navbar"></nav>
-
-    <header class="page-header">
-      <a href="/" class="logo">NAME</a>
-      <div class="nav-icons">
-        <svg
-          @click="redirectToProfile"
-          @keydown.enter.prevent="redirectToProfile"
-          @keydown.space.prevent="redirectToProfile"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="account-icon"
-          role="button"
-          tabindex="0"
-          aria-label="Account"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-          />
-        </svg>
-        <svg
-          @click="redirectToCart"
-          @keydown.enter.prevent="redirectToCart"
-          @keydown.space.prevent="redirectToCart"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="cart-icon"
-          role="button"
-          tabindex="0"
-          aria-label="Cart"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-          />
-        </svg>
-      </div>
-    </header>
-
     <main class="listings-content">
       <div class="listings-header">
         <h2>My Listings</h2>
@@ -145,16 +99,6 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-US', options)
 }
 
-function redirectToProfile() {
-  if (authStore.isLoggedIn) {
-    router.push('/profile')
-  } else {
-    router.push('/login')
-  }
-}
-function redirectToCart() {
-  router.push('/cart')
-}
 function redirectToCreateListing() {
   router.push('/create-listing')
 }
@@ -164,10 +108,7 @@ function redirectToCreateListing() {
 a { color: #ffffff; text-decoration: none; }
 h2 { font-size: 1.8rem; margin: 0; text-align: left; }
 h3 { font-size: 1.2rem; margin: 0.5rem 0; }
-.logo { font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; }
 .page-header { align-items: center; border-bottom: 1px solid #2a2a2a; display: flex; justify-content: space-between; padding: 1.5rem 5%; }
-.nav-icons { align-items: center; display: flex; gap: 1.5rem; }
-.account-icon, .cart-icon { cursor: pointer; height: 28px; width: 28px; }
 .listings-container { color: #ffffff; font-family: Spectral, sans-serif; }
 .listings-content { margin: 0 auto; max-width: 1200px; padding: 4rem 5%; }
 .listings-header { align-items: center; border-bottom: 1px solid #333; display: flex; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1rem; }

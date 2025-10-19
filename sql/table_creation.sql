@@ -134,7 +134,7 @@ CREATE TABLE addresses(
 );
 
 CREATE TABLE portfolio_items(
-    portfolio_item_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    portfolio_item_id CHAR(36) PRIMARY KEY NOT NULL,
     user_id CHAR(36),
     product_id INT UNSIGNED,
     size_id INT UNSIGNED,
