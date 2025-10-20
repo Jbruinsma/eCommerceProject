@@ -7,7 +7,13 @@
         <div class="user-info">
           <h1>{{ greeting }}</h1>
           <p class="user-detail">Member since {{ formattedMemberSince }}</p>
-          <p v-if="user.location" class="user-detail">{{ user.location }}</p>
+          <div v-if="user.location" class="user-detail location-info">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+            </svg>
+            <span>{{ user.location }}</span>
+          </div>
         </div>
       </header>
 
@@ -131,7 +137,7 @@ onMounted(async() => {
   }
 })
 
-// NEW: Logout Function
+// Logout Function
 async function logout() {
   await authStore.logout();
   router.push('/login');
@@ -168,7 +174,11 @@ a { color: #ffffff; text-decoration: none; }
 .api-message.success { background: #0f5132; border: 1px solid #0b2f1f; color: #d1e7dd; }
 .api-message.error { background: #5a1414; border: 1px solid #3e0b0b; color: #f8d7da; }
 
-/* NEW: Logout Button Styles */
+/* NEW: Styles for location icon */
+.location-info { align-items: center; display: flex; gap: 0.4rem; margin-top: 0.5rem !important; }
+.location-info svg { height: 1rem; width: 1rem; }
+
+/* Logout Button Styles */
 .logout-section { text-align: center; }
 .btn-logout { background-color: #5a1414; border: 1px solid #842029; border-radius: 8px; color: #f8d7da; cursor: pointer; font-family: inherit; font-size: 1rem; font-weight: 600; padding: 0.75rem 2.5rem; transition: all 0.3s ease; }
 .btn-logout:hover { background-color: #842029; border-color: #a33b42; color: #ffffff; }
