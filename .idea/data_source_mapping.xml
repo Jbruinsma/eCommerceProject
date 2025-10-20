@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$PROJECT_DIR$/sql/address.sql" value="f2b2d26b-5988-4fbd-b054-aea8e3b69457" />
+    <file url="file://$PROJECT_DIR$/sql/asks.sql" value="f2b2d26b-5988-4fbd-b054-aea8e3b69457" />
+    <file url="file://$PROJECT_DIR$/sql/bids.sql" value="f2b2d26b-5988-4fbd-b054-aea8e3b69457" />
+    <file url="file://$PROJECT_DIR$/sql/brands.sql" value="f2b2d26b-5988-4fbd-b054-aea8e3b69457" />
+    <file url="file://$PROJECT_DIR$/sql/dummy_data.sql" value="f2b2d26b-5988-4fbd-b054-aea8e3b69457" />
+    <file url="file://$PROJECT_DIR$/sql/listings.sql" value="f2b2d26b-5988-4fbd-b054-aea8e3b69457" />
+    <file url="file://$PROJECT_DIR$/sql/orders.sql" value="f2b2d26b-5988-4fbd-b054-aea8e3b69457" />
+    <file url="file://$PROJECT_DIR$/sql/portfolio.sql" value="f2b2d26b-5988-4fbd-b054-aea8e3b69457" />
+    <file url="file://$PROJECT_DIR$/sql/product.sql" value="f2b2d26b-5988-4fbd-b054-aea8e3b69457" />
+    <file url="file://$PROJECT_DIR$/sql/profile.sql" value="f2b2d26b-5988-4fbd-b054-aea8e3b69457" />
+    <file url="file://$PROJECT_DIR$/sql/table_creation.sql" value="f2b2d26b-5988-4fbd-b054-aea8e3b69457" />
+    <file url="file://$PROJECT_DIR$/sql/transactions.sql" value="f2b2d26b-5988-4fbd-b054-aea8e3b69457" />
+    <file url="file://$PROJECT_DIR$/sql/users.sql" value="f2b2d26b-5988-4fbd-b054-aea8e3b69457" />
+  </component>
+</project>
