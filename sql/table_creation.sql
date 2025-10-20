@@ -146,3 +146,23 @@ CREATE TABLE portfolio_items(
     FOREIGN KEY (product_id) REFERENCES products(product_id),
     FOREIGN KEY (size_id) REFERENCES sizes(size_id)
 );
+
+DROP TABLE IF EXISTS bids;
+
+CREATE TABLE bids(
+    bid_id CHAR(36) PRIMARY KEY NOT NULL,
+    user_id CHAR(36),
+    product_id INT UNSIGNED,
+    product_size_id INT UNSIGNED,
+    product_condition ENUM('new', 'used', 'worn'),
+    bid_amount DECIMAL(10, 2),
+    transaction_fee DECIMAL(10, 2),
+    total_bid_amount DECIMAL(10, 2),
+    bid_status ENUM('active', 'accepted', 'rejected', 'expired'),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id) REFERENCES users(uuid),
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (product_size_id) REFERENCES sizes(size_id)
+);

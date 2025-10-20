@@ -13,6 +13,7 @@ import CreateListingPage from '@/views/CreateListingPage.vue'
 import PortfolioPage from '@/views/PortfolioPage.vue'
 import AddPortfolioItemPage from '@/views/AddPortfolioItemPage.vue'
 import SearchResultsPage from '@/views/SearchResultsPage.vue'
+import PlaceBid from '@/views/PlaceBid.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +27,7 @@ const router = createRouter({
     { name: 'Transactions', path: '/transactions', component: TransactionsPage },
     { name: 'Settings', path: '/settings', component: SettingsPage },
     { name: 'product-detail', path: '/product/:id', component: ProductDetail, props: true },
+    { name: 'place-bid', path: '/place-bid/:listingId', component: PlaceBid },
     { name: 'my-listings', path: '/my-listings', component: MyListingsPage },
     { name: 'create-listing', path: '/create-listing', component: CreateListingPage },
     { name: 'listing', path: '/listing/:listingId', component: ListingDetailPage },

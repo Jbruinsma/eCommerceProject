@@ -1,9 +1,5 @@
 <template>
   <div class="add-item-container">
-    <header class="page-header">
-      <a href="/" class="logo">NAME</a>
-    </header>
-
     <main class="add-item-content">
       <div class="wizard-card">
         <div v-if="isLoading" class="loading-overlay">
@@ -178,17 +174,6 @@ async function submitPortfolioItem() {
   if (!isStepValid.value) return;
   isLoading.value = true;
   submissionResult.value = null;
-
-  console.log('Portfolio Item Data:', portfolioItemData);
-
-  // {
-  //   "brand_id": 1,
-  //   "product_id": 10,
-  //   "size_id": 13,
-  //   "item_condition": "new",
-  //   "acquisition_date": null,
-  //   "acquisition_price": 200
-  // }
 
   try {
     const response = await postToAPI(`/portfolio/${authStore.uuid}`, portfolioItemData);
