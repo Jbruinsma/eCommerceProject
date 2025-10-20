@@ -9,11 +9,19 @@ export const useAuthStore = defineStore('auth', {
   actions: {
 
     login(userData) {
-      this.isLoggedIn = true;
-      this.uuid = userData.uuid;
-      this.email = userData.email;
 
-      console.log("Login Successful")
+      const uuid = userData.uuid;
+      const email = userData.email;
+      const role = userData.role;
+
+      if (!uuid || !email || !(role in {admin: 1, user: 1})) {
+        throw new Error('Invalid user data');
+      }
+
+      this.isLoggedIn = true;
+      this.uuid = uuid;
+      this.email = email;
+      this.role = role;
     },
 
     logout() {

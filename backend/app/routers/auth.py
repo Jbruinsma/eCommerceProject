@@ -32,7 +32,8 @@ async def login(login_credentials: LoginCredentials, session: AsyncSession = Dep
 
     return Message(message="Login Successful", extra= {
         "uuid": user.uuid,
-        "email": user.email
+        "email": user.email,
+        "role": user.role
     })
 
 @router.post("/register")
