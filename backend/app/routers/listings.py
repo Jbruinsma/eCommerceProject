@@ -42,7 +42,7 @@ async def listings(user_uuid: str, session: AsyncSession = Depends(get_session))
     return list(rows)
 
 @router.get("/{user_uuid}/{listing_id}")
-async def listing(user_uuid: str, listing_id: str, session: AsyncSession = Depends(get_session)):
+async def user_listing(user_uuid: str, listing_id: str, session: AsyncSession = Depends(get_session)):
     if not user_uuid:
         return ErrorMessage(message="User UUID is required", error="MissingUserUUID")
 
@@ -51,6 +51,20 @@ async def listing(user_uuid: str, listing_id: str, session: AsyncSession = Depen
 
     statement = text("CALL retrieveListingById(:input_listing_id, :input_user_id);")
     result = await session.execute(statement, {"input_listing_id": listing_id, "input_user_id": user_uuid})
+    row = result.mappings().first()
+
+    if not row:
+        return ErrorMessage(message="Listing not found", error="ListingNotFound")
+
+    return dict(row)
+
+@router.get("/active/id/{listing_id}")
+async def listing(listing_id: int, session: AsyncSession = Depends(get_session)):
+    if not listing_id:
+        return ErrorMessage(message="Listing ID is required", error="MissingListingID")
+
+    statement = text("CALL retrieveSpecificActiveListing(:input_listing_id);")
+    result = await session.execute(statement, {"input_listing_id": int(listing_id)})
     row = result.mappings().first()
 
     if not row:

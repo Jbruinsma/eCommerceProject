@@ -85,7 +85,7 @@ CREATE TABLE listings(
 );
 
 CREATE TABLE orders(
-    order_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    order_id CHAR(36) PRIMARY KEY NOT NULL,
     buyer_id CHAR(36),
     seller_id CHAR(36),
     product_id INT UNSIGNED,
@@ -106,7 +106,7 @@ CREATE TABLE orders(
 CREATE TABLE transactions(
     transaction_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
     user_id CHAR(36) NOT NULL,
-    order_id INT UNSIGNED,
+    order_id CHAR(36),
     amount DECIMAL(10, 2),
     transaction_status ENUM('pending', 'completed', 'failed', 'refunded'),
     payment_origin ENUM('account_balance', 'credit_card', 'other'),

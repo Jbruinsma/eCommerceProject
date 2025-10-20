@@ -28,6 +28,58 @@ BEGIN
 
 end //
 
+DROP PROCEDURE IF EXISTS retrieveSpecificListing;
+
+CREATE PROCEDURE retrieveSpecificListing(
+    IN input_listing_id INT UNSIGNED
+)
+
+BEGIN
+
+    SELECT
+        l.*,
+        p.name AS product_name,
+        p.image_url AS product_image_url,
+        s.size_value,
+        s.size_value AS size_value
+    FROM
+        listings l
+            JOIN
+            products p ON l.product_id = p.product_id
+            JOIN
+            sizes s ON l.size_id = s.size_id
+    WHERE
+        l.listing_id = input_listing_id;
+
+end //
+
+DROP PROCEDURE IF EXISTS retrieveSpecificActiveListing;
+
+CREATE PROCEDURE retrieveSpecificActiveListing(
+    IN input_listing_id INT UNSIGNED
+)
+
+BEGIN
+
+    SELECT
+        l.*,
+        p.name AS product_name,
+        p.image_url AS product_image_url,
+        s.size_value,
+        s.size_value AS size_value
+    FROM
+        listings l
+            JOIN
+            products p ON l.product_id = p.product_id
+            JOIN
+            sizes s ON l.size_id = s.size_id
+    WHERE
+        l.listing_id = input_listing_id
+    AND
+        l.status = 'active';
+
+end //
+
 DROP PROCEDURE IF EXISTS retrieveListingById;
 
 CREATE PROCEDURE retrieveListingById(
@@ -92,6 +144,22 @@ BEGIN
            );
 
     SELECT * FROM listings WHERE listing_id = LAST_INSERT_ID();
+
+end //
+
+DROP PROCEDURE IF EXISTS fulfillListing;
+
+CREATE PROCEDURE fulfillListing(
+    IN input_listing_id INT UNSIGNED
+)
+
+BEGIN
+
+    UPDATE listings
+    SET status = 'pending'
+    WHERE listing_id = input_listing_id;
+
+
 
 end //
 

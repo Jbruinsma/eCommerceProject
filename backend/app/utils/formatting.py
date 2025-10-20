@@ -41,7 +41,10 @@ def format_market_data(product_sizes, lowest_ask_info, bids_data):
         condition = lowest_ask_dict["item_condition"]
         formatted_condition = condition.capitalize()
         price = lowest_ask_dict["price"]
-        formatted_market_data[size][formatted_condition]["lowest_ask"] = price
+        formatted_market_data[size][formatted_condition]["lowest_ask"] = {
+            "price": price,
+            "listingId": lowest_ask_dict["listing_id"]
+        }
 
     for bid_dict in bids_data:
         size = bid_dict["listing_size"]["size_value"]

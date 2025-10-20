@@ -109,3 +109,16 @@ async def update_settings(user_uuid: str, updated_user_settings: UpdatedUser, se
     if not row:
         return ErrorMessage(message="User not found", error="UserNotFound")
     return dict(row)
+
+@router.get("/{user_uuid}/balance")
+async def balance(user_uuid: str, session: AsyncSession = Depends(get_session)):
+    if not user_uuid:
+        return ErrorMessage(message="Invalid user UUID", error="InvalidUserUUID")
+
+    statement = text("CALL retrieveUserBalanceById(:input_uuid);")
+    result = await session.execute(statement, {"input_uuid": user_uuid})
+    row = result.mappings().first()
+
+    if not row:
+        return ErrorMessage(message="User not found", error="UserNotFound")
+    return dict(row)

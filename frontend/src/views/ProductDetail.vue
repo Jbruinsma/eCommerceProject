@@ -34,9 +34,22 @@
             </div>
 
             <div class="action-buttons">
-              <button class="btn btn-buy">
+              <router-link
+                v-if="currentMarketData.lowest_ask"
+                :to="{
+                  name: 'place-order',
+                  params: { listingId: currentMarketData.lowest_ask.listingId },
+                  query: { size: selectedSize, condition: selectedCondition },
+                }"
+                class="btn btn-buy"
+              >
                 Buy Now
-                <span class="btn-price">{{ formatCurrency(currentMarketData.lowest_ask) }}</span>
+                <span class="btn-price">{{ formatCurrency(currentMarketData.lowest_ask.price) }}</span>
+              </router-link>
+
+              <button v-else class="btn btn-buy" disabled>
+                Buy Now
+                <span class="btn-price">{{ formatCurrency(null) }}</span>
               </button>
 
               <router-link
@@ -101,27 +114,21 @@ const product = ref({
 const availableConditions = ref(['New', 'Used', 'Worn'])
 const selectedCondition = ref('New')
 
-// Initialize with empty array; will be populated by API
 const availableSizes = ref([])
 const selectedSize = ref(null)
 
-// Initialize with empty object; will be populated by API
 const marketData = ref({})
 
-// This computed property finds data based on both size AND condition.
 const currentMarketData = computed(() => {
   const sizeData = marketData.value[selectedSize.value]
   if (sizeData) {
-    // Return market data for the selected condition, or a default object if not found
     return sizeData[selectedCondition.value] || { lowest_ask: null, highest_bid: null }
   }
-  // Return a default object if the size itself is not found
   return { lowest_ask: null, highest_bid: null }
 })
 
-// Updated to handle null values from the API
 const formatCurrency = (amount) => {
-  if (amount === null || typeof amount !== 'number') return '—' // Display '—' for null or invalid values
+  if (amount === null || typeof amount !== 'number') return '—'
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
 }
 
@@ -134,25 +141,35 @@ const formatDate = (dateString) => {
 onMounted(async () => {
   try {
     const response = await fetchFromAPI(`/product/${product_id}`)
-
-    // Deconstruct the response for easier access
     const { productInfo, sizes, marketData: apiMarketData } = response
 
-    // 1. Populate product info
     if (productInfo) {
       product.value = { ...productInfo, product_id: product_id }
     }
 
-    // 2. Populate and sort available sizes
     if (sizes && sizes.length > 0) {
       const sortedSizes = sizes
         .map((s) => s.size_value)
-        .sort((a, b) => parseFloat(a) - parseFloat(b)) // Sort sizes numerically
+        .sort((a, b) => {
+          const numA = parseFloat(a)
+          const numB = parseFloat(b)
+          if (!isNaN(numA) && !isNaN(numB)) {
+            return numA - numB
+          }
+          return a.localeCompare(b)
+        })
+
       availableSizes.value = sortedSizes
-      selectedSize.value = sortedSizes[0] // Set default selected size to the first available size
+
+      if (sortedSizes.includes('10')) {
+        selectedSize.value = '10'
+      } else if (sortedSizes.includes('M')) {
+        selectedSize.value = 'M'
+      } else {
+        selectedSize.value = sortedSizes[0]
+      }
     }
 
-    // 3. Populate market data
     if (apiMarketData) {
       marketData.value = apiMarketData
     }
@@ -178,10 +195,11 @@ ul { list-style: none; padding: 0; }
 .product-image { border-radius: 12px; max-width: 100%; }
 .action-box { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; margin-bottom: 2.5rem; margin-top: 2rem; padding: 1.5rem; }
 .action-buttons { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; margin-top: 1rem; }
-.btn { align-items: center; border: 1px solid #444; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; font-size: 1rem; font-weight: bold; padding: 0.75rem; transition: all 0.3s ease; }
+.btn { align-items: center; border: 1px solid #444; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; font-size: 1rem; font-weight: bold; padding: 0.75rem; text-decoration: none; transition: all 0.3s ease; }
 .btn-buy { background-color: #1a4a32; border-color: #6ef0a3; color: #ffffff; }
-.btn-buy:hover { background-color: #256b48; }
-.btn-bid { background-color: #2c2c2c; color: #ffffff; text-decoration: none; }
+.btn-buy:hover:not(:disabled) { background-color: #256b48; }
+.btn-buy:disabled { cursor: not-allowed; opacity: 0.5; }
+.btn-bid { background-color: #2c2c2c; color: #ffffff; }
 .btn-bid:hover { background-color: #383838; }
 .btn-price { color: #ccc; font-size: 0.8rem; margin-top: 0.25rem; }
 .condition-selector { display: flex; gap: 0.5rem; }
