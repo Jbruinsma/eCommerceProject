@@ -2,6 +2,23 @@ USE ecommerce;
 
 DELIMITER //
 
+DROP PROCEDURE IF EXISTS retrieveAllOrdersByUserId;
+
+CREATE PROCEDURE retrieveAllOrdersByUserId(
+    IN input_user_id CHAR(36)
+)
+
+BEGIN
+
+    SELECT *
+    FROM orders o
+    JOIN products p ON o.product_id = p.product_id
+    JOIN sizes ON o.size_id = sizes.size_id
+    JOIN listings l ON o.seller_id = l.user_id AND o.product_id = l.product_id AND o.size_id = l.size_id
+    WHERE buyer_id = input_user_id;
+
+end //
+
 DROP PROCEDURE IF EXISTS retrieveRawOrdersByProductId;
 
 CREATE PROCEDURE retrieveRawOrdersByProductId(

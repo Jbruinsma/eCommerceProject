@@ -238,6 +238,7 @@ async function submitOrder() {
     buyer_id: authStore.uuid,
     shipping_info: shippingInfo.value,
     listing_id: parseInt(listingId, 10),
+    purchase_price: purchasePrice.value,
     transaction_fee: transactionFee.value,
     payment_method: paymentMethod.value,
   };

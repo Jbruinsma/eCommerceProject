@@ -13,16 +13,34 @@ from app.pydantic_models.new_order import NewOrder
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 @router.post("/{listing_id}")
-async def fulfil_order(listing_id: str, new_order_summary: NewOrder, session: AsyncSession = Depends(get_session)):
+async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: AsyncSession = Depends(get_session)):
     if not listing_id:
         return ErrorMessage(message="Listing ID is required", error="MissingListingID")
 
     if listing_id != new_order_summary.listing_id:
         return ErrorMessage(message="Listing ID does not match shipping info listing ID", error="ListingIDMismatch")
 
-    print(new_order_summary)
-
     address = new_order_summary.shipping_info
+
+    statement = text("CALL retrieveSpecificActiveListing(:input_listing_id);")
+    result = await session.execute(statement, {"input_listing_id": int(listing_id)})
+    row = result.mappings().first()
+
+    if not row:
+        return ErrorMessage(message="Listing not found", error="ListingNotFound")
+
+    listing_summary = dict(row)
+
+    buyer_id = new_order_summary.buyer_id
+    seller_id = listing_summary['user_id']
+
+    if buyer_id == seller_id:
+        return ErrorMessage(message="Buyer and seller cannot be the same", error="BuyerAndSellerCannotBeSame")
+
+    listing_ask_price = listing_summary['price']
+
+    if new_order_summary.purchase_price != listing_ask_price:
+        return ErrorMessage(message="Purchase price does not match listing ask price", error="PurchasePriceMismatch")
 
     statement = text("CALL addAddress(:input_user_id, :input_name, :input_address_line1, :input_address_line2, :input_city, :input_state, :input_zip_code, :input_country);")
     result = await session.execute(statement, {
@@ -52,3 +70,17 @@ async def fulfil_order(listing_id: str, new_order_summary: NewOrder, session: As
         return ErrorMessage(message="Order could not be fulfilled", error="OrderFulfillmentFailed")
 
     return dict(new_order)
+
+@router.get("/{user_uuid}")
+async def orders(user_uuid: str, session: AsyncSession = Depends(get_session)):
+    if not user_uuid:
+        return ErrorMessage(message="User UUID is required", error="MissingUserUUID")
+
+    statement = text("CALL retrieveAllOrdersByUserId(:input_user_id);")
+    result = await session.execute(statement, {"input_user_id": user_uuid})
+    rows = result.mappings().all()
+
+    if not rows:
+        return ErrorMessage(message="No orders found", error="NoOrdersFound")
+
+    return list(rows)
