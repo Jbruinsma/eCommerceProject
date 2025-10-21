@@ -20,7 +20,6 @@ async def get_user_by_email(session: AsyncSession, email: str):
 
 
 async def create_user(session: AsyncSession, user_in: UserCreate):
-    # NOTE: This uses a simple sha256 for demonstration only. Use a proper password hashing library (passlib) in production.
     hashed = hashlib.sha256(user_in.password.encode()).hexdigest()
     user = User(email=str(user_in.email), password=hashed, first_name=user_in.first_name, last_name=user_in.last_name)
     session.add(user)

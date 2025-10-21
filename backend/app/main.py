@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
+import logging
+import sys
 
 from .db import engine, Base
 from .routers.users import router as users_router
@@ -12,7 +14,6 @@ from .routers.bids import router as bids_router
 from .routers.orders import router as orders_router
 
 from .config import settings
-
 
 @asynccontextmanager
 async def lifespan(app):
