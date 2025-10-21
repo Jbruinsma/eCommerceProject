@@ -64,6 +64,6 @@ async def register(registration_credentials: RegisterCredentials, session: Async
         if not row:
             return ErrorMessage(message="User could not be registered", error="UserRegistrationFailed")
 
-        return dict(row)
+        return Message(message="User registered successfully", extra=dict(row))
 
     return ErrorMessage(message="The email provided is already associated with another account.", error="UserAlreadyExists")

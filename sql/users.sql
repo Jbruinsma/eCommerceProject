@@ -10,6 +10,7 @@ CREATE PROCEDURE createUser(
     IN input_role ENUM('user', 'admin')
 )
 BEGIN
+    
     DECLARE new_user_uuid CHAR(36);
     SET new_user_uuid = UUID();
 

@@ -110,8 +110,10 @@ const handleRegister = async () => {
 
     clearMessages()
 
+    const userData = registrationResponse.extra
+
     try {
-      await authenticateUser(registrationResponse.email, registrationResponse.uuid, registrationResponse.role)
+      await authenticateUser(userData.email, userData.uuid, userData.role)
     } catch (err) {
       console.error('Error authenticating user:', err)
       errorMessage.value = 'Failed to authenticate user.'
