@@ -160,7 +160,7 @@ CREATE TABLE transactions(
     transaction_status ENUM('pending', 'completed', 'failed', 'refunded'),
     payment_origin ENUM('account_balance', 'credit_card', 'other'),
     payment_destination ENUM('account_balance', 'bank_transfer', 'other'),
-    payment_purpose ENUM('sale_proceeds', 'purchase_funds', 'refund', 'fee'),
+    payment_purpose ENUM('sale_proceeds', 'purchase_funds', 'refund', 'fee', 'balance_adjustment'),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (user_id) REFERENCES users(uuid),

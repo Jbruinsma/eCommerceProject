@@ -38,12 +38,13 @@ CREATE PROCEDURE recordTransaction(
     IN input_transaction_status ENUM('pending', 'completed', 'failed'),
     IN input_payment_origin ENUM('account_balance', 'credit_card', 'other'),
     IN input_payment_destination ENUM('account_balance', 'bank_transfer', 'other'),
-    IN input_payment_purpose ENUM('sale_proceeds', 'purchase_funds', 'refund', 'fee')
+    IN input_payment_purpose ENUM('sale_proceeds', 'purchase_funds', 'refund', 'fee', 'balance_adjustment')
 )
 
 BEGIN
 
     INSERT INTO transactions(
+                             transaction_id,
                              user_id,
                              order_id,
                              amount,
@@ -54,6 +55,7 @@ BEGIN
                              created_at
     )
     VALUES (
+            DEFAULT,
             input_user_id,
             input_order_id,
             input_amount,

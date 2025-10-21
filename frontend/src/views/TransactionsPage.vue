@@ -34,7 +34,7 @@
             <td>#{{ tx.transaction_id }}</td>
             <td><a href="#">{{ tx.order_id }}</a></td>
             <td>{{ formatDate(tx.created_at) }}</td>
-            <td>{{ formatCurrency(tx.amount) }}</td>
+            <td :class="tx.amount < 0 ? 'amount-negative' : (tx.amount > 0 ? 'amount-positive' : '')">{{ formatCurrency(tx.amount) }}</td>
             <td>
                 <span class="status-badge" :class="`status-${tx.transaction_status}`">
                   {{ tx.transaction_status }}
@@ -71,18 +71,29 @@ onMounted(async () => {
   try {
     const response = await fetchFromAPI(`/users/${authStore.uuid}/transactions`)
 
-    const { transactions, currentBalance, lifetimeEarnings } = response
+    console.log('Fetched transactions:', response)
 
-    transactionsList.value = transactions.map((tx) => ({
-      transaction_id: tx.transaction_id ?? tx.id ?? tx.tx_id ?? '',
-      order_id: tx.order_id ?? tx.orderId ?? (tx.order && (tx.order.id ?? tx.order_id)) ?? '',
-      created_at: tx.created_at ?? tx.createdAt ?? tx.date ?? '',
+    const {
+      transactions: respTransactions = [],
+      currentBalance: respCurrentBalance = 0,
+      lifetimeEarnings: respLifetimeEarnings = 0,
+    } = response || {}
+
+    transactionsList.value = (respTransactions || []).map((tx) => ({
+      transaction_id: tx.transaction_id ?? tx.id ?? tx.tx_id ?? '---',
+      order_id:
+        tx.order_id ?? tx.orderId ?? (tx.order && (tx.order.id ?? tx.order_id)) ?? '---',
+      created_at: tx.created_at ?? tx.createdAt ?? tx.date ?? '---',
       amount: tx.amount ?? tx.total ?? 0,
       transaction_status: (tx.transaction_status ?? tx.transactionStatus ?? tx.status ?? 'pending').toString(),
+      payment_purpose: tx.payment_purpose ?? tx.paymentPurpose ?? '---',
+      payment_origin: tx.payment_origin ?? tx.paymentOrigin ?? '---',
+      payment_destination: tx.payment_destination ?? tx.paymentDestination ?? '---',
     }))
 
-    currentBalance.value = currentBalance ?? 0
-    lifetimeEarnings.value = lifetimeEarnings ?? 0
+    // Set the reactive refs from the response values
+    currentBalance.value = respCurrentBalance ?? 0
+    lifetimeEarnings.value = respLifetimeEarnings ?? 0
 
   } catch (err) {
     console.error('Failed to load transactions:', err)
@@ -134,6 +145,9 @@ tbody td a { font-weight: bold; }
 .stat-card { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 2rem; text-align: center; }
 .stat-card h3 { color: #ffffff; font-size: 2.2rem; margin: 0 0 0.5rem 0; }
 .stat-card p { color: #888; font-size: 0.9rem; margin: 0; }
+
+.amount-positive { color: #6ef0a3; }
+.amount-negative { color: #f06e6e; }
 
 @media (max-width: 640px) {
   .page-header { padding: 1rem 3%; }

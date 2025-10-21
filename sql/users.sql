@@ -93,13 +93,20 @@ DROP PROCEDURE IF EXISTS updateBalance;
 CREATE PROCEDURE updateBalance(
     IN input_uuid CHAR(36),
     IN input_email VARCHAR(225),
-    IN input_amount DECIMAL(10, 2)
+    IN input_balance_adjustment_amount DECIMAL(10, 2)
 )
 
 BEGIN
 
     UPDATE account_balance
-    SET balance = balance + input_amount
+    SET balance = balance + input_balance_adjustment_amount
+    WHERE
+        (input_uuid IS NOT NULL AND user_id = input_uuid)
+        OR
+        (input_email IS NOT NULL AND user_id = (SELECT uuid FROM users WHERE email = input_email));
+
+    SELECT balance
+    FROM account_balance
     WHERE
         (input_uuid IS NOT NULL AND user_id = input_uuid)
         OR

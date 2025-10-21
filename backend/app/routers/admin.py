@@ -9,6 +9,8 @@ from ..pydantic_models.error_message import ErrorMessage
 import re
 import uuid
 
+from ..pydantic_models.modified_balance_info import ModifiedBalanceInfo
+
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
@@ -62,15 +64,63 @@ async def get_balance(user_identifier: str, session: AsyncSession = Depends(get_
     return dict(row)
 
 @router.post("/{user_identifier}/balance")
-def modify_balance(user_identifier: str, new_balance: float, session: AsyncSession = Depends(get_session)):
+async def modify_balance(user_identifier: str, modified_balance_info: ModifiedBalanceInfo, session: AsyncSession = Depends(get_session)):
+
     if not user_identifier:
         return ErrorMessage(message="User identifier is required", error="MissingUserIdentifier")
 
-    if not new_balance:
-        return ErrorMessage(message="New balance is required", error="MissingNewBalance")
-
     id_type = identify_identifier(user_identifier)
+
     if id_type == "unknown":
         return ErrorMessage(message="User identifier must be an email or UUID", error="InvalidIdentifier")
 
-    statement = text("CALL recordTransaction(:input_user_id, :input_order_id, :input_amount, :input_transaction_status, :input_payment_origin, :input_payment_destination, :input_payment_purpose);)")
+    user_uuid = None
+
+    if id_type != "uuid":
+        statement = text("CALL retrieveCompleteUserProfile(:input_uuid, :input_email);")
+        result = await session.execute(statement, {"input_uuid": user_identifier, "input_email": user_identifier})
+        row = result.mappings().first()
+        user_uuid = row.uuid
+    else:
+        user_uuid = user_identifier
+
+
+    if user_uuid != modified_balance_info.uuid:
+        return ErrorMessage(message="User identifier does not match UUID", error="InvalidIdentifier")
+
+
+    statement = text("CALL recordTransaction(:input_user_id, :input_order_id, :input_amount, :input_transaction_status, :input_payment_origin, :input_payment_destination, :input_payment_purpose);")
+    result = await session.execute(statement, {
+        "input_user_id": user_uuid,
+        "input_order_id": None,
+        "input_amount": modified_balance_info.change,
+        "input_transaction_status": "completed",
+        "input_payment_origin": "other",
+        "input_payment_destination": "account_balance",
+        "input_payment_purpose": modified_balance_info.reason,
+
+    })
+
+    await session.commit()
+
+    new_transaction_row = result.mappings().first()
+    if not new_transaction_row:
+        return ErrorMessage(message="Transaction could not be recorded", error="TransactionRecordingFailed")
+
+    statement = text("CALL updateBalance(:input_user_id, :input_email, :input_balance_adjustment_amount);")
+    result = await session.execute(statement, {
+        "input_user_id": user_uuid,
+        "input_email": user_identifier,
+        "input_balance_adjustment_amount": modified_balance_info.change,
+    })
+
+    await session.commit()
+
+    updated_balance_row = result.mappings().first()
+    if not updated_balance_row:
+        return ErrorMessage(message="Balance could not be updated", error="BalanceUpdateFailed")
+
+    return {
+        "newBalance": updated_balance_row.balance,
+        "transaction": dict(new_transaction_row)
+    }
