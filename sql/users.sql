@@ -2,15 +2,15 @@ USE ecommerce;
 
 DELIMITER //
 
-DROP PROCEDURE IF EXISTS createUser;
+DROP PROCEDURE IF EXISTS createNewUser;
 
-CREATE PROCEDURE createUser(
+CREATE PROCEDURE createNewUser(
     IN input_email VARCHAR(225),
     IN input_hashed_password VARCHAR(255),
     IN input_role ENUM('user', 'admin')
 )
 BEGIN
-    
+
     DECLARE new_user_uuid CHAR(36);
     SET new_user_uuid = UUID();
 
@@ -88,6 +88,28 @@ BEGIN
 
 end //
 
+DROP PROCEDURE IF EXISTS updateBalance;
+
+CREATE PROCEDURE updateBalance(
+    IN input_uuid CHAR(36),
+    IN input_email VARCHAR(225),
+    IN input_amount DECIMAL(10, 2)
+)
+
+BEGIN
+
+    UPDATE account_balance
+    SET balance = balance + input_amount
+    WHERE
+        (input_uuid IS NOT NULL AND user_id = input_uuid)
+        OR
+        (input_email IS NOT NULL AND user_id = (SELECT uuid FROM users WHERE email = input_email));
+
+end //
+
+
+DROP PROCEDURE IF EXISTS calculateLifetimeEarnings;
+
 CREATE PROCEDURE calculateLifetimeEarnings(
     IN input_uuid CHAR(36)
 )
@@ -119,5 +141,34 @@ BEGIN
     SELECT (total_sales_amount - total_refunds_amount) AS lifetime_earnings;
 
 END //
+
+DROP PROCEDURE IF EXISTS retrieveCompleteUserProfile;
+
+CREATE PROCEDURE retrieveCompleteUserProfile(
+    IN input_uuid CHAR(36),
+    IN input_email VARCHAR(225)
+)
+
+BEGIN
+
+    SELECT
+        u.uuid,
+        u.email,
+        u.first_name,
+        u.last_name,
+        u.location,
+        u.birth_date,
+        u.role,
+        u.created_at,
+        u.updated_at,
+        ab.balance
+    FROM users u
+    LEFT JOIN account_balance ab ON u.uuid = ab.user_id
+    WHERE
+        (input_uuid IS NOT NULL AND u.uuid = input_uuid)
+        OR
+        (input_email IS NOT NULL AND u.email = input_email);
+
+end //
 
 DELIMITER ;

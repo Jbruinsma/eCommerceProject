@@ -16,11 +16,15 @@ import SearchResultsPage from '@/views/SearchResultsPage.vue'
 import PlaceBid from '@/views/PlaceBid.vue'
 import PlaceOrder from '@/views/PlaceOrder.vue'
 import OrdersPage from '@/views/OrdersPage.vue'
+import AdminDashboard from '@/views/AdminDashboard.vue'
+import ManageFunds from '@/views/ManageFunds.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { name: 'Home', path: '/', component: HomePage },
+    { name: 'AdminDashboard', path: '/admin', component: AdminDashboard },
+    { name: 'ManageFunds', path: '/admin/funds', component: ManageFunds },
     { name: 'Login', path: '/login', component: LoginPage },
     { name: 'Register', path: '/register', component: RegisterPage },
     { name: 'ForgotPassword', path: '/account-recovery', component: ForgotPassword },

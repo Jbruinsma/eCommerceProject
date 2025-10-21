@@ -12,6 +12,7 @@ from .routers.listings import router as listings_router
 from .routers.portfolio import router as portfolio_router
 from .routers.bids import router as bids_router
 from .routers.orders import router as orders_router
+from.routers.admin import router as admin_router
 
 from .config import settings
 
@@ -45,6 +46,7 @@ app.include_router(listings_router)
 app.include_router(portfolio_router)
 app.include_router(bids_router)
 app.include_router(orders_router)
+app.include_router(admin_router)
 
 
 @app.get("/health")
