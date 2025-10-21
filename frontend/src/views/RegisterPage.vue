@@ -110,7 +110,14 @@ const handleRegister = async () => {
 
     clearMessages()
 
-    await authenticateUser(registrationResponse.email, registrationResponse.uuid)
+    try {
+      await authenticateUser(registrationResponse.email, registrationResponse.uuid, registrationResponse.role)
+    } catch (err) {
+      console.error('Error authenticating user:', err)
+      errorMessage.value = 'Failed to authenticate user.'
+      clearMessages()
+      return
+    }
     await router.push('/')
   } catch (err) {
     errorMessage.value =

@@ -89,8 +89,17 @@ const handleLogin = async () => {
     clearMessages()
 
     const userData = data.extra
-    await authenticateUser(userData.email, userData.uuid)
+
+    try {
+      await authenticateUser(userData.email, userData.uuid, userData.role)
+    } catch (err) {
+      console.error('Error authenticating user:', err)
+      errorMessage.value = 'Failed to authenticate user.'
+      clearMessages()
+      return
+    }
     await router.push('/')
+
   } catch (err) {
     errorMessage.value =
       (err && err.data && (err.data.message || err.data.detail)) ||
