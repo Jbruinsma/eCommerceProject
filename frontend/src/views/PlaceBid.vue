@@ -1,7 +1,6 @@
 <template>
   <div class="bid-container">
     <main class="bid-content">
-      <!-- Loading Overlay -->
       <div v-if="isLoading" class="loading-overlay">
         <div class="spinner"></div>
         <p>Submitting your bid...</p>
@@ -70,57 +69,102 @@
             </div>
           </div>
 
-          <div class="bid-form">
-            <div class="market-context">
-              <div class="market-item">
-                <span>Highest Bid</span>
-                <p>{{ formatCurrency(marketInfo.highest_bid) }}</p>
+          <div class="bid-steps-col">
+            <div v-if="currentStep === 1" class="bid-form">
+              <div class="section-header">
+                <h2>Enter Your Bid</h2>
+                <button @click="nextStep" :disabled="!isStepReady" class="btn-nav">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                  </svg>
+                </button>
               </div>
-              <div class="market-item">
-                <span>Lowest Ask</span>
-                <p>{{ formatCurrency(marketInfo.lowest_ask) }}</p>
+              <div class="market-context">
+                <div class="market-item">
+                  <span>Highest Bid</span>
+                  <p>{{ formatCurrency(marketInfo.highest_bid) }}</p>
+                </div>
+                <div class="market-item">
+                  <span>Lowest Ask</span>
+                  <p>{{ formatCurrency(marketInfo.lowest_ask) }}</p>
+                </div>
               </div>
+              <div class="bid-input-group">
+                <span class="currency-symbol">$</span>
+                <input :value="bidInput" @input="filterBidInput" type="text" class="bid-input" placeholder="0.00"/>
+              </div>
+              <p v-if="bidMatchesHighestError" class="error-message">
+                Your bid cannot be the same as the current highest bid.
+              </p>
+              <ul class="fee-breakdown">
+                <li>
+                  <span>Your Bid</span>
+                  <span>{{ formatCurrency(bidAmount) }}</span>
+                </li>
+                <li>
+                  <span>Transaction Fee ({{ (transactionFeeRate.rate * 100).toFixed(2) }}%)</span>
+                  <span>+ {{ formatCurrency(transactionFee) }}</span>
+                </li>
+                <li class="total-cost">
+                  <span>Total</span>
+                  <span>{{ formatCurrency(totalCost) }}</span>
+                </li>
+              </ul>
             </div>
 
-            <div class="bid-input-group">
-              <span class="currency-symbol">$</span>
-              <input
-                :value="bidInput"
-                @input="filterBidInput"
-                type="text"
-                class="bid-input"
-                placeholder="0.00"
-              />
+            <div v-if="currentStep === 2" class="bid-form">
+              <div class="section-header">
+                <button @click="prevStep" class="btn-nav">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
+                  </svg>
+                </button>
+                <h2>Confirm Bid</h2>
+                <div class="nav-placeholder"></div>
+              </div>
+
+              <ul class="fee-breakdown">
+                <li>
+                  <span>Your Bid</span>
+                  <span>{{ formatCurrency(bidAmount) }}</span>
+                </li>
+                <li>
+                  <span>Transaction Fee ({{ (transactionFeeRate.rate * 100).toFixed(2) }}%)</span>
+                  <span>+ {{ formatCurrency(transactionFee) }}</span>
+                </li>
+                <li class="total-cost">
+                  <span>Total</span>
+                  <span>{{ formatCurrency(totalCost) }}</span>
+                </li>
+              </ul>
+
+              <div class="payment-section">
+                <h4 class="payment-title">Payment Method</h4>
+                <div class="payment-options">
+                  <div class="payment-option" :class="{ selected: paymentMethod === 'account_balance', disabled: !canUseBalance }" @click="selectPaymentMethod('account_balance')">
+                    <span class="option-name">Account Balance</span>
+                    <span class="option-detail">{{ formatCurrency(userBalance) }}</span>
+                  </div>
+                  <div class="payment-option" :class="{ selected: paymentMethod === 'credit_card' }" @click="selectPaymentMethod('credit_card')">
+                    <span class="option-name">Credit Card</span>
+                    <span class="option-detail">**** 1234</span>
+                  </div>
+                </div>
+                <p v-if="!canUseBalance && bidAmount > 0" class="balance-insufficient">Insufficient balance for this bid.</p>
+              </div>
+
+              <p v-if="bidMatch" class="bid-match-message">
+                Your bid matches the current lowest ask. Placing this bid will result in an immediate purchase.
+              </p>
+
+              <button @click="submitBid" :disabled="!isBidValid" class="btn-submit-bid">
+                {{ submitButtonText }}
+              </button>
+              <p v-if="!bidMatch" class="disclaimer">
+                By placing a bid, you are committing to buy this item if your bid is accepted.
+              </p>
             </div>
 
-            <ul class="fee-breakdown">
-              <li>
-                <span>Your Bid</span>
-                <span>{{ formatCurrency(bidAmount) }}</span>
-              </li>
-              <li>
-                <span>Transaction Fee ({{ transactionFeeRate.rate * 100 }}%)</span>
-                <span>+ {{ formatCurrency(transactionFee) }}</span>
-              </li>
-              <li class="total-cost">
-                <span>Total</span>
-                <span>{{ formatCurrency(totalCost) }}</span>
-              </li>
-            </ul>
-
-            <p v-if="bidMatch" class="bid-match-message">
-              Your bid matches the current lowest ask.
-            </p>
-            <p v-if="bidMatch" class="bid-match-message">
-              Placing this bid will result in an immediate purchase.
-            </p>
-
-            <button @click="submitBid" :disabled="!isBidValid" class="btn-submit-bid">
-              {{ submitButtonText }}
-            </button>
-            <p v-if="!bidMatch" class="disclaimer">
-              By placing a bid, you are committing to buy this item if your bid is accepted.
-            </p>
           </div>
         </div>
       </template>
@@ -139,6 +183,9 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
+const currentStep = ref(1)
+const totalSteps = 2
+
 const product_id = route.params.listingId
 const selectedSize = ref(route.query.size || 'N/A')
 const selectedCondition = ref(route.query.condition || 'N/A')
@@ -152,6 +199,8 @@ const product = ref({
 const marketInfo = ref({ highest_bid: 0, lowest_ask: 0 })
 const bidAmount = ref(null)
 const bidInput = ref('')
+const userBalance = ref(0)
+const paymentMethod = ref(null)
 
 const bidMatch = ref(false)
 const submitButtonText = ref('Confirm Bid')
@@ -163,21 +212,38 @@ const MIN_BID = 0.01
 const MAX_BID = 99999999.99
 let transactionFeeRate = ref({
   rateId: null,
-  rate: ref(0.01)
+  rate: 0.01
 })
 
 const transactionFee = computed(() => (bidAmount.value || 0) * transactionFeeRate.value.rate)
 const totalCost = computed(() => (bidAmount.value || 0) + transactionFee.value)
-const isBidValid = computed(
-  () =>
-    typeof bidAmount.value === 'number' &&
+const canUseBalance = computed(() => userBalance.value >= totalCost.value);
+
+const isBidAmountValid = computed(() => {
+  return typeof bidAmount.value === 'number' &&
     !isNaN(bidAmount.value) &&
     bidAmount.value >= MIN_BID &&
-    bidAmount.value <= MAX_BID,
-)
+    bidAmount.value <= MAX_BID
+})
+
+const bidMatchesHighestError = computed(() => {
+  return bidAmount.value !== null &&
+    bidAmount.value > 0 &&
+    bidAmount.value === marketInfo.value.highest_bid
+})
+
+const isStepReady = computed(() => {
+  if (currentStep.value === 1) {
+    return isBidAmountValid.value && !bidMatchesHighestError.value;
+  }
+  if (currentStep.value === 2) return !!paymentMethod.value;
+  return false;
+})
+
+const isBidValid = computed(() => isBidAmountValid.value && !bidMatchesHighestError.value && !!paymentMethod.value)
 
 const formatCurrency = (amount) => {
-  if (typeof amount !== 'number' || isNaN(amount)) return '$0.00'
+  if (typeof amount !== 'number' || isNaN(amount)) return '---'
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
 }
 
@@ -205,38 +271,56 @@ const filterBidInput = (event) => {
   bidAmount.value = parsed
 }
 
+function selectPaymentMethod(method) {
+  if (method === 'account_balance' && !canUseBalance.value) return;
+  paymentMethod.value = method;
+}
+
+function nextStep() {
+  if (currentStep.value < totalSteps) currentStep.value++;
+}
+
+function prevStep() {
+  if (currentStep.value > 1) currentStep.value--;
+}
+
+
 onMounted(async () => {
   try {
-
-    const feeData = await getBuyerFee()
+    const [feeData, productResponse, balanceData] = await Promise.all([
+      getBuyerFee(),
+      fetchFromAPI(`/product/${product_id}`),
+      fetchFromAPI(`/users/${authStore.uuid}/balance`)
+    ]);
 
     transactionFeeRate.value.rateId = feeData.id
     transactionFeeRate.value.rate = feeData.buyer_fee_percentage
 
-    const productResponse = await fetchFromAPI(`/product/${product_id}`)
-
     const allMarketData = productResponse.marketData || {}
-    const relevantMarketData = allMarketData[selectedSize.value][selectedCondition.value]
-    const highestBid = relevantMarketData.highest_bid
-    const lowestAsk = relevantMarketData.lowest_ask
-    marketInfo.value = { highest_bid: highestBid, lowest_ask: lowestAsk }
+    const relevantMarketData = allMarketData[selectedSize.value]?.[selectedCondition.value] || { highest_bid: 0, lowest_ask: 0 }
+    marketInfo.value = { highest_bid: relevantMarketData.highest_bid, lowest_ask: relevantMarketData.lowest_ask }
 
     const productData = productResponse.productInfo
-
     if (productData) product.value = productData
+
+    if (balanceData && typeof balanceData.balance === 'number') {
+      userBalance.value = balanceData.balance
+    }
+
   } catch (error) {
     console.error('Error fetching page data:', error)
     router.back()
   }
 })
 
-watch(bidInput, async (newValue) => {
-
-  if (parseFloat(newValue) === marketInfo.value.lowest_ask){
+watch(bidAmount, (newValue) => {
+  if (marketInfo.value.lowest_ask > 0 && newValue === marketInfo.value.lowest_ask){
     bidMatch.value = true
     submitButtonText.value = 'Buy Now'
+  } else {
+    bidMatch.value = false
+    submitButtonText.value = 'Confirm Bid'
   }
-
 })
 
 async function submitBid() {
@@ -246,19 +330,14 @@ async function submitBid() {
   submissionResult.value = null
 
   try {
-    const bidToSubmit = Math.round(bidAmount.value * 100) / 100
-    const totalAmount = bidToSubmit + transactionFee.value
-
     const bidResponse = await postToAPI(`/bids/${authStore.uuid}`, {
       user_id: authStore.uuid,
       product_id: product_id,
       size: selectedSize.value,
       product_condition: selectedCondition.value,
-      bid_amount: bidToSubmit,
-      transaction_fee: transactionFee.value,
-      transaction_fee_rate_id: transactionFeeRate.value.rateId,
-      total_amount: totalAmount,
-      bid_status: 'pending',
+      bid_amount: bidAmount.value,
+      fee_structure_id: transactionFeeRate.value.rateId,
+      payment_origin: paymentMethod.value
     })
 
     if (bidResponse && bidResponse.bid_id) {
@@ -269,7 +348,7 @@ async function submitBid() {
   } catch (error) {
     submissionResult.value = {
       success: false,
-      message: error.message || 'An unknown error occurred.',
+      message: error.data?.message || error.message || 'An unknown error occurred.',
     }
     console.error('Error submitting bid:', error)
   } finally {
@@ -279,9 +358,9 @@ async function submitBid() {
 </script>
 
 <style scoped>
-h1, h2, h3 { font-family: Spectral, sans-serif; font-weight: 600; }
+h1, h2, h3, h4 { font-family: Spectral, sans-serif; font-weight: 600; }
 h1.page-title { border-bottom: 1px solid #333; font-size: 2.2rem; margin-bottom: 3rem; padding-bottom: 1.5rem; text-align: center; }
-h2 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.8rem; flex-grow: 1; margin: 0; text-align: center; }
 p { color: #cccccc; line-height: 1.6; }
 .bid-container { color: #ffffff; padding: 4rem 5%; }
 .bid-content { margin: 0 auto; max-width: 900px; }
@@ -296,7 +375,7 @@ p { color: #cccccc; line-height: 1.6; }
 .result-summary { background-color: #121212; border-radius: 8px; margin: 1.5rem 0; padding: 1rem; text-align: left; }
 .result-summary p { margin: 0.5rem 0; }
 .btn { border: 1px solid transparent; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: bold; padding: 0.75rem 1.5rem; transition: all 0.3s ease; }
-.bid-match-message { text-align: center; color: #f06e6e; font-size: 0.9rem; margin-top: 1rem; }
+.bid-match-message { color: #6ef0a3; font-size: 0.9rem; margin-top: 1rem; text-align: center; }
 .btn-primary { background-color: #ffffff; color: #121212; }
 .btn-secondary { background-color: #2c2c2c; border-color: #444; color: #ffffff; }
 .bid-grid { display: grid; gap: 3rem; grid-template-columns: 1fr 1.25fr; }
@@ -314,13 +393,34 @@ h3.product-name { font-size: 1.5rem; margin: 0.25rem 0 0; }
 .bid-input-group:focus-within { border-color: #ffffff; }
 .currency-symbol { color: #888; font-size: 2rem; font-weight: bold; }
 .bid-input { background-color: transparent; border: none; color: #ffffff; font-size: 2rem; font-weight: bold; outline: none; text-align: left; width: 100%; }
+.error-message { color: #f06e6e; font-size: 0.9rem; margin-bottom: 1.5rem; margin-top: -1rem; text-align: center; }
 .fee-breakdown { list-style: none; margin: 0 0 2rem; padding: 0; }
 .fee-breakdown li { align-items: center; display: flex; font-size: 1rem; justify-content: space-between; margin-bottom: 0.75rem; }
 .fee-breakdown span:first-child { color: #aaa; }
 .total-cost { border-top: 1px solid #333; font-size: 1.2rem !important; font-weight: bold; margin-top: 1rem; padding-top: 1rem; }
 .btn-submit-bid { background-color: #ffffff; border: 1px solid #ffffff; border-radius: 8px; color: #121212; cursor: pointer; font-size: 1.1rem; font-weight: bold; padding: 1rem; transition: background-color 0.3s, color 0.3s; width: 100%; }
-.btn-submit-bid:hover { background-color: transparent; color: #ffffff; }
+.btn-submit-bid:hover:not(:disabled) { background-color: transparent; color: #ffffff; }
 .btn-submit-bid:disabled { cursor: not-allowed; opacity: 0.6; }
 .disclaimer { color: #888; font-size: 0.8rem; margin-top: 1rem; text-align: center; }
+.payment-section { border-top: 1px solid #333; margin-top: 2rem; padding-top: 2rem; }
+.payment-title { color: #e0e0e0; font-size: 1.1rem; margin-bottom: 1.5rem; text-align: left; }
+.payment-options { display: flex; flex-direction: column; gap: 1rem; }
+.payment-option { align-items: center; background-color: #2c2c2c; border: 1px solid #444; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; padding: 1rem; transition: border-color 0.2s ease, background-color 0.2s ease; }
+.payment-option:hover { background-color: #333; }
+.payment-option.selected { border-color: #6ef0a3; }
+.payment-option.disabled { cursor: not-allowed; opacity: 0.5; }
+.payment-option.disabled:hover { background-color: #2c2c2c; border-color: #444; }
+.option-name { font-weight: 600; }
+.option-detail { color: #aaa; }
+.balance-insufficient { color: #ff6b6b; font-size: 0.9rem; margin-top: 1rem; text-align: center; }
+
+/* --- Step Navigation Styles --- */
+.section-header { align-items: center; display: flex; justify-content: space-between; margin-bottom: 2rem; }
+.btn-nav { align-items: center; background: transparent; border: 1px solid #444; border-radius: 50%; color: #ccc; cursor: pointer; display: flex; height: 44px; justify-content: center; padding: 0; transition: all 0.2s ease; width: 44px; }
+.btn-nav:hover:not(:disabled) { background-color: #2a2a2a; border-color: #666; color: #fff; }
+.btn-nav:disabled { cursor: not-allowed; opacity: 0.4; }
+.btn-nav svg { height: 24px; width: 24px; }
+.nav-placeholder { height: 44px; width: 44px; }
+
 @media (max-width: 768px) { .bid-grid { grid-template-columns: 1fr; } .product-summary { margin-bottom: 2rem; } }
 </style>

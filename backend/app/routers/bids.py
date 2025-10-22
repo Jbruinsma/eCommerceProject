@@ -137,22 +137,25 @@ async def create_bid(new_bid_info: NewBidInfo, user_uuid: str, session: AsyncSes
     if user_uuid != new_bid_info.user_id:
         return ErrorMessage(message="User UUID does not match bid info user ID", error="UserUUIDMismatch")
 
-    bid_amount = new_bid_info.bid_amount
-    transaction_fee = new_bid_info.transaction_fee
-    transaction_fee_id = new_bid_info.transaction_fee_rate_id
-    product_condition = new_bid_info.product_condition.lower()
+    payment_origin = new_bid_info.payment_origin
 
-    statement = text("CALL createBid(:input_user_id, :input_product_id, :input_product_size, :input_product_condition, :input_bid_amount, :input_transaction_fee, :input_fee_structure_id, :input_payment_origin, :input_total_amount);")
+    if payment_origin not in ('account_balance', 'credit_card', 'other'):
+        return ErrorMessage(message="Invalid payment origin", error="InvalidPaymentOrigin")
+
+    bid_amount = new_bid_info.bid_amount
+    transaction_fee_id = new_bid_info.fee_structure_id
+    product_condition = new_bid_info.product_condition.lower()
+    size = new_bid_info.size
+
+    statement = text("CALL createBid(:input_user_id, :input_product_id, :input_product_size, :input_product_condition, :input_bid_amount, :input_fee_structure_id, :input_payment_origin);")
     result = await session.execute(statement, {
         "input_user_id": new_bid_info.user_id,
         "input_product_id": new_bid_info.product_id,
-        "input_product_size": new_bid_info.size,
+        "input_product_size": size,
         "input_product_condition": product_condition,
         "input_bid_amount": bid_amount,
-        "input_transaction_fee": transaction_fee,
         "input_fee_structure_id": transaction_fee_id,
-        "input_payment_origin": new_bid_info.payment_origin,
-        "input_total_amount": bid_amount + transaction_fee,
+        "input_payment_origin": payment_origin,
     })
 
     await session.commit()

@@ -5,13 +5,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db import get_session
+from ..db import get_session
 
-from app.pydantic_models.error_message import ErrorMessage
+from ..pydantic_models.error_message import ErrorMessage
 
-from app.utils.bids import process_bids
+from ..utils.bids import process_bids
 
-from app.utils.formatting import format_market_data
+from ..utils.formatting import format_market_data
 
 router = APIRouter(prefix="/product", tags=["products"])
 

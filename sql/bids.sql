@@ -7,19 +7,22 @@ DROP PROCEDURE IF EXISTS createBid;
 CREATE PROCEDURE createBid(
     IN input_user_id CHAR(36),
     IN input_product_id INT UNSIGNED,
-    IN input_product_size INT UNSIGNED,
+    IN input_product_size VARCHAR(50),
     IN input_product_condition ENUM('new', 'used', 'worn'),
     IN input_bid_amount DECIMAL(10,2),
-    IN input_transaction_fee DECIMAL(10,2),
     IN input_fee_structure_id INT,
-    IN input_payment_origin VARCHAR(100),
-    IN input_total_amount DECIMAL(10,2)
+    IN input_payment_origin VARCHAR(100)
 )
 
 BEGIN
 
     DECLARE new_bid_id CHAR(36);
+    DECLARE bid_transaction_fee DECIMAL(10,2);
+    DECLARE total_payment DECIMAL(10,2);
+
     SET new_bid_id = UUID();
+    SET bid_transaction_fee = (input_bid_amount * (SELECT buyer_fee_percentage FROM fee_structures WHERE id = input_fee_structure_id));
+    SET total_payment = input_bid_amount + bid_transaction_fee;
 
     INSERT INTO bids(
                     bid_id,
@@ -41,17 +44,12 @@ BEGIN
                 new_bid_id,
                 input_user_id,
                 input_product_id,
-                (
-                SELECT size_id
-                FROM sizes
-                WHERE size_value = input_product_size
-                LIMIT 1
-                ),
+                (SELECT size_id FROM sizes WHERE size_id IN (SELECT size_id FROM products_sizes WHERE product_id = input_product_id) AND size_value = input_product_size),
                 input_product_condition,
                 input_bid_amount,
-                input_transaction_fee,
+                bid_transaction_fee,
                 input_fee_structure_id,
-                input_total_amount,
+                total_payment,
                 'active',
                 input_payment_origin,
                 CURRENT_TIMESTAMP,
@@ -126,30 +124,31 @@ BEGIN
         b.product_condition,
         b.bid_amount,
         b.transaction_fee,
+        b.fee_structure_id,
         b.total_bid_amount,
         b.bid_status,
+        b.payment_origin,
         b.created_at,
         b.updated_at
     FROM
         bids b
-            INNER JOIN (
-            SELECT
-                product_size_id,
-                MAX(bid_amount) AS max_bid
-            FROM
-                bids
-            WHERE
-                product_id = input_product_id AND bid_status = 'active'
-            GROUP BY
-                product_size_id
-            )
-                AS highest_bids
-                ON
-                    b.product_size_id = highest_bids.product_size_id
-                        AND
-                    b.bid_amount = highest_bids.max_bid
-            JOIN
-            sizes s ON b.product_size_id = s.size_id
+    INNER JOIN (
+        SELECT
+            product_size_id,
+            MAX(bid_amount) AS max_bid
+        FROM
+            bids
+        WHERE
+            product_id = input_product_id AND bid_status = 'active'
+        GROUP BY
+            product_size_id
+    ) AS highest_bids
+        ON b.product_size_id = highest_bids.product_size_id
+        AND b.bid_amount = highest_bids.max_bid
+    JOIN
+        sizes s ON b.product_size_id = s.size_id
+    WHERE
+        b.product_id = input_product_id AND b.bid_status = 'active'
     ORDER BY
         s.size_id;
 
