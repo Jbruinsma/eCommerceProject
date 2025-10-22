@@ -24,25 +24,8 @@ BEGIN
     DECLARE calculated_seller_final_payout DECIMAL(10,2);
     DECLARE new_order_id CHAR(36);
 
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        ROLLBACK;
-        RESIGNAL;
-    END;
-
-    START TRANSACTION;
-
     SELECT fee_structure_id INTO buyer_fee_id FROM bids WHERE bid_id = input_bid_id;
-
-    IF buyer_fee_id IS NULL THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No matching bid found or bid has a NULL fee_structure_id.';
-    END IF;
-
     SELECT fee.buyer_fee_percentage INTO buyer_fee_percentage FROM fee_structures AS fee WHERE fee.id = buyer_fee_id;
-
-    IF buyer_fee_percentage IS NULL THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Could not find a valid fee structure for the given bid.';
-    END IF;
 
     SET calculated_buyer_transaction_fee = ROUND((input_sale_price * buyer_fee_percentage), 2);
     SET calculated_buyer_final_price = ROUND((input_sale_price + calculated_buyer_transaction_fee), 2);
@@ -70,6 +53,10 @@ BEGIN
         input_seller_fee_structure_id, calculated_seller_final_payout,
         'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
     );
+
+    UPDATE addresses
+    SET order_id = new_order_id
+    WHERE user_id = calculated_buyer_id AND order_id = input_bid_id;
 
     SELECT * FROM orders WHERE order_id = new_order_id;
 

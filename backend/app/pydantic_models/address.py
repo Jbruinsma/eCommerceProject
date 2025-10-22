@@ -1,7 +1,7 @@
 from pydantic import BaseModel
-from typing import Optional
 
-class ShippingInfo(BaseModel):
+
+class Address(BaseModel):
     name: str
     address_line_1: str
     address_line_2: str | None

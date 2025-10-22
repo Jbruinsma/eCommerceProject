@@ -19,6 +19,7 @@ import OrdersPage from '@/views/OrdersPage.vue'
 import AdminDashboard from '@/views/AdminDashboard.vue'
 import ManageFunds from '@/views/ManageFunds.vue'
 import BidsPage from '@/views/BidsPage.vue'
+import OrderDetailPage from '@/views/OrderDetailPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,6 +36,7 @@ const router = createRouter({
     { name: 'Settings', path: '/settings', component: SettingsPage },
     { name: 'Bids', path: '/bids', component: BidsPage },
     { name: 'Orders', path: '/orders', component: OrdersPage },
+    { name: 'OrderDetails', path: '/orders/:orderId', component: OrderDetailPage },
     { name: 'ProductDetail', path: '/product/:id', component: ProductDetail, props: true },
     { name: 'PlaceOrder', path: '/place-order/:listingId', component: PlaceOrder },
     { name: 'PlaceBid', path: '/place-bid/:listingId', component: PlaceBid },

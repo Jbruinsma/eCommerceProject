@@ -84,3 +84,94 @@ async def orders(user_uuid: str, session: AsyncSession = Depends(get_session)):
         return ErrorMessage(message="No orders found", error="NoOrdersFound")
 
     return list(rows)
+
+@router.get("/{user_uuid}/{order_id}")
+async def order_details(user_uuid: str, order_id: str, session: AsyncSession = Depends(get_session)):
+    if not user_uuid:
+        return ErrorMessage(message="User UUID is required", error="MissingUserUUID")
+
+    if not order_id:
+        return ErrorMessage(message="Order ID is required", error="MissingOrderID")
+
+    statement = text("CALL retrieveOrderById(:input_order_id);")
+    result = await session.execute(statement, {"input_order_id": order_id})
+    order_row = result.mappings().first()
+
+    print(order_row)
+
+    # {
+    #     'order_id': '3a400dad-af76-11f0-9011-96302f5b3d1f',
+    #     'buyer_id': '23d25655-af53-11f0-9011-96302f5b3d1f',
+    #     'seller_id': '963987dc-af53-11f0-9011-96302f5b3d1f',
+    #     'order_status': 'pending'
+    #     'buyer_transaction_fee': Decimal('4.50'),
+    #     'buyer_final_price': Decimal('304.50'),
+    #     'seller_transaction_fee': Decimal('18.00'),
+    #     'seller_final_payout': Decimal('282.00'),
+    #     'product_id': 1,
+    #     'size_id': 13,
+    #     'size': '10',
+    #     'brand_id': 12,
+    #     'brand_name': 'Nike',
+    #     'product_name': 'Dunk Low "Panda"',
+    #     'product_sku': 'DD1391-100',
+    #     'product_colorway': 'White/Black-White',
+    #     'product_image_url': 'https://images.stockx.com/images/Nike-Dunk-Low-Retro-White-Black-2021-Product.jpg',
+    #     'product_retail_price': Decimal('110.00'),
+    #     'address_name': 'Justino B',
+    #     'address_line_1': '123 Main St',
+    #     'address_line_2': 'Apt 4B',
+    #     'city': 'Springfield',
+    #     'state': 'IL',
+    #     'zip_code': '62701',
+    #     'country': 'USA',
+    #     'created_at': datetime.datetime(2025, 10, 22, 14, 37, 56),
+    #     'updated_at': datetime.datetime(2025, 10, 22, 14, 37, 56)
+    # }
+
+    role = None
+    if user_uuid == order_row['buyer_id']: role = 'buyer'
+    elif user_uuid == order_row['seller_id']: role = 'seller'
+
+    core_payload = {
+        "role": role,
+        "orderId": order_row.order_id,
+        "orderStatus": order_row.order_status,
+        "createdAt": order_row.created_at,
+        "lastUpdatedAt": order_row.updated_at,
+        "productDetails": {
+            "productId": order_row.product_id,
+            "sizeId": order_row.size_id,
+            "sizeValue": order_row.size,
+            "brandId": order_row.brand_id,
+            "brandName": order_row.brand_name,
+            "productName": order_row.product_name,
+            "productSku": order_row.product_sku,
+            "productColorway": order_row.product_colorway,
+            "productImageUrl": order_row.product_image_url,
+            "productRetailPrice": order_row.product_retail_price,
+        }
+    }
+
+    if role == 'buyer':
+        core_payload['buyerDetails'] = {
+            "address":{
+                "nameOnAddress": order_row.address_name,
+                "addressLine1": order_row.address_line_1,
+                "addressLine2": order_row.address_line_2,
+                "city": order_row.city,
+                "state": order_row.state,
+                "zipCode": order_row.zip_code,
+                "country": order_row.country,
+            },
+            "transactionFee": order_row.buyer_transaction_fee,
+            "finalPrice": order_row.buyer_final_price
+        }
+
+    if role == 'seller':
+        core_payload['sellerDetails'] = {
+            "transactionFee": order_row.seller_transaction_fee,
+            "finalPayout": order_row.seller_final_payout
+        }
+
+    return core_payload

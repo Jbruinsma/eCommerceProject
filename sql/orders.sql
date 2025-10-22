@@ -74,142 +74,53 @@ BEGIN
 
 end //
 
-DROP PROCEDURE IF EXISTS newOrder;
+DROP PROCEDURE IF EXISTS retrieveOrderById;
 
-CREATE PROCEDURE newOrder(
-    IN input_buyer_id CHAR(36),
-    IN input_listing_id INT UNSIGNED,
-    IN input_transaction_fee DECIMAL(10,2),
-    IN input_payment_method ENUM('account_balance', 'credit_card', 'other')
+CREATE PROCEDURE retrieveOrderById(
+    IN input_order_id CHAR(36)
 )
 
 BEGIN
 
-    DECLARE new_order_id CHAR(36);
-    SET new_order_id = UUID();
+    SELECT
+    o.order_id AS order_id,
+    o.buyer_id AS buyer_id,
+    o.seller_id AS seller_id,
+    o.order_status AS order_status,
 
-    INSERT INTO orders(
-                       order_id,
-                       buyer_id,
-                       seller_id,
-                       product_id,
-                       size_id,
-                       sale_price,
-                       transaction_fee,
-                       total_price,
-                       order_status,
-                       created_at,
-                       updated_at
-                      )
-        VALUES (
-                new_order_id,
-                input_buyer_id,
-                (SELECT user_id
-                 FROM listings
-                 WHERE listing_id = input_listing_id
-                 ),
-                (SELECT product_id
-                 FROM listings
-                 WHERE listing_id = input_listing_id
-                 ),
-                (
-                SELECT size_id
-                FROM listings
-                WHERE listing_id = input_listing_id
-                ),
-                (SELECT price
-                 FROM listings
-                 WHERE listing_id = input_listing_id),
-                input_transaction_fee,
-                (SELECT price + input_transaction_fee
-                 FROM listings
-                 WHERE listing_id = input_listing_id
-                 ),
-                'pending',
-                CURRENT_TIMESTAMP,
-                CURRENT_TIMESTAMP
-               );
+    o.buyer_transaction_fee AS buyer_transaction_fee,
+    o.buyer_final_price AS buyer_final_price,
+    o.seller_transaction_fee AS seller_transaction_fee,
+    o.seller_final_payout AS seller_final_payout,
 
-    UPDATE listings
-    SET status = 'pending'
-    WHERE listing_id = input_listing_id;
+    o.product_id AS product_id,
+    o.size_id AS size_id,
+    s.size_value AS size,
+    p.brand_id AS brand_id,
+    b.brand_name AS brand_name,
+    p.name AS product_name,
+    p.sku AS product_sku,
+    p.colorway AS product_colorway,
+    p.image_url AS product_image_url,
+    p.retail_price AS product_retail_price,
 
-    INSERT INTO transactions(
-                             user_id,
-                             order_id,
-                             amount,
-                             transaction_status,
-                             payment_origin,
-                             payment_destination,
-                             payment_purpose,
-                             created_at
-    )
+    a.name AS address_name,
+    a.address_line_1 AS address_line_1,
+    a.address_line_2 AS address_line_2,
+    a.city AS city,
+    a.state AS state,
+    a.zip_code AS zip_code,
+    a.country AS country,
 
-    VALUES(
-           input_buyer_id,
-              new_order_id,
-              (SELECT price + input_transaction_fee
-                FROM listings
-                WHERE listing_id = input_listing_id
-              ),
-              'pending',
-              input_payment_method,
-              'other',
-              'purchase_funds',
-              CURRENT_TIMESTAMP
-          );
+    o.created_at AS created_at,
+    o.updated_at AS updated_at
 
-    SELECT *
-    FROM orders
-    WHERE order_id = new_order_id;
-
-end //
-
-DROP PROCEDURE IF EXISTS createOrder;
-
-CREATE PROCEDURE createOrder(
-    IN input_buyer_id CHAR(36),
-    IN input_seller_id CHAR(36),
-    IN input_product_id INT UNSIGNED,
-    IN input_size_id INT UNSIGNED,
-    IN input_sale_price DECIMAL(10,2),
-    IN input_transaction_fee DECIMAL(10,2),
-    IN input_total_amount DECIMAL(10,2),
-    IN input_order_status ENUM('pending', 'completed', 'cancelled', 'failed')
-)
-
-BEGIN
-
-    DECLARE new_order_id CHAR(36);
-    SET new_order_id = UUID();
-
-    INSERT INTO orders(
-                       order_id,
-                       buyer_id,
-                       seller_id,
-                       product_id,
-                       size_id,
-                       sale_price,
-                       transaction_fee,
-                       total_price,
-                       order_status,
-                       created_at,
-                       updated_at
-        )
-
-        VALUES (
-                new_order_id,
-                input_buyer_id,
-                input_seller_id,
-                input_product_id,
-                input_size_id,
-                input_sale_price,
-                input_transaction_fee,
-                input_total_amount,
-                input_order_status,
-                CURRENT_TIMESTAMP,
-                CURRENT_TIMESTAMP
-               );
+FROM orders o
+JOIN ecommerce.sizes s ON o.size_id = s.size_id
+JOIN ecommerce.products p ON o.product_id = p.product_id
+JOIN ecommerce.brands b ON p.brand_id = b.brand_id
+JOIN ecommerce.addresses a ON o.order_id = a.order_id
+WHERE o.order_id = input_order_id;
 
 end //
 

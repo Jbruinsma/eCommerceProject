@@ -63,6 +63,7 @@ CREATE TABLE products(
 CREATE TABLE addresses(
     address_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
     user_id CHAR(36),
+    order_id CHAR(36),
     purpose ENUM('billing', 'shipping', 'both'),
     name VARCHAR(100),
     address_line_1 VARCHAR(255),
@@ -72,7 +73,8 @@ CREATE TABLE addresses(
     zip_code VARCHAR(20),
     country VARCHAR(100),
 
-    FOREIGN KEY (user_id) REFERENCES users(uuid)
+    FOREIGN KEY (user_id) REFERENCES users(uuid),
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE SET NULL
 );
 
 CREATE TABLE products_sizes(
