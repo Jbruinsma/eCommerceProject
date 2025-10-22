@@ -47,6 +47,7 @@ async def fulfill_listing(user_uuid: str, sale_info: SaleInfo, session: AsyncSes
     if not target_bid_row:
         return ErrorMessage(message="Bid not found", error="BidNotFound")
 
+    bider_uuid = target_bid_row.user_id
     bid_payment_method = target_bid_row.payment_origin
     total_bid_amount = target_bid_row.total_bid_amount
 
@@ -59,7 +60,61 @@ async def fulfill_listing(user_uuid: str, sale_info: SaleInfo, session: AsyncSes
         if user_balance - total_bid_amount < 0:
             return ErrorMessage(message="Insufficient funds", error="InsufficientFunds")
 
+    # {
+    #     'input_product_id': 1,
+    #     'input_seller_id': '963987dc-af53-11f0-9011-96302f5b3d1f',
+    #     'input_bid_id': '91de3a28-af5e-11f0-9011-96302f5b3d1f',
+    #     'input_listing_id': None,
+    #     'input_sale_price': 350,
+    #     'input_size_id': 13,
+    #     'input_seller_fee_structure_id': 1
+    # }
 
+    statement = text("CALL connectListingToBid(:input_product_id, :input_seller_id, :input_bid_id, :input_listing_id, :input_sale_price, :input_size_id, :input_seller_fee_structure_id);")
+    result = await session.execute(statement, {
+        "input_product_id": sale_info.product_id,
+        "input_seller_id": user_uuid,
+        "input_bid_id": sale_info.target_bid_id,
+        "input_listing_id": None,
+        "input_sale_price": sale_info.price,
+        "input_size_id": sale_info.size_id,
+        "input_seller_fee_structure_id": sale_info.fee_id,
+    })
+    await session.commit()
+
+    new_order_row = result.mappings().first()
+    if not new_order_row:
+        return ErrorMessage(message="An error occurred fulfilling order.", error="OrderFulfillmentFailed")
+
+    buyer_final_price = new_order_row.buyer_final_price
+    buyer_payment_origin = 'other'
+
+    if bid_payment_method == "account_balance":
+        buyer_payment_origin = 'account_balance'
+        statement = text("CALL updateBalance(:input_uuid, :input_email, :input_balance_adjustment_amount);")
+        result = await session.execute(statement, {
+            "input_uuid": bider_uuid,
+            "input_email": None,
+            "input_balance_adjustment_amount": -1 * buyer_final_price,
+        })
+        await session.commit()
+
+    statement = text("CALL recordTransaction(:input_user_id, :input_order_id, :input_amount, :input_transaction_status, :input_payment_origin, :input_payment_destination, :input_payment_purpose);")
+    result = await session.execute(statement, {
+        "input_user_id": bider_uuid,
+        "input_order_id": new_order_row.order_id,
+        "input_amount": buyer_final_price,
+        "input_transaction_status": "completed",
+        "input_payment_origin": buyer_payment_origin,
+        "input_payment_destination": "account_balance",
+        "input_payment_purpose": "sale_proceeds",
+    })
+    await session.commit()
+    transaction_row = result.mappings().first()
+    if not transaction_row:
+        return ErrorMessage(message="An error occurred recording transaction.", error="TransactionRecordingFailed")
+
+    return dict(new_order_row)
 
 @router.get("/{user_uuid}")
 async def listings(user_uuid: str, session: AsyncSession = Depends(get_session)):

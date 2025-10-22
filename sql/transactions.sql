@@ -33,41 +33,36 @@ DROP PROCEDURE IF EXISTS recordTransaction;
 
 CREATE PROCEDURE recordTransaction(
     IN input_user_id CHAR(36),
-    IN input_order_id INT UNSIGNED,
-    IN input_amount DECIMAL(15,2),
-    IN input_transaction_status ENUM('pending', 'completed', 'failed'),
-    IN input_payment_origin ENUM('account_balance', 'credit_card', 'other'),
-    IN input_payment_destination ENUM('account_balance', 'bank_transfer', 'other'),
-    IN input_payment_purpose ENUM('sale_proceeds', 'purchase_funds', 'refund', 'fee', 'balance_adjustment')
+    IN input_order_id CHAR(36),
+    IN input_amount DECIMAL(10, 2),
+    IN input_transaction_status VARCHAR(50),
+    IN input_payment_origin VARCHAR(50),
+    IN input_payment_destination VARCHAR(50),
+    IN input_payment_purpose VARCHAR(50)
 )
-
 BEGIN
-
-    INSERT INTO transactions(
-                             transaction_id,
-                             user_id,
-                             order_id,
-                             amount,
-                             transaction_status,
-                             payment_origin,
-                             payment_destination,
-                             payment_purpose,
-                             created_at
-    )
-    VALUES (
-            DEFAULT,
-            input_user_id,
-            input_order_id,
-            input_amount,
-            input_transaction_status,
-            input_payment_origin,
-            input_payment_destination,
-            input_payment_purpose,
-            CURRENT_TIMESTAMP
+    INSERT INTO transactions (
+        user_id,
+        order_id,
+        amount,
+        transaction_status,
+        payment_origin,
+        payment_destination,
+        payment_purpose,
+        created_at
+    ) VALUES (
+        input_user_id,
+        input_order_id,
+        input_amount,
+        input_transaction_status,
+        input_payment_origin,
+        input_payment_destination,
+        input_payment_purpose,
+        CURRENT_TIMESTAMP
     );
 
     SELECT * FROM transactions WHERE transaction_id = LAST_INSERT_ID();
 
-end //
+END //
 
 DELIMITER ;
