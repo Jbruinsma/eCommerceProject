@@ -14,7 +14,7 @@ DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS brands;
 DROP TABLE IF EXISTS sizes;
-
+DROP TABLE IF EXISTS fee_structures;
 
 CREATE TABLE users(
     uuid CHAR(36) PRIMARY KEY NOT NULL,
@@ -123,6 +123,7 @@ CREATE TABLE bids(
     product_condition ENUM('new', 'used', 'worn'),
     bid_amount DECIMAL(10, 2),
     transaction_fee DECIMAL(10, 2),
+    fee_structure_id INT,
     total_bid_amount DECIMAL(10, 2),
     bid_status ENUM('active', 'accepted', 'rejected', 'expired'),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -130,7 +131,16 @@ CREATE TABLE bids(
 
     FOREIGN KEY (user_id) REFERENCES users(uuid),
     FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (product_size_id) REFERENCES sizes(size_id)
+    FOREIGN KEY (product_size_id) REFERENCES sizes(size_id),
+    FOREIGN KEY (fee_structure_id) REFERENCES fee_structures(id)
+);
+
+CREATE TABLE fee_structures (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    seller_fee_percentage DECIMAL(10, 4) NOT NULL,
+    buyer_fee_percentage DECIMAL(10, 4) NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE orders(
@@ -139,6 +149,7 @@ CREATE TABLE orders(
     seller_id CHAR(36),
     product_id INT UNSIGNED,
     size_id INT UNSIGNED,
+    fee_structure_id INT,
     sale_price DECIMAL(10, 2),
     transaction_fee DECIMAL(10, 2),
     total_price DECIMAL(10, 2),
@@ -149,7 +160,8 @@ CREATE TABLE orders(
     FOREIGN KEY (buyer_id) REFERENCES users(uuid),
     FOREIGN KEY (seller_id) REFERENCES users(uuid),
     FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (size_id) REFERENCES sizes(size_id)
+    FOREIGN KEY (size_id) REFERENCES sizes(size_id),
+    FOREIGN KEY (fee_structure_id) REFERENCES fee_structures(id)
 );
 
 CREATE TABLE transactions(

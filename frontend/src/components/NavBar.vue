@@ -44,7 +44,7 @@
       </svg>
 
       <svg
-        @click="redirectToCart"
+        @click="redirectToOrders"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
@@ -124,8 +124,9 @@ function redirectToProfile() {
   else router.push('/login')
 }
 
-function redirectToCart() {
-  router.push('/cart')
+function redirectToOrders() {
+  if (authStore.isLoggedIn) router.push('/orders')
+  else router.push('/login')
 }
 
 function redirectToAdminDashboard() {

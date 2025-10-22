@@ -99,7 +99,7 @@
                 <span>{{ formatCurrency(bidAmount) }}</span>
               </li>
               <li>
-                <span>Transaction Fee ({{ transactionFeeRate * 100 }}%)</span>
+                <span>Transaction Fee ({{ transactionFeeRate.rate * 100 }}%)</span>
                 <span>+ {{ formatCurrency(transactionFee) }}</span>
               </li>
               <li class="total-cost">
@@ -133,6 +133,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchFromAPI, postToAPI } from '@/utils/index.js'
 import { useAuthStore } from '@/stores/authStore.js'
+import { getBuyerFee } from '@/utils/fees.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -160,9 +161,12 @@ const submissionResult = ref(null)
 
 const MIN_BID = 0.01
 const MAX_BID = 99999999.99
-const transactionFeeRate = 0.05 // 5%
+let transactionFeeRate = ref({
+  rateId: null,
+  rate: ref(0.01)
+})
 
-const transactionFee = computed(() => (bidAmount.value || 0) * transactionFeeRate)
+const transactionFee = computed(() => (bidAmount.value || 0) * transactionFeeRate.value.rate)
 const totalCost = computed(() => (bidAmount.value || 0) + transactionFee.value)
 const isBidValid = computed(
   () =>
@@ -203,6 +207,12 @@ const filterBidInput = (event) => {
 
 onMounted(async () => {
   try {
+
+    const feeData = await getBuyerFee()
+
+    transactionFeeRate.value.rateId = feeData.id
+    transactionFeeRate.value.rate = feeData.buyer_fee_percentage
+
     const productResponse = await fetchFromAPI(`/product/${product_id}`)
 
     const allMarketData = productResponse.marketData || {}
@@ -246,6 +256,7 @@ async function submitBid() {
       product_condition: selectedCondition.value,
       bid_amount: bidToSubmit,
       transaction_fee: transactionFee.value,
+      transaction_fee_rate_id: transactionFeeRate.value.rateId,
       total_amount: totalAmount,
       bid_status: 'pending',
     })

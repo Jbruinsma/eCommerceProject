@@ -18,6 +18,7 @@ import PlaceOrder from '@/views/PlaceOrder.vue'
 import OrdersPage from '@/views/OrdersPage.vue'
 import AdminDashboard from '@/views/AdminDashboard.vue'
 import ManageFunds from '@/views/ManageFunds.vue'
+import BidsPage from '@/views/BidsPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,15 +33,16 @@ const router = createRouter({
     { name: 'Profile', path: '/profile', component: ProfilePage },
     { name: 'Transactions', path: '/transactions', component: TransactionsPage },
     { name: 'Settings', path: '/settings', component: SettingsPage },
+    { name: 'Bids', path: '/bids', component: BidsPage },
     { name: 'Orders', path: '/orders', component: OrdersPage },
-    { name: 'product-detail', path: '/product/:id', component: ProductDetail, props: true },
-    { name: 'place-order', path: '/place-order/:listingId', component: PlaceOrder },
-    { name: 'place-bid', path: '/place-bid/:listingId', component: PlaceBid },
-    { name: 'my-listings', path: '/my-listings', component: MyListingsPage },
-    { name: 'create-listing', path: '/create-listing', component: CreateListingPage },
-    { name: 'listing', path: '/listing/:listingId', component: ListingDetailPage },
+    { name: 'ProductDetail', path: '/product/:id', component: ProductDetail, props: true },
+    { name: 'PlaceOrder', path: '/place-order/:listingId', component: PlaceOrder },
+    { name: 'PlaceBid', path: '/place-bid/:listingId', component: PlaceBid },
+    { name: 'MyListings', path: '/my-listings', component: MyListingsPage },
+    { name: 'CreateListing', path: '/create-listing', component: CreateListingPage },
+    { name: 'Listing', path: '/listing/:listingId', component: ListingDetailPage },
     { name: 'Portfolio', path: '/portfolio', component: PortfolioPage },
-    { name: 'add-portfolio-item', path: '/portfolio/add', component: AddPortfolioItemPage },
+    { name: 'AddPortfolioItem', path: '/portfolio/add', component: AddPortfolioItemPage },
   ],
 })
 

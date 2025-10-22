@@ -11,6 +11,7 @@ CREATE PROCEDURE createBid(
     IN input_product_condition ENUM('new', 'used', 'worn'),
     IN input_bid_amount DECIMAL(10,2),
     IN input_transaction_fee DECIMAL(10,2),
+    IN input_fee_structure_id INT,
     IN input_total_amount DECIMAL(10,2)
 )
 
@@ -27,6 +28,7 @@ BEGIN
                     product_condition,
                     bid_amount,
                     transaction_fee,
+                     fee_structure_id,
                     total_bid_amount,
                     bid_status,
                     created_at,
@@ -46,6 +48,7 @@ BEGIN
                 input_product_condition,
                 input_bid_amount,
                 input_transaction_fee,
+                input_fee_structure_id,
                 input_total_amount,
                 'active',
                 CURRENT_TIMESTAMP,
@@ -55,6 +58,50 @@ BEGIN
     SELECT *
     FROM bids
     WHERE bid_id = new_bid_id;
+
+end //
+
+DROP PROCEDURE IF EXISTS updateBid;
+
+CREATE PROCEDURE updateBid(
+    IN input_bid_id CHAR(36),
+    IN input_bid_amount DECIMAL(10,2),
+    IN input_fee_structure_id INT
+)
+
+BEGIN
+
+    DECLARE new_transaction_fee DECIMAL(10,2);
+    DECLARE new_total_bid_amount DECIMAL(10,2);
+
+    SET new_transaction_fee = (input_bid_amount * (SELECT buyer_fee_percentage FROM fee_structures WHERE id = input_fee_structure_id));
+    SET new_total_bid_amount = input_bid_amount + new_transaction_fee;
+
+    UPDATE bids
+    SET
+        bid_amount = input_bid_amount,
+        transaction_fee = new_transaction_fee,
+        total_bid_amount = new_total_bid_amount,
+        fee_structure_id = input_fee_structure_id,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE bid_id = input_bid_id;
+
+    SELECT *
+    FROM bids
+    WHERE bid_id = input_bid_id;
+
+end //
+
+DROP PROCEDURE IF EXISTS deleteBid;
+
+CREATE PROCEDURE deleteBid(
+    IN input_bid_id CHAR(36)
+)
+
+BEGIN
+
+    DELETE FROM bids
+    WHERE bid_id = input_bid_id;
 
 end //
 
@@ -104,5 +151,38 @@ BEGIN
         s.size_id;
 
 END //
+
+DROP PROCEDURE IF EXISTS retrieveBidsByUserId;
+
+CREATE PROCEDURE retrieveBidsByUserId(
+    IN input_user_id CHAR(36)
+)
+
+BEGIN
+
+    SELECT *
+    FROM bids
+    JOIN sizes ON bids.product_size_id = sizes.size_id
+    JOIN products ON bids.product_id = products.product_id
+    WHERE user_id = input_user_id;
+
+
+end //
+
+DROP PROCEDURE IF EXISTS retrieveActiveBidsByUserId;
+
+CREATE PROCEDURE retrieveActiveBidsByUserId(
+    IN input_user_id CHAR(36)
+)
+
+BEGIN
+
+    SELECT *
+    FROM bids
+    JOIN sizes ON bids.product_size_id = sizes.size_id
+    JOIN products ON bids.product_id = products.product_id
+    WHERE user_id = input_user_id AND bid_status = 'active';
+
+end //
 
 DELIMITER ;

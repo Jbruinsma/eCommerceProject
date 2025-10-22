@@ -43,10 +43,10 @@
             <h3>Portfolio</h3>
             <p>View your collection's value.</p>
           </a>
-          <a href="/orders" class="nav-card">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c.578 0 1.058-.42 1.135-.984l2.062-7.341a.375.375 0 0 0-.34-.48H4.625a.375.375 0 0 0-.34.48L6.44 11.25M12 21a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Zm6 0a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" /></svg>
-            <h3>Orders</h3>
-            <p>Track your purchases and sales.</p>
+          <a href="/bids" class="nav-card">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M10.05 4.575a1.575 1.575 0 1 0-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 0 1 3.15 0v1.5m-3.15 0 .075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 0 1 3.15 0V15M6.9 7.575a1.575 1.575 0 1 0-3.15 0v8.175a6.75 6.75 0 0 0 6.75 6.75h2.018a5.25 5.25 0 0 0 3.712-1.538l1.732-1.732a5.25 5.25 0 0 0 1.538-3.712l.003-2.024a.668.668 0 0 1 .198-.471 1.575 1.575 0 1 0-2.228-2.228 3.818 3.818 0 0 0-1.12 2.687M6.9 7.575V12m6.27 4.318A4.49 4.49 0 0 1 16.35 15m.002 0h-.002" /></svg>
+            <h3>Bids</h3>
+            <p>Track your active bids</p>
           </a>
           <a href="/transactions" class="nav-card">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.826-1.106-2.279 0-3.105C10.42 7.219 11.22 7 12 7c.817 0 1.579.24 2.212.659" /></svg>

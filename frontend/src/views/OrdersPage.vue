@@ -10,29 +10,25 @@
       <div v-else-if="ordersList.length === 0" class="empty-state">
         <h2>No Orders Found</h2>
         <p>You haven't bought or sold any items yet.</p>
-        <router-link to="/" class="btn-shop">Start Shopping</router-link>
+        <router-link :to="{ name: 'SearchResults' }" class="btn-shop">Start Shopping</router-link>
       </div>
 
       <div v-else class="orders-grid">
         <div v-for="order in ordersList" :key="order.order_id" class="order-card">
           <div class="order-card-image">
-            <!-- API provides `image_url` and `name` fields -->
             <img :src="order.image_url" :alt="order.name" @error="(event) => event.target.src=IMAGE_PLACEHOLDER" />
           </div>
           <div class="order-card-details">
             <h3 class="product-name">{{ order.name }}</h3>
             <p class="product-size">Size: {{ order.size_value }}</p>
-            <!-- new field from API -->
             <p class="product-condition">Condition: {{ order.item_condition || order.condition || 'N/A' }}</p>
             <div class="order-info">
               <p><strong>Order ID:</strong> {{ order.order_id }}</p>
               <p><strong>Date:</strong> {{ formatDate(order.created_at) }}</p>
-              <!-- API uses `total_price` for the overall total -->
               <p><strong>Total:</strong> {{ formatCurrency(order.total_price) }}</p>
             </div>
           </div>
           <div class="order-card-status">
-            <!-- support either `order_status` (preferred) or `status` from API -->
             <span class="status-badge" :class="`status-${order.order_status || order.status}`">
               {{ formatStatus(order.order_status || order.status) }}
             </span>
@@ -42,7 +38,6 @@
     </main>
     <footer class="site-footer"></footer>
   </div>
-  <!-- Hidden sentinel to make CSS linters detect dynamic status-<state> classes as used -->
   <div aria-hidden="true" style="display:none" class="status-pending status-paid status-shipped status-completed status-cancelled status-refunded"></div>
 </template>
 

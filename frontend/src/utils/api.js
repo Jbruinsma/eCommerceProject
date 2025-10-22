@@ -1,8 +1,8 @@
 // Helper functions for API calls used across the frontend.
-// Provides `fetchFromAPI` for GET-like requests and `postToAPI` for POST requests.
-// - Uses import.meta.env.VITE_API_BASE_URL as the API base (falls back to empty string)
-// - Automatically attaches `Authorization: Bearer <token>` if `localStorage.token` exists
-// - Provides a configurable timeout using AbortController
+// Provides `fetchFromAPI`, `postToAPI`, and `deleteFromAPI`.
+// - Uses import.meta.env.VITE_API_BASE_URL as the API base
+// - Automatically attaches `Authorization: Bearer <token>`
+// - Provides a configurable timeout
 // - Normalizes errors into thrown objects: { message, status, data }
 
 const API_BASE = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL
@@ -33,9 +33,8 @@ function getAuthHeader() {
 
 async function parseResponseBody(res) {
   const contentType = res.headers.get('content-type') || '';
-  if (!contentType) return null;
+  if (!contentType || res.status === 204) return null; // 204 No Content
   if (contentType.includes('application/json')) return res.json();
-  // fallback to text for other content types
   return res.text();
 }
 
@@ -48,40 +47,21 @@ function makeTimeoutController(timeout, externalSignal) {
 }
 
 function isApiErrorPayload(data) {
-  // Detect known API error shapes even when HTTP status is 200.
-  // Your backend returns ErrorMessage(message, error) on auth failures.
   if (!data || typeof data !== 'object') return false;
-  // Common patterns:
-  // - { error: 'InvalidCredentials', message: '...' }
-  // - { success: false, message: '...' }
-  // - { status: 'error', message: '...' }
   if (data.error) return true;
   if (data.success === false) return true;
   if (typeof data.status === 'string' && data.status.toLowerCase() === 'error') return true;
   return false;
 }
 
-async function fetchFromAPI(endpoint, options = {}) {
-  // options: { params, headers, timeout(ms), signal }
-  const { params, headers = {}, timeout = 10000, signal: externalSignal } = options;
-  const url = buildUrl(endpoint, params);
-  const authHeader = getAuthHeader();
+async function callAPI(url, options) {
+  const { timeout = 10000, signal: externalSignal, ...fetchOptions } = options;
   const { signal, cancel } = makeTimeoutController(timeout, externalSignal);
 
   try {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        ...authHeader,
-        ...headers,
-      },
-      signal,
-    });
-
+    const res = await fetch(url, { ...fetchOptions, signal });
     const data = await parseResponseBody(res);
 
-    // If server returned an API-level error payload (but still 200), treat it as an error
     if (isApiErrorPayload(data)) {
       const message = (data && (data.message || data.detail)) || res.statusText || 'Request failed';
       const err = new Error(message);
@@ -91,16 +71,14 @@ async function fetchFromAPI(endpoint, options = {}) {
     }
 
     if (!res.ok) {
-      // Prefer structured error messages when available (FastAPI validation errors use `detail`)
       let message = res.statusText || 'Request failed';
       if (data) {
         if (data.message) message = data.message;
         else if (data.detail) {
           if (Array.isArray(data.detail)) {
-            // Format each validation error to a short message: "loc: msg"
             try {
               message = data.detail
-                .map((d) => {
+                .map(d => {
                   const loc = Array.isArray(d.loc) ? d.loc.join('.') : d.loc || '';
                   return loc ? `${loc}: ${d.msg}` : d.msg;
                 })
@@ -112,8 +90,7 @@ async function fetchFromAPI(endpoint, options = {}) {
             message = String(data.detail);
           }
         } else {
-          // Fallback to stringifying the data object
-          try { message = JSON.stringify(data) } catch (e) { /* ignore */ }
+          try { message = JSON.stringify(data); } catch (e) { /* ignore */ }
         }
       }
       const err = new Error(message);
@@ -123,6 +100,7 @@ async function fetchFromAPI(endpoint, options = {}) {
     }
 
     return data;
+
   } catch (err) {
     if (err.name === 'AbortError') {
       const e = new Error('Request timed out');
@@ -135,107 +113,69 @@ async function fetchFromAPI(endpoint, options = {}) {
   }
 }
 
-async function postToAPI(endpoint, body = {}, options = {}) {
-  // options: { headers, timeout(ms), signal }
-  const { headers = {}, timeout = 10000, signal: externalSignal } = options;
-  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
+async function fetchFromAPI(endpoint, options = {}) {
+  const { params, headers = {}, ...restOptions } = options;
+  const url = buildUrl(endpoint, params);
   const authHeader = getAuthHeader();
-  const { signal, cancel } = makeTimeoutController(timeout, externalSignal);
 
-  // Build final headers object so we can conditionally add/remove Content-Type
+  return callAPI(url, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      ...authHeader,
+      ...headers,
+    },
+    ...restOptions,
+  });
+}
+
+async function postToAPI(endpoint, body = {}, options = {}) {
+  const { headers = {}, ...restOptions } = options;
+  const url = buildUrl(endpoint);
+  const authHeader = getAuthHeader();
+
   const finalHeaders = {
     Accept: 'application/json',
     ...authHeader,
     ...headers,
   };
 
-  // Determine content-type preference (if caller provided one)
   const specifiedContentType = headers['Content-Type'] || headers['content-type'];
   const contentType = specifiedContentType || 'application/json';
 
   let payload;
   if (contentType.includes('application/json')) {
     payload = JSON.stringify(body);
-    // only set Content-Type header if caller didn't already
     if (!specifiedContentType) finalHeaders['Content-Type'] = 'application/json';
   } else {
-    // allow callers to pass a FormData instance or pre-serialized body
     payload = body;
-    // If payload is FormData, the browser will set the correct Content-Type boundary; remove it if present
     if (payload instanceof FormData && finalHeaders['Content-Type']) {
       delete finalHeaders['Content-Type'];
     }
   }
 
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: finalHeaders,
-      body: payload,
-      signal,
-    });
-
-    const data = await parseResponseBody(res);
-
-    // If server returned an API-level error payload (but still 200), treat it as an error
-    if (isApiErrorPayload(data)) {
-      const message = (data && (data.message || data.detail)) || res.statusText || 'Request failed';
-      const err = new Error(message);
-      err.status = res.status;
-      err.data = data;
-      throw err;
-    }
-
-    if (!res.ok) {
-      // Prefer structured error messages when available (FastAPI validation errors use `detail`)
-      let message = res.statusText || 'Request failed';
-      if (data) {
-        if (data.message) message = data.message;
-        else if (data.detail) {
-          if (Array.isArray(data.detail)) {
-            try {
-              message = data.detail
-                .map((d) => {
-                  const loc = Array.isArray(d.loc) ? d.loc.join('.') : d.loc || '';
-                  return loc ? `${loc}: ${d.msg}` : d.msg;
-                })
-                .join('; ');
-            } catch (e) {
-              message = JSON.stringify(data.detail);
-            }
-          } else {
-            message = String(data.detail);
-          }
-        } else {
-          try { message = JSON.stringify(data) } catch (e) { /* ignore */ }
-        }
-      }
-      const err = new Error(message);
-      err.status = res.status;
-      err.data = data;
-      throw err;
-    }
-
-    return data;
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      const e = new Error('Request timed out');
-      e.status = 0;
-      throw e;
-    }
-    throw err;
-  } finally {
-    cancel();
-  }
+  return callAPI(url, {
+    method: 'POST',
+    headers: finalHeaders,
+    body: payload,
+    ...restOptions
+  });
 }
 
-export { fetchFromAPI, postToAPI };
+async function deleteFromAPI(endpoint, options = {}) {
+  const { headers = {}, ...restOptions } = options;
+  const url = buildUrl(endpoint);
+  const authHeader = getAuthHeader();
 
-// Usage examples:
-// import { fetchFromAPI, postToAPI } from '@/utils/api';
-// fetchFromAPI('/products', { params: { page: 1, limit: 20 } })
-//   .then(data => console.log(data))
-//   .catch(err => console.error(err));
-// postToAPI('/login', { email, password })
-//   .then(data => console.log(data))
-//   .catch(err => console.error(err));
+  return callAPI(url, {
+    method: 'DELETE',
+    headers: {
+      Accept: 'application/json',
+      ...authHeader,
+      ...headers,
+    },
+    ...restOptions
+  });
+}
+
+export { fetchFromAPI, postToAPI, deleteFromAPI };

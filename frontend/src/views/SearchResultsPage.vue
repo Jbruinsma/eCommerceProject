@@ -56,7 +56,7 @@
           <router-link
             v-for="product in searchResults"
             :key="product.id"
-            :to="{ name: 'product-detail', params: { id: product.id } }"
+            :to="{ name: 'ProductDetail', params: { id: product.id } }"
             class="product-card"
           >
             <img :src="product.imageUrl" :alt="product.name" class="product-image" />

@@ -37,7 +37,7 @@
               <router-link
                 v-if="currentMarketData.lowest_ask"
                 :to="{
-                  name: 'place-order',
+                  name: 'PlaceOrder',
                   params: { listingId: currentMarketData.lowest_ask.listingId },
                   query: { size: selectedSize, condition: selectedCondition },
                 }"
@@ -54,7 +54,7 @@
 
               <router-link
                 :to="{
-                  name: 'place-bid',
+                  name: 'PlaceBid',
                   params: { listingId: product.product_id },
                   query: { size: selectedSize, condition: selectedCondition },
                 }"

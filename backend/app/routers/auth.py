@@ -1,17 +1,16 @@
 from fastapi import APIRouter, Depends
 
-from app.pydantic_models.login_credentials import LoginCredentials
-from app.pydantic_models.message import Message
-from app.pydantic_models.error_message import ErrorMessage
+from ..pydantic_models.login_credentials import LoginCredentials
+from ..pydantic_models.message import Message
+from ..pydantic_models.error_message import ErrorMessage
 
-from app.models import User
-from app.db import get_session
+from ..db import get_session
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.security import verify_password, get_password_hash
-from app.pydantic_models.register_credentials import RegisterCredentials
-from app.utils.database_utils import find_user_by_email
+from ..security import verify_password, get_password_hash
+from ..pydantic_models.register_credentials import RegisterCredentials
+from ..utils.database_utils import find_user_by_email
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

@@ -3,10 +3,10 @@ from fastapi.params import Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db import get_session
+from ..db import get_session
 
-from app.pydantic_models.error_message import ErrorMessage
-from app.pydantic_models.updated_user import UpdatedUser
+from ..pydantic_models.error_message import ErrorMessage
+from ..pydantic_models.updated_user import UpdatedUser
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -62,10 +62,6 @@ async def transactions(user_uuid: str, session: AsyncSession = Depends(get_sessi
         "currentBalance": round(float(current_balance_row.balance), 2),
         "lifetimeEarnings": round(float(lifetime_earnings_row.lifetime_earnings), 2)
     }
-
-@router.get("/{user_uuid}/listings")
-async def listings(user_uuid: str, session: AsyncSession = Depends(get_session)):
-    pass
 
 @router.get("/{user_uuid}/settings")
 async def get_settings(user_uuid: str, session: AsyncSession = Depends(get_session)):

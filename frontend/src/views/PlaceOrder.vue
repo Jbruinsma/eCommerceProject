@@ -197,10 +197,13 @@ const formatOrderDate = (dateString) => {
 
 onMounted(async () => {
   try {
-    const [listingData, balanceData] = await Promise.all([
+    const [listingData, balanceData, feeData] = await Promise.all([
       fetchFromAPI(`/listings/active/id/${listingId}`),
-      fetchFromAPI(`/users/${authStore.uuid}/balance`)
+      fetchFromAPI(`/users/${authStore.uuid}/balance`),
+      fetchFromAPI('/fees/buyer_fee_percentage')
     ]);
+
+    console.log('Listing Data:', feeData);
 
     if (listingData && listingData.listing_id) {
       listing.value = listingData;

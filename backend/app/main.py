@@ -1,8 +1,6 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-import logging
-import sys
 
 from .db import engine, Base
 from .routers.users import router as users_router
@@ -12,7 +10,8 @@ from .routers.listings import router as listings_router
 from .routers.portfolio import router as portfolio_router
 from .routers.bids import router as bids_router
 from .routers.orders import router as orders_router
-from.routers.admin import router as admin_router
+from .routers.admin import router as admin_router
+from .routers.fees import router as fees_router
 
 from .config import settings
 
@@ -47,6 +46,7 @@ app.include_router(portfolio_router)
 app.include_router(bids_router)
 app.include_router(orders_router)
 app.include_router(admin_router)
+app.include_router(fees_router)
 
 
 @app.get("/health")
