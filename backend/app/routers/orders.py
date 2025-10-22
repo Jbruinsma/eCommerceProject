@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends
 
-from app.pydantic_models.login_credentials import LoginCredentials
-from app.pydantic_models.message import Message
-from app.pydantic_models.error_message import ErrorMessage
+from ..pydantic_models.login_credentials import LoginCredentials
+from ..pydantic_models.message import Message
+from ..pydantic_models.error_message import ErrorMessage
 
-from app.db import get_session
+from ..db import get_session
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.pydantic_models.new_order import NewOrder
+from ..pydantic_models.new_order import NewOrder
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 

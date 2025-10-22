@@ -4,20 +4,47 @@ DELIMITER //
 
 DROP PROCEDURE IF EXISTS retrieveAllOrdersByUserId;
 
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS retrieveAllOrdersByUserId;
+
 CREATE PROCEDURE retrieveAllOrdersByUserId(
     IN input_user_id CHAR(36)
 )
-
 BEGIN
 
-    SELECT *
-    FROM orders o
-    JOIN products p ON o.product_id = p.product_id
-    JOIN sizes ON o.size_id = sizes.size_id
-    JOIN listings l ON o.seller_id = l.user_id AND o.product_id = l.product_id AND o.size_id = l.size_id
-    WHERE buyer_id = input_user_id;
+    SELECT
+        o.order_id,
+        o.sale_price,
+        o.order_status,
+        o.created_at,
+        p.name AS product_name,
+        p.image_url AS product_image_url,
+        b.brand_name,
+        s.size_value,
+        CASE
+            WHEN o.seller_id = input_user_id THEN 'sell'
+            ELSE 'buy'
+        END AS user_role,
+        CASE
+            WHEN o.seller_id = input_user_id THEN o.seller_final_payout
+            ELSE o.buyer_final_price
+        END AS user_net_amount
+    FROM
+        orders o
+    JOIN
+        products p ON o.product_id = p.product_id
+    JOIN
+        brands b ON p.brand_id = b.brand_id
+    JOIN
+        sizes s ON o.size_id = s.size_id
+    WHERE
+        o.buyer_id = input_user_id OR o.seller_id = input_user_id
+    ORDER BY
+        o.created_at DESC;
 
-end //
+END //
+
 
 DROP PROCEDURE IF EXISTS retrieveRawOrdersByProductId;
 
