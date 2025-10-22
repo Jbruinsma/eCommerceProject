@@ -140,4 +140,10 @@ WHERE s.size_id BETWEEN @apparel_size_start_id AND @apparel_size_end_id
   );
 
 -- Commit all the changes to the database
+
+UPDATE fee_structures SET is_active = 0 WHERE is_active = 1;
+
+INSERT INTO fee_structures (seller_fee_percentage, buyer_fee_percentage, is_active)
+VALUES (0.0600, 0.0150, 1); -- New 6% seller fee, 1.5% buyer fee
+
 COMMIT;

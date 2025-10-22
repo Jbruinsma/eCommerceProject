@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class NewListingInfo(BaseModel):
+class SaleInfo(BaseModel):
     listing_type: str
     brand_id: int
     product_id: int
@@ -9,3 +9,4 @@ class NewListingInfo(BaseModel):
     item_condition: str
     price: int
     fee_id: int
+    target_bid_id: str

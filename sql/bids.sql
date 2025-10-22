@@ -12,6 +12,7 @@ CREATE PROCEDURE createBid(
     IN input_bid_amount DECIMAL(10,2),
     IN input_transaction_fee DECIMAL(10,2),
     IN input_fee_structure_id INT,
+    IN input_payment_origin VARCHAR(100),
     IN input_total_amount DECIMAL(10,2)
 )
 
@@ -28,9 +29,10 @@ BEGIN
                     product_condition,
                     bid_amount,
                     transaction_fee,
-                     fee_structure_id,
+                    fee_structure_id,
                     total_bid_amount,
                     bid_status,
+                    payment_origin,
                     created_at,
                     updated_at
         )
@@ -51,6 +53,7 @@ BEGIN
                 input_fee_structure_id,
                 input_total_amount,
                 'active',
+                input_payment_origin,
                 CURRENT_TIMESTAMP,
                 CURRENT_TIMESTAMP
                );
@@ -182,6 +185,22 @@ BEGIN
     JOIN sizes ON bids.product_size_id = sizes.size_id
     JOIN products ON bids.product_id = products.product_id
     WHERE user_id = input_user_id AND bid_status = 'active';
+
+end //
+
+DROP PROCEDURE IF EXISTS retrieveBidById;
+
+CREATE PROCEDURE retrieveBidById(
+    IN input_bid_id CHAR(36)
+)
+
+BEGIN
+
+    SELECT *
+    FROM bids
+    JOIN sizes ON bids.product_size_id = sizes.size_id
+    JOIN products ON bids.product_id = products.product_id
+    WHERE bid_id = input_bid_id;
 
 end //
 

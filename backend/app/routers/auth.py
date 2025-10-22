@@ -51,7 +51,7 @@ async def register(registration_credentials: RegisterCredentials, session: Async
     if not user:
         hashed_password = get_password_hash(user_provided_unhashed_password)
 
-        statement = text("CALL createUser(:input_email, :input_hashed_password, :input_role);")
+        statement = text("CALL createNewUser(:input_email, :input_hashed_password, :input_role);")
         result = await session.execute(statement, {
             "input_email": user_provided_email,
             "input_hashed_password": hashed_password,

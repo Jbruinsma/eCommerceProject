@@ -139,7 +139,6 @@ const isStepValid = computed(() => {
   switch (currentStep.value) {
     case 1: return !!portfolioItemData.brand_id;
     case 2: return !!portfolioItemData.product_id;
-    // MODIFICATION: Removed the check for acquisition_date
     case 3: return !!portfolioItemData.size_id && !!portfolioItemData.item_condition && portfolioItemData.acquisition_price > 0;
     case 4: return true;
     default: return false;

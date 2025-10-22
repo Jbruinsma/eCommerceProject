@@ -9,6 +9,7 @@ from ..pydantic_models.new_bid_info import NewBidInfo
 from ..db import get_session
 
 from ..pydantic_models.error_message import ErrorMessage
+from ..utils.bids import process_bids
 
 router = APIRouter(prefix="/bids", tags=["bids"])
 
@@ -23,6 +24,56 @@ async def get_user_bids(user_uuid: str, session: AsyncSession = Depends(get_sess
     })
     rows = result.mappings().all()
     return list(rows)
+
+@router.get("/{product_id}/all")
+async def get_all_bids(product_id: str, session: AsyncSession = Depends(get_session)):
+    if not product_id:
+        return ErrorMessage(message="Product ID is required", error="MissingProductID")
+
+    statement = text("CALL retrieveAllProductSizes(:input_product_id);")
+    size_result = await session.execute(statement, {"input_product_id": product_id})
+    size_rows = size_result.mappings().all()
+    all_product_sizes = list(size_rows)
+
+    statement = text("CALL getBidsByProductId(:input_product_id);")
+    bids_results = await session.execute(statement, {"input_product_id": product_id})
+    bids_rows = bids_results.mappings().all()
+    processed_bids = process_bids(bids_rows)
+
+    formatted_bids = {}
+    for size_dict in all_product_sizes:
+        size = size_dict["size_value"]
+        size_id = size_dict["size_id"]
+        formatted_bids[size] = {
+            "sizeId": size_id,
+            "bids": {
+                "New": None,
+                "Used": None,
+                "Worn": None
+            }
+        }
+
+    for bid_dict in processed_bids:
+        bid_id = bid_dict["bid_id"]
+
+        size_dict = bid_dict["listing_size"]
+        size = size_dict["size_value"]
+        size_id = size_dict["size_id"]
+
+        condition = bid_dict["product_condition"]
+        formatted_condition = condition.capitalize()
+        status = bid_dict["bid_status"]
+        bid_amount = bid_dict["bid_amount"]
+
+        if status != "active":
+            continue
+
+        formatted_bids[size]["bids"][formatted_condition] = {
+            "bidId": bid_id,
+            "bidAmount": bid_amount,
+        }
+
+    return formatted_bids
 
 @router.get("/{user_uuid}/active")
 async def get_active_bids(user_uuid: str, session: AsyncSession = Depends(get_session)):
@@ -91,7 +142,7 @@ async def create_bid(new_bid_info: NewBidInfo, user_uuid: str, session: AsyncSes
     transaction_fee_id = new_bid_info.transaction_fee_rate_id
     product_condition = new_bid_info.product_condition.lower()
 
-    statement = text("CALL createBid(:input_user_id, :input_product_id, :input_product_size, :input_product_condition, :input_bid_amount, :input_transaction_fee, :input_fee_structure_id, :input_total_amount);")
+    statement = text("CALL createBid(:input_user_id, :input_product_id, :input_product_size, :input_product_condition, :input_bid_amount, :input_transaction_fee, :input_fee_structure_id, :input_payment_origin, :input_total_amount);")
     result = await session.execute(statement, {
         "input_user_id": new_bid_info.user_id,
         "input_product_id": new_bid_info.product_id,
@@ -100,6 +151,7 @@ async def create_bid(new_bid_info: NewBidInfo, user_uuid: str, session: AsyncSes
         "input_bid_amount": bid_amount,
         "input_transaction_fee": transaction_fee,
         "input_fee_structure_id": transaction_fee_id,
+        "input_payment_origin": new_bid_info.payment_origin,
         "input_total_amount": bid_amount + transaction_fee,
     })
 

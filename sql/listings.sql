@@ -114,6 +114,7 @@ CREATE PROCEDURE createListing(
     IN input_size_id INT UNSIGNED,
     IN input_listing_type ENUM('ask', 'bid'),
     IN input_price DECIMAL(10,2),
+    IN input_fee_structure_id INT,
     IN input_condition ENUM('new', 'used', 'worn')
 )
 BEGIN
@@ -125,6 +126,7 @@ BEGIN
                          size_id,
                          listing_type,
                          price,
+                         fee_structure_id,
                          item_condition,
                          status,
                          created_at,
@@ -137,6 +139,7 @@ BEGIN
             input_size_id,
             input_listing_type,
             input_price,
+            input_fee_structure_id,
             input_condition,
             'active',
             CURRENT_TIMESTAMP,
