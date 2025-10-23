@@ -1,7 +1,4 @@
 from fastapi import APIRouter, Depends
-
-from ..pydantic_models.login_credentials import LoginCredentials
-from ..pydantic_models.message import Message
 from ..pydantic_models.error_message import ErrorMessage
 
 from ..db import get_session
@@ -43,7 +40,7 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
         return ErrorMessage(message="Purchase price does not match listing ask price", error="PurchasePriceMismatch")
 
     statement = text("CALL addAddress(:input_user_id, :input_name, :input_address_line1, :input_address_line2, :input_city, :input_state, :input_zip_code, :input_country);")
-    result = await session.execute(statement, {
+    await session.execute(statement, {
         "input_user_id": new_order_summary.buyer_id,
         "input_name": address.name,
         "input_address_line1": address.address_line_1,
@@ -54,7 +51,6 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
         "input_country": address.country,
     })
     await session.commit()
-    address_row = result.mappings().first()
 
     statement = text("CALL newOrder(:input_buyer_id, :input_listing_id, :input_transaction_fee, :input_payment_method)")
     result = await session.execute(statement, {

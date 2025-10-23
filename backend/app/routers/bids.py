@@ -58,7 +58,6 @@ async def get_all_bids(product_id: str, session: AsyncSession = Depends(get_sess
 
         size_dict = bid_dict["listing_size"]
         size = size_dict["size_value"]
-        size_id = size_dict["size_id"]
 
         condition = bid_dict["product_condition"]
         formatted_condition = condition.capitalize()
@@ -121,7 +120,7 @@ async def delete_bid(bid_id: str, user_uuid: str, session: AsyncSession = Depend
         return ErrorMessage(message="Bid ID is required", error="MissingBidID")
 
     statement = text("CALL deleteBid(:input_bid_id);")
-    result = await session.execute(statement, {"input_bid_id": bid_id})
+    await session.execute(statement, {"input_bid_id": bid_id})
     await session.commit()
 
     return Message(

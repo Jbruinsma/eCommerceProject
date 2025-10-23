@@ -60,16 +60,6 @@ async def fulfill_listing(user_uuid: str, sale_info: SaleInfo, session: AsyncSes
         if user_balance - total_bid_amount < 0:
             return ErrorMessage(message="Insufficient funds", error="InsufficientFunds")
 
-    # {
-    #     'input_product_id': 1,
-    #     'input_seller_id': '963987dc-af53-11f0-9011-96302f5b3d1f',
-    #     'input_bid_id': '91de3a28-af5e-11f0-9011-96302f5b3d1f',
-    #     'input_listing_id': None,
-    #     'input_sale_price': 350,
-    #     'input_size_id': 13,
-    #     'input_seller_fee_structure_id': 1
-    # }
-
     statement = text("CALL connectListingToBid(:input_product_id, :input_seller_id, :input_bid_id, :input_listing_id, :input_sale_price, :input_size_id, :input_seller_fee_structure_id);")
     result = await session.execute(statement, {
         "input_product_id": sale_info.product_id,
@@ -92,7 +82,7 @@ async def fulfill_listing(user_uuid: str, sale_info: SaleInfo, session: AsyncSes
     if bid_payment_method == "account_balance":
         buyer_payment_origin = 'account_balance'
         statement = text("CALL updateBalance(:input_uuid, :input_email, :input_balance_adjustment_amount);")
-        result = await session.execute(statement, {
+        await session.execute(statement, {
             "input_uuid": bider_uuid,
             "input_email": None,
             "input_balance_adjustment_amount": -1 * buyer_final_price,
