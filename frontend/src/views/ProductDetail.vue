@@ -12,6 +12,20 @@
 
           <div class="action-box">
             <div class="form-group">
+              <label>Condition</label>
+              <div class="condition-selector">
+                <button
+                  v-for="condition in availableConditions"
+                  :key="condition"
+                  @click="selectedCondition = condition"
+                  :class="['btn-condition', { active: selectedCondition === condition }]"
+                >
+                  {{ condition.charAt(0).toUpperCase() + condition.slice(1) }}
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
               <label for="size-select">Size</label>
               <select id="size-select" v-model="selectedSize">
                 <option v-for="size in availableSizes" :key="size" :value="size">
@@ -22,12 +36,11 @@
 
             <div class="action-buttons">
               <router-link
-                v-if="currentMarketData.lowestAsk"
+                v-if="currentMarketData.lowestAsk && currentMarketData.lowestAsk.price"
                 :to="{
                   name: 'PlaceOrder',
-                  // Ensure listingId from lowestAsk is passed correctly
                   params: { listingId: currentMarketData.lowestAsk.listingId },
-                  query: { size: selectedSize },
+                  query: { size: selectedSize, condition: selectedCondition },
                 }"
                 class="btn btn-buy"
               >
@@ -43,14 +56,17 @@
               <router-link
                 :to="{
                   name: 'PlaceBid',
-                  // The parameter should likely be the product ID, not a listing ID
                   params: { listingId: product.productId },
-                  query: { size: selectedSize },
+                  query: { size: selectedSize, condition: selectedCondition },
                 }"
                 class="btn btn-bid"
               >
                 Place Bid
-                <span class="btn-price">{{ formatCurrency(currentMarketData.highestBid ? currentMarketData.highestBid.amount : null) }}</span>
+                <span class="btn-price">{{
+                    formatCurrency(
+                      currentMarketData.highestBid ? currentMarketData.highestBid.amount : null
+                    )
+                  }}</span>
               </router-link>
             </div>
             <a href="#" class="market-link">View Market Data</a>
@@ -76,7 +92,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { fetchFromAPI } from '@/utils/index.js'
 
@@ -95,10 +111,20 @@ const product = ref({
 const availableSizes = ref([])
 const selectedSize = ref(null)
 
+const availableConditions = ref(['new', 'used', 'worn'])
+const selectedCondition = ref('new')
+
 const marketData = ref({})
 
 const currentMarketData = computed(() => {
-  return marketData.value[selectedSize.value] || { lowestAsk: null, highestBid: null }
+  if (!selectedSize.value || !selectedCondition.value) {
+    return { lowestAsk: null, highestBid: null }
+  }
+  const sizeData = marketData.value[selectedSize.value]
+  if (!sizeData) {
+    return { lowestAsk: null, highestBid: null }
+  }
+  return sizeData[selectedCondition.value] || { lowestAsk: null, highestBid: null }
 })
 
 const formatCurrency = (amount) => {
@@ -109,7 +135,6 @@ const formatCurrency = (amount) => {
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
   const options = { year: 'numeric', month: 'long', day: 'numeric' }
-  // Corrected the function call here
   return new Date(dateString).toLocaleDateString('en-US', options)
 }
 
@@ -117,31 +142,29 @@ onMounted(async () => {
   try {
     const response = await fetchFromAPI(`/search/${productId}`)
 
+    console.log('API Response:', response)
+
     product.value = { ...response, productId: productId }
 
     if (response.sizes && response.sizes.length > 0) {
       const processedMarketData = {}
       const uniqueSizes = new Set()
 
-      response.sizes.forEach(item => {
+      response.sizes.forEach((item) => {
         uniqueSizes.add(item.size)
         if (!processedMarketData[item.size]) {
-          processedMarketData[item.size] = {
-            highestBid: null,
-            lowestAsk: null,
+          processedMarketData[item.size] = {}
+        }
+
+        availableConditions.value.forEach((condition) => {
+          processedMarketData[item.size][condition] = {
+            highestBid: item.highestBid[condition],
+            lowestAsk: item.lowestAskingPrice[condition],
           }
-        }
+        })
+      })
 
-        if (item.highestBid.amount && (!processedMarketData[item.size].highestBid || item.highestBid.amount > processedMarketData[item.size].highestBid.amount)) {
-          processedMarketData[item.size].highestBid = item.highestBid
-        }
-
-        if (item.lowestAskingPrice.price && (!processedMarketData[item.size].lowestAsk || item.lowestAskingPrice.price < processedMarketData[item.size].lowestAsk.price)) {
-          processedMarketData[item.size].lowestAsk = item.lowestAskingPrice
-        }
-      });
-
-      marketData.value = processedMarketData;
+      marketData.value = processedMarketData
 
       const sortedSizes = Array.from(uniqueSizes).sort((a, b) => {
         const numA = parseFloat(a)
@@ -159,11 +182,10 @@ onMounted(async () => {
         selectedSize.value = '10'
       } else if (sortedSizes.includes('M')) {
         selectedSize.value = 'M'
-      } else {
+      } else if (sortedSizes.length > 0) {
         selectedSize.value = sortedSizes[0]
       }
     }
-
   } catch (error) {
     console.error('Error fetching product details:', error)
     product.value.name = 'Product Not Found'
@@ -186,16 +208,20 @@ ul { list-style: none; padding: 0; }
 .action-box { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; margin-bottom: 2.5rem; margin-top: 2rem; padding: 1.5rem; }
 .action-buttons { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; margin-top: 1rem; }
 .btn { align-items: center; border: 1px solid #444; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; font-size: 1rem; font-weight: bold; padding: 0.75rem; text-decoration: none; transition: all 0.3s ease; }
-.btn-buy { background-color: #1a4a32; border-color: #6ef0a3; color: #ffffff; }
-.btn-buy:hover:not(:disabled) { background-color: #256b48; }
-.btn-buy:disabled { cursor: not-allowed; opacity: 0.5; }
 .btn-bid { background-color: #2c2c2c; color: #ffffff; }
 .btn-bid:hover { background-color: #383838; }
+.btn-buy { background-color: #1a4a32; border-color: #6ef0a3; color: #ffffff; }
+.btn-buy:disabled { cursor: not-allowed; opacity: 0.5; }
+.btn-buy:hover:not(:disabled) { background-color: #256b48; }
+.btn-condition { background-color: #2c2c2c; border: 1px solid #444; border-radius: 8px; color: #ffffff; cursor: pointer; flex-grow: 1; font-weight: 600; padding: 0.75rem; transition: background-color 0.2s ease, border-color 0.2s ease; }
+.btn-condition.active { background-color: #4a4a4a; border-color: #888; }
+.btn-condition:hover { background-color: #383838; }
 .btn-price { color: #ccc; font-size: 0.8rem; margin-top: 0.25rem; }
+.condition-selector { display: flex; gap: 0.5rem; }
 .form-group { margin-bottom: 1rem; }
-select { appearance: none; background-color: #2c2c2c; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; border: 1px solid #444; border-radius: 8px; color: #ffffff; font-size: 1rem; padding: 0.75rem 2.5rem 0.75rem 1rem; width: 100%; }
 .market-link { color: #ccc; display: block; font-size: 0.9rem; margin-top: 1.5rem; text-align: center; text-decoration: underline; }
 .product-details li { align-items: center; display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
 .product-details span { color: #aaa; }
+select { appearance: none; background-color: #2c2c2c; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; border: 1px solid #444; border-radius: 8px; color: #ffffff; font-size: 1rem; padding: 0.75rem 2.5rem 0.75rem 1rem; width: 100%; }
 @media (max-width: 900px) { .product-grid { grid-template-columns: 1fr; } }
 </style>

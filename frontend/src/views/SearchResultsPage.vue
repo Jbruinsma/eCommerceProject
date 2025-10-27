@@ -125,16 +125,10 @@ async function searchProducts(searchQuery = null, category = null) {
   try {
     const endpoint = queryString ? `/search/?${queryString}` : '/search/'
 
-    // Fetch the new data structure
     const response = await fetchFromAPI(endpoint)
 
-    // Assign products and filters from the response object
     searchResults.value = response.products || []
     filterOptions.value = response.filters || {}
-
-    // console.log('SEARCH RESULTS: ', searchResults.value)
-    // console.log('FILTER OPTIONS: ', filterOptions.value)
-
   } catch (error) {
     console.error('Error fetching search results:', error)
     searchResults.value = []

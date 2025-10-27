@@ -82,18 +82,21 @@ async def search_by_product_id(product_id: str, session: AsyncSession = Depends(
             CompleteSizeInfo(
                 size=size_dict['size_value'],
                 sizeId=size_dict['size_id'],
-                highestBid=BidInfo(
-                    amount=size_dict['highest_bid'].get('amount'),
-                    bidId=size_dict['highest_bid'].get('bid_id')
-                ),
-                lowestAskingPrice=AskInfo(
-                    price=size_dict['lowest_asking_price'].get('price'),
-                    listingId=size_dict['lowest_asking_price'].get('listing_id')
-                )
+                highestBid={
+                    condition: BidInfo(
+                        amount=bid_data.get('amount'),
+                        bidId=bid_data.get('bid_id')
+                    ) for condition, bid_data in size_dict['highest_bid'].items() if bid_data
+                },
+                lowestAskingPrice={
+                    condition: AskInfo(
+                        price=ask_data.get('price'),
+                        listingId=ask_data.get('listing_id')
+                    ) for condition, ask_data in size_dict['lowest_ask'].items() if ask_data
+                }
             ) for size_dict in make_json_safe(product_dict.sizes)
         ]
     )
-
 def format_filters(product_rows):
     return {
         "brands": set(product_dict.brand_name for product_dict in product_rows),

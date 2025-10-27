@@ -9,5 +9,5 @@ from ..pydantic_models.bid_info import BidInfo
 class CompleteSizeInfo(BaseModel):
     size: str | int
     sizeId: int
-    highestBid: BidInfo
-    lowestAskingPrice: AskInfo
+    highestBid: Dict[str, BidInfo]
+    lowestAskingPrice: Dict[str, AskInfo]

@@ -106,7 +106,32 @@ CREATE PROCEDURE searchProductByProductId(
     IN input_product_id INT UNSIGNED
 )
 BEGIN
-
+    -- CTE to find the highest active bid for each product, size, and condition.
+    -- We use ROW_NUMBER() to handle cases where multiple bids have the same highest amount.
+    WITH HighestBids AS (
+        SELECT
+            b.product_id,
+            b.product_size_id,
+            b.product_condition,
+            b.bid_amount,
+            b.bid_id,
+            ROW_NUMBER() OVER(PARTITION BY b.product_id, b.product_size_id, b.product_condition ORDER BY b.bid_amount DESC) as rn
+        FROM bids b
+        WHERE b.bid_status = 'active'
+    ),
+    -- CTE to find the lowest active listing for each product, size, and condition.
+    LowestAsks AS (
+        SELECT
+            l.product_id,
+            l.size_id,
+            l.item_condition,
+            l.price,
+            l.listing_id,
+            ROW_NUMBER() OVER(PARTITION BY l.product_id, l.size_id, l.item_condition ORDER BY l.price ASC) as rn
+        FROM listings l
+        WHERE l.status = 'active'
+    )
+    -- Main query to select product details and construct the nested JSON for sizes.
     SELECT
         p.product_id,
         p.name,
@@ -116,37 +141,45 @@ BEGIN
         p.retail_price,
         p.release_date,
         p.product_type,
-        JSON_ARRAYAGG(
-            JSON_OBJECT('size_id', s.size_id, 'size_value', s.size_value, 'highest_bid', JSON_OBJECT('amount', bd.bid_amount, 'bid_id', bd.bid_id), 'lowest_asking_price', JSON_OBJECT('price', l.price, 'listing_id', l.listing_id))
+        (
+            -- This subquery constructs the JSON array for all available sizes.
+            SELECT
+                JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'size_id', s.size_id,
+                        'size_value', s.size_value,
+                        'highest_bid', JSON_OBJECT(
+                            'new',  JSON_OBJECT('amount', hb_new.bid_amount, 'bid_id', hb_new.bid_id),
+                            'used', JSON_OBJECT('amount', hb_used.bid_amount, 'bid_id', hb_used.bid_id),
+                            'worn', JSON_OBJECT('amount', hb_worn.bid_amount, 'bid_id', hb_worn.bid_id)
+                        ),
+                        'lowest_ask', JSON_OBJECT(
+                            'new', JSON_OBJECT('price', la_new.price, 'listing_id', la_new.listing_id),
+                            'used', JSON_OBJECT('price', la_used.price, 'listing_id', la_used.listing_id),
+                            'worn', JSON_OBJECT('price', la_worn.price, 'listing_id', la_worn.listing_id)
+                        )
+                    )
+                )
+            FROM products_sizes ps
+            JOIN sizes s ON ps.size_id = s.size_id
+            -- Join against HighestBids CTE for each condition
+            LEFT JOIN HighestBids hb_new ON ps.product_id = hb_new.product_id AND s.size_id = hb_new.product_size_id AND hb_new.product_condition = 'new' AND hb_new.rn = 1
+            LEFT JOIN HighestBids hb_used ON ps.product_id = hb_used.product_id AND s.size_id = hb_used.product_size_id AND hb_used.product_condition = 'used' AND hb_used.rn = 1
+            LEFT JOIN HighestBids hb_worn ON ps.product_id = hb_worn.product_id AND s.size_id = hb_worn.product_size_id AND hb_worn.product_condition = 'worn' AND hb_worn.rn = 1
+            -- Join against LowestAsks CTE for each condition
+            LEFT JOIN LowestAsks la_new ON ps.product_id = la_new.product_id AND s.size_id = la_new.size_id AND la_new.item_condition = 'new' AND la_new.rn = 1
+            LEFT JOIN LowestAsks la_used ON ps.product_id = la_used.product_id AND s.size_id = la_used.size_id AND la_used.item_condition = 'used' AND la_used.rn = 1
+            LEFT JOIN LowestAsks la_worn ON ps.product_id = la_worn.product_id AND s.size_id = la_worn.size_id AND la_worn.item_condition = 'worn' AND la_worn.rn = 1
+            WHERE ps.product_id = p.product_id -- Correlate with the outer query
         ) AS sizes
     FROM
         products p
-        JOIN brands b ON p.brand_id = b.brand_id
-            LEFT JOIN products_sizes ps
-                ON
-                    p.product_id = ps.product_id
-            LEFT JOIN sizes s
-                ON
-                    ps.size_id = s.size_id
-            LEFT JOIN bids bd
-                ON
-                    p.product_id = bd.product_id
-                        AND
-                    bd.bid_status = 'active'
-                        AND
-                    bd.product_size_id = s.size_id
-            LEFT JOIN listings l
-                ON
-                    p.product_id = l.product_id
-                        AND
-                    l.status = 'active'
-                        AND
-                    l.size_id = s.size_id
+    JOIN brands b ON p.brand_id = b.brand_id
     WHERE
         p.product_id = input_product_id
     GROUP BY
         p.product_id, b.brand_name;
 
-end //
+END //
 
 DELIMITER ;
