@@ -3,11 +3,11 @@
     <main class="product-content">
       <div class="product-grid">
         <div class="product-image-container">
-          <img :src="product.image_url" :alt="product.name" class="product-image" />
+          <img :src="product.imageUrl" :alt="product.name" class="product-image" />
         </div>
 
         <div class="product-info-container">
-          <h2 class="brand-name">{{ product.brand_name }}</h2>
+          <h2 class="brand-name">{{ product.brandName }}</h2>
           <h1 class="product-name">{{ product.name }}</h1>
 
           <div class="action-box">
@@ -35,7 +35,7 @@
 
             <div class="action-buttons">
               <router-link
-                v-if="currentMarketData.lowest_ask"
+                v-if="currentMarketData.lowest_ask && currentMarketData.lowest_ask.listingId"
                 :to="{
                   name: 'PlaceOrder',
                   params: { listingId: currentMarketData.lowest_ask.listingId },
@@ -55,13 +55,16 @@
               <router-link
                 :to="{
                   name: 'PlaceBid',
-                  params: { listingId: product.product_id },
-                  query: { size: selectedSize, condition: selectedCondition },
+                  query: {
+                    productId: product.productId,
+                    size: selectedSize,
+                    condition: selectedCondition
+                  },
                 }"
                 class="btn btn-bid"
               >
                 Place Bid
-                <span class="btn-price">{{ formatCurrency(currentMarketData.highest_bid) }}</span>
+                <span class="btn-price">{{ formatCurrency(currentMarketData.highest_bid ? currentMarketData.highest_bid.amount : null) }}</span>
               </router-link>
             </div>
             <a href="#" class="market-link">View Market Data</a>
@@ -71,16 +74,16 @@
             <h3>Product Details</h3>
             <ul>
               <li>
-                <strong>SKU</strong><span>{{ product.sku }}</span>
+                <strong>SKU</strong><span>-</span>
               </li>
               <li>
-                <strong>Colorway</strong><span>{{ product.colorway }}</span>
+                <strong>Colorway</strong><span>-</span>
               </li>
               <li>
-                <strong>Retail Price</strong><span>{{ formatCurrency(product.retail_price) }}</span>
+                <strong>Retail Price</strong><span>{{ formatCurrency(product.retailPrice) }}</span>
               </li>
               <li>
-                <strong>Release Date</strong><span>{{ formatDate(product.release_date) }}</span>
+                <strong>Release Date</strong><span>{{ formatDate(product.releaseDate) }}</span>
               </li>
             </ul>
           </div>
@@ -98,20 +101,18 @@ import { useRoute } from 'vue-router'
 import { fetchFromAPI } from '@/utils/index.js'
 
 const route = useRoute()
-const product_id = route.params.id
+const productId = route.params.id
 
 const product = ref({
-  product_id: product_id,
-  brand_name: '',
+  productId: productId,
+  brandName: '',
   name: 'Loading...',
-  sku: '',
-  colorway: '',
-  retail_price: 0,
-  release_date: '',
-  image_url: 'https://placehold.co/800x600/1a1a1a/ffffff?text=Loading',
+  retailPrice: 0,
+  releaseDate: '',
+  imageUrl: 'https://placehold.co/800x600/1a1a1a/ffffff?text=Loading',
 })
 
-const availableConditions = ref(['New', 'Used', 'Worn'])
+const availableConditions = ref(['New'])
 const selectedCondition = ref('New')
 
 const availableSizes = ref([])
@@ -140,38 +141,49 @@ const formatDate = (dateString) => {
 
 onMounted(async () => {
   try {
-    const response = await fetchFromAPI(`/product/${product_id}`)
-    const { productInfo, sizes, marketData: apiMarketData } = response
+    const productData = await fetchFromAPI(`/search/${productId}`)
+    product.value = productData
 
-    if (productInfo) {
-      product.value = { ...productInfo, product_id: product_id }
-    }
+    if (productData.sizes && productData.sizes.length > 0) {
+      const processedMarketData = {}
+      const uniqueSizes = new Set()
 
-    if (sizes && sizes.length > 0) {
-      const sortedSizes = sizes
-        .map((s) => s.size_value)
-        .sort((a, b) => {
-          const numA = parseFloat(a)
-          const numB = parseFloat(b)
-          if (!isNaN(numA) && !isNaN(numB)) {
-            return numA - numB
+      productData.sizes.forEach((item) => {
+        uniqueSizes.add(item.size)
+
+        if (!processedMarketData[item.size]) {
+          processedMarketData[item.size] = {
+            New: { lowest_ask: null, highest_bid: null },
           }
-          return a.localeCompare(b)
-        })
+        }
 
+        const market = processedMarketData[item.size]['New']
+
+        if (item.highestBid.amount !== null) {
+          if (market.highest_bid === null || item.highestBid.amount > market.highest_bid.amount) {
+            market.highest_bid = item.highestBid
+          }
+        }
+
+        if (item.lowestAskingPrice.price !== null) {
+          if (market.lowest_ask === null || item.lowestAskingPrice.price < market.lowest_ask.price) {
+            market.lowest_ask = item.lowestAskingPrice
+          }
+        }
+      })
+
+      marketData.value = processedMarketData
+
+      const sortedSizes = Array.from(uniqueSizes).sort((a, b) => {
+        const numA = parseFloat(a)
+        const numB = parseFloat(b)
+        return !isNaN(numA) && !isNaN(numB) ? numA - numB : a.localeCompare(b)
+      })
       availableSizes.value = sortedSizes
 
-      if (sortedSizes.includes('10')) {
-        selectedSize.value = '10'
-      } else if (sortedSizes.includes('M')) {
-        selectedSize.value = 'M'
-      } else {
-        selectedSize.value = sortedSizes[0]
+      if (sortedSizes.length > 0) {
+        selectedSize.value = sortedSizes.includes('10') ? '10' : sortedSizes[0]
       }
-    }
-
-    if (apiMarketData) {
-      marketData.value = apiMarketData
     }
 
   } catch (error) {

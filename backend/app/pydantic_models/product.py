@@ -5,6 +5,7 @@ from typing import List
 
 from pydantic import BaseModel
 
+from .complete_size_info import CompleteSizeInfo
 from ..pydantic_models.size_info import SizeInfo
 
 class Product(BaseModel):
@@ -16,4 +17,4 @@ class Product(BaseModel):
     retailPrice: float
     releaseDate: date | None
     productType: str
-    sizes: List[SizeInfo]
+    sizes: List[SizeInfo | CompleteSizeInfo]

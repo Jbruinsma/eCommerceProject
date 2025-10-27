@@ -99,4 +99,54 @@ BEGIN
     END IF;
 
 END //
+
+DROP PROCEDURE IF EXISTS searchProductByProductId;
+
+CREATE PROCEDURE searchProductByProductId(
+    IN input_product_id INT UNSIGNED
+)
+BEGIN
+
+    SELECT
+        p.product_id,
+        p.name,
+        p.brand_id,
+        b.brand_name,
+        p.image_url,
+        p.retail_price,
+        p.release_date,
+        p.product_type,
+        JSON_ARRAYAGG(
+            JSON_OBJECT('size_id', s.size_id, 'size_value', s.size_value, 'highest_bid', JSON_OBJECT('amount', bd.bid_amount, 'bid_id', bd.bid_id), 'lowest_asking_price', JSON_OBJECT('price', l.price, 'listing_id', l.listing_id))
+        ) AS sizes
+    FROM
+        products p
+        JOIN brands b ON p.brand_id = b.brand_id
+            LEFT JOIN products_sizes ps
+                ON
+                    p.product_id = ps.product_id
+            LEFT JOIN sizes s
+                ON
+                    ps.size_id = s.size_id
+            LEFT JOIN bids bd
+                ON
+                    p.product_id = bd.product_id
+                        AND
+                    bd.bid_status = 'active'
+                        AND
+                    bd.product_size_id = s.size_id
+            LEFT JOIN listings l
+                ON
+                    p.product_id = l.product_id
+                        AND
+                    l.status = 'active'
+                        AND
+                    l.size_id = s.size_id
+    WHERE
+        p.product_id = input_product_id
+    GROUP BY
+        p.product_id, b.brand_name;
+
+end //
+
 DELIMITER ;

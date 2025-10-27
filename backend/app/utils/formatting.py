@@ -16,8 +16,6 @@ def make_json_safe(data_input):
     - Converts datetime.date objects to ISO format strings ('YYYY-MM-DD').
     - Converts Decimal objects to floats.
     """
-    # --- FIX IS HERE ---
-    # Check if the input is a string; if so, parse it into a Python list
     if isinstance(data_input, str):
         try:
             product_list = json.loads(data_input)
