@@ -2,7 +2,7 @@
   <nav class="navbar">
     <a class="logo" href="/">NAME</a>
     <ul class="nav-links">
-      <li class="nav-customization"><a href="#">Sneakers</a></li>
+      <li class="nav-customization"><a href="/search?category=sneakers">Sneakers</a></li>
       <li class="nav-customization"><a href="#">Apparel</a></li>
       <li class="nav-customization"><a href="#">Collectibles</a></li>
     </ul>

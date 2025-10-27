@@ -56,6 +56,7 @@ CREATE TABLE products(
     retail_price DECIMAL(10, 2),
     release_date DATE,
     image_url VARCHAR(2083),
+    product_type ENUM('sneakers', 'apparel', 'accessories', 'other'),
 
     FOREIGN KEY (brand_id) REFERENCES brands(brand_id)
 );

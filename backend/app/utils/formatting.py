@@ -6,6 +6,55 @@ def format_size_dict(size_dict_str):
         return json.loads(size_dict_str)
     return size_dict_str
 
+
+def make_json_safe(data_input):
+    """
+    Converts a list of product dictionaries (or a JSON string representing it)
+    into a JSON-serializable format.
+
+    - Parses the 'sizes' JSON string into a list of objects.
+    - Converts datetime.date objects to ISO format strings ('YYYY-MM-DD').
+    - Converts Decimal objects to floats.
+    """
+    # --- FIX IS HERE ---
+    # Check if the input is a string; if so, parse it into a Python list
+    if isinstance(data_input, str):
+        try:
+            product_list = json.loads(data_input)
+        except json.JSONDecodeError:
+            print("Error: Input string is not valid JSON.")
+            return []  # Return an empty list on failure
+    elif isinstance(data_input, list):
+        product_list = data_input
+    else:
+        print("Error: Invalid input type. Expected a list or a JSON string.")
+        return []
+
+    processed_list = []
+    for product in product_list:
+        # Now 'product' is guaranteed to be a dictionary
+        processed_product = product.copy()
+
+        # 1. Parse the 'sizes' string into a list
+        if 'sizes' in processed_product and isinstance(processed_product['sizes'], str):
+            try:
+                processed_product['sizes'] = json.loads(processed_product['sizes'])
+            except json.JSONDecodeError:
+                print(f"Warning: Could not decode sizes for product_id {processed_product.get('product_id')}")
+                processed_product['sizes'] = []
+
+        # 2. Convert datetime.date to string
+        if 'release_date' in processed_product and isinstance(processed_product['release_date'], datetime.date):
+            processed_product['release_date'] = processed_product['release_date'].isoformat()
+
+        # 3. Convert Decimal to float
+        if 'retail_price' in processed_product and isinstance(processed_product['retail_price'], Decimal):
+            processed_product['retail_price'] = float(processed_product['retail_price'])
+
+        processed_list.append(processed_product)
+
+    return processed_list
+
 def format_lowest_ask(lowest_ask_dict):
     formatted_size_dict = format_size_dict(lowest_ask_dict.size_details)
     return {

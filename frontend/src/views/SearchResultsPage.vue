@@ -12,7 +12,7 @@
       <aside class="filters-sidebar">
         <h2>Filters</h2>
 
-        <div class="filter-group">
+        <div v-if="filterOptions.categories && filterOptions.categories.length" class="filter-group">
           <h3>Category</h3>
           <ul class="filter-options">
             <li v-for="category in filterOptions.categories" :key="category">
@@ -21,7 +21,7 @@
           </ul>
         </div>
 
-        <div class="filter-group">
+        <div v-if="filterOptions.brands && filterOptions.brands.length" class="filter-group">
           <h3>Brand</h3>
           <ul class="filter-options">
             <li v-for="brand in filterOptions.brands" :key="brand">
@@ -55,14 +55,14 @@
         <div v-if="searchResults.length > 0" class="product-grid">
           <router-link
             v-for="product in searchResults"
-            :key="product.id"
-            :to="{ name: 'ProductDetail', params: { id: product.id } }"
+            :key="product.productId"
+            :to="{ name: 'ProductDetail', params: { id: product.productId } }"
             class="product-card"
           >
             <img :src="product.imageUrl" :alt="product.name" class="product-image" />
             <h3>{{ product.name }}</h3>
-            <p class="product-brand">{{ product.brand }}</p>
-            <p class="product-price">${{ product.price }}</p>
+            <p class="product-brand">{{ product.brandName }}</p>
+            <p class="product-price">${{ product.retailPrice }}</p>
           </router-link>
         </div>
 
@@ -91,44 +91,54 @@ import { fetchFromAPI } from '@/utils/index.js'
 const searchQuery = ref('')
 const searchResults = ref([])
 
-const filterOptions = ref({
-  categories: ['Sneakers', 'Apparel', 'Accessories'],
-  brands: ['Nike', 'Jordan', 'Adidas', 'New Balance', 'Supreme'],
-})
+const filterOptions = ref({})
 
 const route = useRoute()
 
 onMounted(async () => {
+  const categoryQuery = route.query.category || ''
   const currentSearchQuery = route.query.q || ''
-  searchQuery.value = currentSearchQuery
-  await searchProducts(currentSearchQuery)
+  await searchProducts(currentSearchQuery, categoryQuery)
 })
 
 watch(searchQuery, async (newQuery) => {
+  if (route.query.category) {
+    route.query.category = null
+  }
   await searchProducts(newQuery)
 })
 
-async function searchProducts(searchQuery) {
-  try {
-    const apiData = await fetchFromAPI(
-      `/product/search/general?brand_name=${searchQuery}&product_name=${searchQuery}`
-    )
+async function searchProducts(searchQuery = null, category = null) {
+  const params = new URLSearchParams()
 
-    if (apiData && Array.isArray(apiData)) {
-      searchResults.value = apiData.map((product) => ({
-        id: product.product_id,
-        name: product.name,
-        brand: product.brand_name,
-        price: product.retail_price,
-        imageUrl: product.image_url,
-      }))
-    } else {
-      // Ensure results are cleared if API returns nothing
-      searchResults.value = []
-    }
+  if (searchQuery) {
+    params.append('q', searchQuery)
+  }
+  if (category) {
+    params.append('category', category)
+  }
+
+  const queryString = params.toString()
+
+  console.log('SEARCH QUERY: ', queryString)
+
+  try {
+    const endpoint = queryString ? `/search/?${queryString}` : '/search/'
+
+    // Fetch the new data structure
+    const response = await fetchFromAPI(endpoint)
+
+    // Assign products and filters from the response object
+    searchResults.value = response.products || []
+    filterOptions.value = response.filters || {}
+
+    // console.log('SEARCH RESULTS: ', searchResults.value)
+    // console.log('FILTER OPTIONS: ', filterOptions.value)
+
   } catch (error) {
     console.error('Error fetching search results:', error)
-    searchResults.value = [] // Clear results on error
+    searchResults.value = []
+    filterOptions.value = {}
   }
 }
 </script>
@@ -164,7 +174,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .product-brand { color: #888; font-size: 0.9rem; margin: 0.25rem 0; }
 .product-card { background-color: #1a1a1a; border: 1px solid #2a2a2a; cursor: pointer; display: block; padding: 1.5rem; text-align: left; transition: box-shadow 0.3s ease, transform 0.3s ease; }
 .product-card:hover { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); transform: translateY(-5px); }
-.product-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, 250px); justify-content: center; }
+.product-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, 250px); justify-content: start; }
 .product-image { aspect-ratio: 1 / 1; margin-bottom: 1rem; object-fit: cover; width: 100%; }
 .product-price { font-size: 1.2rem; font-weight: bold; margin-top: 0.5rem; }
 .results-container { flex: 1; }

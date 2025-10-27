@@ -2,13 +2,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db import get_session
+from ..db import get_session
 
-from app.pydantic_models.new_portfolio_item import NewPortfolioItem
+from ..pydantic_models.new_portfolio_item import NewPortfolioItem
 
-from app.pydantic_models.error_message import ErrorMessage
+from ..pydantic_models.error_message import ErrorMessage
 
-from app.pydantic_models.portfolio_item import PortfolioItem
+from ..pydantic_models.portfolio_item import PortfolioItem
 
 router = APIRouter(prefix="/portfolio", tags=["portfolio"])
 
