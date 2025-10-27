@@ -12,19 +12,6 @@
 
           <div class="action-box">
             <div class="form-group">
-              <label>Condition</label>
-              <div class="condition-selector">
-                <button
-                  v-for="condition in availableConditions"
-                  :key="condition"
-                  :class="{ active: selectedCondition === condition }"
-                  @click="selectedCondition = condition"
-                >
-                  {{ condition }}
-                </button>
-              </div>
-            </div>
-            <div class="form-group">
               <label for="size-select">Size</label>
               <select id="size-select" v-model="selectedSize">
                 <option v-for="size in availableSizes" :key="size" :value="size">
@@ -35,16 +22,17 @@
 
             <div class="action-buttons">
               <router-link
-                v-if="currentMarketData.lowest_ask && currentMarketData.lowest_ask.listingId"
+                v-if="currentMarketData.lowestAsk"
                 :to="{
                   name: 'PlaceOrder',
-                  params: { listingId: currentMarketData.lowest_ask.listingId },
-                  query: { size: selectedSize, condition: selectedCondition },
+                  // Ensure listingId from lowestAsk is passed correctly
+                  params: { listingId: currentMarketData.lowestAsk.listingId },
+                  query: { size: selectedSize },
                 }"
                 class="btn btn-buy"
               >
                 Buy Now
-                <span class="btn-price">{{ formatCurrency(currentMarketData.lowest_ask.price) }}</span>
+                <span class="btn-price">{{ formatCurrency(currentMarketData.lowestAsk.price) }}</span>
               </router-link>
 
               <button v-else class="btn btn-buy" disabled>
@@ -55,16 +43,14 @@
               <router-link
                 :to="{
                   name: 'PlaceBid',
-                  query: {
-                    productId: product.productId,
-                    size: selectedSize,
-                    condition: selectedCondition
-                  },
+                  // The parameter should likely be the product ID, not a listing ID
+                  params: { listingId: product.productId },
+                  query: { size: selectedSize },
                 }"
                 class="btn btn-bid"
               >
                 Place Bid
-                <span class="btn-price">{{ formatCurrency(currentMarketData.highest_bid ? currentMarketData.highest_bid.amount : null) }}</span>
+                <span class="btn-price">{{ formatCurrency(currentMarketData.highestBid ? currentMarketData.highestBid.amount : null) }}</span>
               </router-link>
             </div>
             <a href="#" class="market-link">View Market Data</a>
@@ -73,12 +59,6 @@
           <div class="product-details">
             <h3>Product Details</h3>
             <ul>
-              <li>
-                <strong>SKU</strong><span>-</span>
-              </li>
-              <li>
-                <strong>Colorway</strong><span>-</span>
-              </li>
               <li>
                 <strong>Retail Price</strong><span>{{ formatCurrency(product.retailPrice) }}</span>
               </li>
@@ -112,20 +92,13 @@ const product = ref({
   imageUrl: 'https://placehold.co/800x600/1a1a1a/ffffff?text=Loading',
 })
 
-const availableConditions = ref(['New'])
-const selectedCondition = ref('New')
-
 const availableSizes = ref([])
 const selectedSize = ref(null)
 
 const marketData = ref({})
 
 const currentMarketData = computed(() => {
-  const sizeData = marketData.value[selectedSize.value]
-  if (sizeData) {
-    return sizeData[selectedCondition.value] || { lowest_ask: null, highest_bid: null }
-  }
-  return { lowest_ask: null, highest_bid: null }
+  return marketData.value[selectedSize.value] || { lowestAsk: null, highestBid: null }
 })
 
 const formatCurrency = (amount) => {
@@ -136,53 +109,58 @@ const formatCurrency = (amount) => {
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
   const options = { year: 'numeric', month: 'long', day: 'numeric' }
+  // Corrected the function call here
   return new Date(dateString).toLocaleDateString('en-US', options)
 }
 
 onMounted(async () => {
   try {
-    const productData = await fetchFromAPI(`/search/${productId}`)
-    product.value = productData
+    const response = await fetchFromAPI(`/search/${productId}`)
 
-    if (productData.sizes && productData.sizes.length > 0) {
+    product.value = { ...response, productId: productId }
+
+    if (response.sizes && response.sizes.length > 0) {
       const processedMarketData = {}
       const uniqueSizes = new Set()
 
-      productData.sizes.forEach((item) => {
+      response.sizes.forEach(item => {
         uniqueSizes.add(item.size)
-
         if (!processedMarketData[item.size]) {
           processedMarketData[item.size] = {
-            New: { lowest_ask: null, highest_bid: null },
+            highestBid: null,
+            lowestAsk: null,
           }
         }
 
-        const market = processedMarketData[item.size]['New']
-
-        if (item.highestBid.amount !== null) {
-          if (market.highest_bid === null || item.highestBid.amount > market.highest_bid.amount) {
-            market.highest_bid = item.highestBid
-          }
+        if (item.highestBid.amount && (!processedMarketData[item.size].highestBid || item.highestBid.amount > processedMarketData[item.size].highestBid.amount)) {
+          processedMarketData[item.size].highestBid = item.highestBid
         }
 
-        if (item.lowestAskingPrice.price !== null) {
-          if (market.lowest_ask === null || item.lowestAskingPrice.price < market.lowest_ask.price) {
-            market.lowest_ask = item.lowestAskingPrice
-          }
+        if (item.lowestAskingPrice.price && (!processedMarketData[item.size].lowestAsk || item.lowestAskingPrice.price < processedMarketData[item.size].lowestAsk.price)) {
+          processedMarketData[item.size].lowestAsk = item.lowestAskingPrice
         }
-      })
+      });
 
-      marketData.value = processedMarketData
+      marketData.value = processedMarketData;
 
       const sortedSizes = Array.from(uniqueSizes).sort((a, b) => {
         const numA = parseFloat(a)
         const numB = parseFloat(b)
-        return !isNaN(numA) && !isNaN(numB) ? numA - numB : a.localeCompare(b)
+        if (!isNaN(numA) && !isNaN(numB)) {
+          return numA - numB
+        }
+        return a.localeCompare(b)
       })
+
       availableSizes.value = sortedSizes
 
-      if (sortedSizes.length > 0) {
-        selectedSize.value = sortedSizes.includes('10') ? '10' : sortedSizes[0]
+      // Set a default selected size
+      if (sortedSizes.includes('10')) {
+        selectedSize.value = '10'
+      } else if (sortedSizes.includes('M')) {
+        selectedSize.value = 'M'
+      } else {
+        selectedSize.value = sortedSizes[0]
       }
     }
 
@@ -214,10 +192,6 @@ ul { list-style: none; padding: 0; }
 .btn-bid { background-color: #2c2c2c; color: #ffffff; }
 .btn-bid:hover { background-color: #383838; }
 .btn-price { color: #ccc; font-size: 0.8rem; margin-top: 0.25rem; }
-.condition-selector { display: flex; gap: 0.5rem; }
-.condition-selector button { background-color: #2c2c2c; border: 1px solid #444; border-radius: 8px; color: #ccc; cursor: pointer; flex-grow: 1; font-size: 1rem; padding: 0.75rem; transition: all 0.3s ease; }
-.condition-selector button.active { background-color: #ffffff; border-color: #ffffff; color: #121212; }
-.condition-selector button:hover:not(.active) { background-color: #383838; }
 .form-group { margin-bottom: 1rem; }
 select { appearance: none; background-color: #2c2c2c; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; border: 1px solid #444; border-radius: 8px; color: #ffffff; font-size: 1rem; padding: 0.75rem 2.5rem 0.75rem 1rem; width: 100%; }
 .market-link { color: #ccc; display: block; font-size: 0.9rem; margin-top: 1.5rem; text-align: center; text-decoration: underline; }
