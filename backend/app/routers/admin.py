@@ -10,6 +10,8 @@ import re
 import uuid
 
 from ..pydantic_models.modified_balance_info import ModifiedBalanceInfo
+from ..pydantic_models.updated_user import UpdatedUser
+from ..utils.users import update_user
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -124,3 +126,50 @@ async def modify_balance(user_identifier: str, modified_balance_info: ModifiedBa
         "newBalance": updated_balance_row.balance,
         "transaction": dict(new_transaction_row)
     }
+
+@router.get("/users/{user_identifier:path}")
+async def get_user_info(user_identifier: str, session: AsyncSession = Depends(get_session)):
+    if not user_identifier:
+        return ErrorMessage(message="User identifier is required", error="MissingUserIdentifier")
+
+    id_type = identify_identifier(user_identifier)
+    if id_type == "unknown":
+        return ErrorMessage(message="User identifier must be an email or UUID", error="InvalidIdentifier")
+
+    user_uuid = None
+    user_email = None
+
+    if id_type == "uuid":
+        user_uuid = user_identifier
+        statement = text("SELECT email FROM users WHERE uuid = :input_uuid;")
+        result = await session.execute(statement, {"input_uuid": user_identifier})
+        row = result.mappings().first()
+        if not row:
+            return ErrorMessage(message="User not found", error="UserNotFound")
+        user_email = row.email
+    else:
+        user_email = user_identifier
+        statement = text("SELECT uuid FROM users WHERE email = :input_email;")
+        result = await session.execute(statement, {"input_email": user_identifier})
+        row = result.mappings().first()
+        if not row:
+            return ErrorMessage(message="User not found", error="UserNotFound")
+        user_uuid = row.uuid
+
+    statement = text("CALL retrieveCompleteUserProfile(:input_uuid, :input_email);")
+    result = await session.execute(statement, {"input_uuid": user_uuid, "input_email": user_email})
+    row = result.mappings().first()
+
+    if not row:
+        return ErrorMessage(message="User not found", error="UserNotFound")
+    return dict(row)
+
+@router.post("/users/{user_uuid}")
+async def modify_user(user_uuid: str, updated_user_settings : UpdatedUser, session: AsyncSession = Depends(get_session)):
+    if not user_uuid:
+        return ErrorMessage(message="User UUID is required", error="MissingUserUUID")
+
+    if user_uuid != updated_user_settings.uuid:
+        return ErrorMessage(message="User UUID does not match user info UUID", error="UserUUIDMismatch")
+
+    return await update_user(updated_user_settings, session)

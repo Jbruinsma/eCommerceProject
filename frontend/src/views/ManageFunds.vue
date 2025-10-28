@@ -104,7 +104,7 @@
           <p>
             <strong>Action:</strong>
             <span :class="actionText.toLowerCase()"
-              >{{ actionText }} {{ formatCurrency(Math.abs(amountToModify)) }}</span
+            >{{ actionText }} {{ formatCurrency(Math.abs(amountToModify)) }}</span
             >
           </p>
           <p><strong>Reason:</strong> {{ formattedReason }}</p>
@@ -119,161 +119,164 @@
       </div>
     </div>
 
-    <!-- Hidden reference elements to satisfy static CSS usage checks (no visual impact) -->
-    <div aria-hidden="true" style="position: absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);">
-      <span class="add" style="display:none;"></span>
-      <span class="subtract" style="display:none;"></span>
-      <div class="api-message error" style="display:none;"></div>
-      <button class="btn btn-danger" style="display:none;"></button>
-      <span class="balance-positive" style="display:none;"></span>
-      <span class="balance-negative" style="display:none;"></span>
-      <span class="balance-zero" style="display:none;"></span>
+    <div
+      aria-hidden="true"
+      style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)"
+    >
+      <span class="add" style="display: none"></span>
+      <span class="subtract" style="display: none"></span>
+      <div class="api-message error" style="display: none"></div>
+      <button class="btn btn-danger" style="display: none"></button>
+      <span class="balance-positive" style="display: none"></span>
+      <span class="balance-negative" style="display: none"></span>
+      <span class="balance-zero" style="display: none"></span>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue'
 import { fetchFromAPI, postToAPI } from '@/utils/index.js'
+import { authenticateAdmin } from '@/utils/authenticateUser.js'
 
-// --- Reactive State ---
-const searchQuery = ref('');
-const loading = ref(false);
-const message = ref('');
-const messageType = ref('info');
-const user = ref({});
-const amountToModify = ref(''); // Changed to string to better handle input
-const modificationReason = ref('');
-const showModal = ref(false);
-const lastTransaction = ref(null);
+const searchQuery = ref('')
+const loading = ref(false)
+const message = ref('')
+const messageType = ref('info')
+const user = ref({})
+const amountToModify = ref('')
+const modificationReason = ref('')
+const showModal = ref(false)
+const lastTransaction = ref(null)
 
-// --- Methods ---
+onMounted( async() => {
+  await authenticateAdmin();
+})
 
 function formatCurrency(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return '$0.00';
-  const abs = Math.abs(n);
-  const formatted = abs.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return n < 0 ? `-$${formatted}` : `$${formatted}`;
+  const n = Number(value)
+  if (!Number.isFinite(n)) return '$0.00'
+  const abs = Math.abs(n)
+  const formatted = abs.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+  return n < 0 ? `-$${formatted}` : `$${formatted}`
 }
 
-// Computed class for the main displayed balance (colors: negative, zero, positive)
 const balanceClass = computed(() => {
-  const n = Number(user.value.balance);
-  if (!Number.isFinite(n) || n === 0) return 'balance-zero';
-  return n < 0 ? 'balance-negative' : 'balance-positive';
-});
+  const n = Number(user.value.balance)
+  if (!Number.isFinite(n) || n === 0) return 'balance-zero'
+  return n < 0 ? 'balance-negative' : 'balance-positive'
+})
 
-// NEW: Input handler to enforce numeric and decimal rules
 function handleAmountInput(event) {
-  let value = event.target.value;
-  // Allow only numbers, one leading minus sign, and one decimal point
-  value = value.replace(/[^-?\d.]/g, '');
-  // Ensure minus sign is only at the start
-  value = value.replace(/(\..*)\./g, '$1').replace(/(?!^)-/g, '');
-  // Limit to two decimal places
-  const parts = value.split('.');
+  let value = event.target.value
+  value = value.replace(/[^-?\d.]/g, '')
+  value = value.replace(/(\..*)\./g, '$1').replace(/(?!^)-/g, '')
+  const parts = value.split('.')
   if (parts[1] && parts[1].length > 2) {
-    parts[1] = parts[1].substring(0, 2);
-    value = parts.join('.');
+    parts[1] = parts[1].substring(0, 2)
+    value = parts.join('.')
   }
-  amountToModify.value = value;
+  amountToModify.value = value
 }
-
 
 async function searchUser() {
   if (!searchQuery.value) {
-    message.value = 'Please enter a User ID or Email.';
-    messageType.value = 'error';
-    return;
+    message.value = 'Please enter a User ID or Email.'
+    messageType.value = 'error'
+    return
   }
-  loading.value = true;
-  user.value = {};
-  message.value = '';
-  lastTransaction.value = null;
+  loading.value = true
+  user.value = {}
+  message.value = ''
+  lastTransaction.value = null
 
   try {
-    const searchResponse = await fetchFromAPI(`/admin/${searchQuery.value}/balance`);
+    const searchResponse = await fetchFromAPI(`/admin/${searchQuery.value}/balance`)
     if (searchResponse && searchResponse.uuid) {
       user.value = {
         id: searchResponse.uuid,
-        name: searchResponse.first_name + (searchResponse.last_name ? ' ' + searchResponse.last_name : ''),
+        name:
+          searchResponse.first_name +
+          (searchResponse.last_name ? ' ' + searchResponse.last_name : ''),
         email: searchResponse.email,
         balance: searchResponse.balance,
-      };
+      }
     } else {
-      message.value = 'User not found.';
-      messageType.value = 'error';
+      message.value = 'User not found.'
+      messageType.value = 'error'
     }
   } catch (err) {
-    console.error('Error searching user:', err);
-    message.value = 'An error occurred while searching for the user.';
-    messageType.value = 'error';
+    console.error('Error searching user:', err)
+    message.value = 'An error occurred while searching for the user.'
+    messageType.value = 'error'
   }
-  loading.value = false;
-  searchQuery.value = '';
+  loading.value = false
+  searchQuery.value = ''
 }
 
 function openConfirmationModal() {
-  const amount = parseFloat(amountToModify.value);
+  const amount = parseFloat(amountToModify.value)
   if (isNaN(amount) || amount === 0) {
-    message.value = 'Please enter a valid, non-zero amount to modify.';
-    messageType.value = 'error';
-    return;
+    message.value = 'Please enter a valid, non-zero amount to modify.'
+    messageType.value = 'error'
+    return
   }
   if (!modificationReason.value) {
-    message.value = 'Please select a reason for the modification.';
-    messageType.value = 'error';
-    return;
+    message.value = 'Please select a reason for the modification.'
+    messageType.value = 'error'
+    return
   }
-  showModal.value = true;
+  showModal.value = true
 }
 
 function closeConfirmationModal() {
-  showModal.value = false;
+  showModal.value = false
 }
 
 async function confirmAndUpdateBalance() {
-  loading.value = true;
-  closeConfirmationModal();
+  loading.value = true
+  closeConfirmationModal()
 
-  const changeAmount = parseFloat(amountToModify.value);
+  const changeAmount = parseFloat(amountToModify.value)
 
   try {
     const modificationResponse = await postToAPI(`/admin/${user.value.id}/balance`, {
       uuid: user.value.id,
       change: changeAmount,
-      reason: modificationReason.value
-    });
+      reason: modificationReason.value,
+    })
 
     if (modificationResponse && typeof modificationResponse.newBalance !== 'undefined') {
-      user.value.balance = modificationResponse.newBalance;
-      lastTransaction.value = modificationResponse.transaction || null;
-      message.value = `Successfully updated ${user.value.name}'s balance.`;
-      messageType.value = 'success';
+      user.value.balance = modificationResponse.newBalance
+      lastTransaction.value = modificationResponse.transaction || null
+      message.value = `Successfully updated ${user.value.name}'s balance.`
+      messageType.value = 'success'
     }
   } catch (err) {
-    console.error('Error updating balance:', err);
-    message.value = err?.data?.message || 'Failed to update balance. Please try again.';
-    messageType.value = 'error';
+    console.error('Error updating balance:', err)
+    message.value = err?.data?.message || 'Failed to update balance. Please try again.'
+    messageType.value = 'error'
   }
 
-  amountToModify.value = '';
-  modificationReason.value = '';
-  loading.value = false;
+  amountToModify.value = ''
+  modificationReason.value = ''
+  loading.value = false
 }
 
-const actionText = computed(() => (parseFloat(amountToModify.value) > 0 ? 'Add' : 'Subtract'));
+const actionText = computed(() => (parseFloat(amountToModify.value) > 0 ? 'Add' : 'Subtract'))
 const newBalancePreview = computed(() => {
-  const current = Number(user.value.balance) || 0;
-  const change = parseFloat(amountToModify.value || 0);
-  if (!Number.isFinite(current) || !Number.isFinite(change)) return current;
-  return current + change;
-});
+  const current = Number(user.value.balance) || 0
+  const change = parseFloat(amountToModify.value || 0)
+  if (!Number.isFinite(current) || !Number.isFinite(change)) return current
+  return current + change
+})
 const formattedReason = computed(() => {
-  if (!modificationReason.value) return '';
-  return modificationReason.value.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-});
+  if (!modificationReason.value) return ''
+  return modificationReason.value.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+})
 </script>
 
 <style scoped>
@@ -323,5 +326,8 @@ p { color: #cccccc; line-height: 1.6; }
 .user-details-card { display: flex; flex-wrap: wrap; gap: 2rem; }
 .user-info { flex: 1; min-width: 300px; }
 .user-info p { margin-bottom: 0.75rem; }
-@media (max-width: 640px) { .page-header { padding: 1rem 3%; } }
+@media (max-width: 640px) {
+  .page-header { padding: 1rem 3%; }
+}
 </style>
+
