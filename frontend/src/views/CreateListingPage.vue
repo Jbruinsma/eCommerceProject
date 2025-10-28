@@ -310,6 +310,11 @@ onMounted(async () => {
     return
   }
   try {
+
+    console.log("Brand Products: ", await fetchFromAPI('/search/?brand_id=1'))
+
+    console.log("Product: ", await fetchFromAPI('/search/?product_id=1'))
+
     const sellerFeeInfo = await getSellerFee()
     if (sellerFeeInfo && sellerFeeInfo.id) {
       transactionFeeRate.value = sellerFeeInfo.seller_fee_percentage
@@ -396,6 +401,26 @@ const isStepValid = computed(() => {
   }
 })
 
+async function searchForBrandProducts(brandId) {
+  if (!brandId) {
+    productsResults.value = []
+    return
+  }
+  try {
+    const rawProducts = await fetchFromAPI(`/search/?brand_id=${brandId}`)
+
+    console.log(rawProducts)
+
+  } catch (err) {
+    console.error('Product search failed', err)
+    productsResults.value = []
+  }
+}
+
+async function retrieveProductData(product) {
+  const response = await fetchFromAPI(`/search/?product_id=${product.product_id}`)
+}
+
 async function searchForProducts() {
   if (!listingData.brand_id) {
     productsResults.value = []
@@ -404,9 +429,11 @@ async function searchForProducts() {
   const chosenBrandId = listingData.brand_id
   const query = productSearchQuery.value || ''
   try {
-    const rawProducts = await fetchFromAPI(
-      `/product/search?brand_id=${chosenBrandId}&product_name=${query}`,
-    )
+    const rawProducts = await fetchFromAPI(`/search/?brand_id=${chosenBrandId}`)
+
+    console.log(rawProducts)
+
+
 
     productsResults.value = (rawProducts || []).map((product) => {
       let sizesArray = []

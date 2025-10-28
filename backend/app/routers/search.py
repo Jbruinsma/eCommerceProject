@@ -97,6 +97,7 @@ async def search_by_product_id(product_id: str, session: AsyncSession = Depends(
             ) for size_dict in make_json_safe(product_dict.sizes)
         ]
     )
+
 def format_filters(product_rows):
     return {
         "brands": set(product_dict.brand_name for product_dict in product_rows),
