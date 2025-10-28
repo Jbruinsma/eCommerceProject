@@ -62,7 +62,7 @@
             <img :src="product.imageUrl" :alt="product.name" class="product-image" />
             <h3>{{ product.name }}</h3>
             <p class="product-brand">{{ product.brandName }}</p>
-            <p class="product-price">${{ product.retailPrice }}</p>
+            <p class="product-price">{{ formatCurrency(product.lowestAskingPrice) }}</p>
           </router-link>
         </div>
 
@@ -90,9 +90,7 @@ import { fetchFromAPI } from '@/utils/index.js'
 
 const searchQuery = ref('')
 const searchResults = ref([])
-
 const filterOptions = ref({})
-
 const route = useRoute()
 
 onMounted(async () => {
@@ -120,11 +118,8 @@ async function searchProducts(searchQuery = null, category = null) {
 
   const queryString = params.toString()
 
-  console.log('SEARCH QUERY: ', queryString)
-
   try {
     const endpoint = queryString ? `/search/?${queryString}` : '/search/'
-
     const response = await fetchFromAPI(endpoint)
 
     searchResults.value = response.products || []
@@ -135,14 +130,19 @@ async function searchProducts(searchQuery = null, category = null) {
     filterOptions.value = {}
   }
 }
+
+// NEW: Helper function to format the price
+const formatCurrency = (amount) => {
+  if (typeof amount !== 'number') return '---'
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+}
 </script>
 
 <style scoped>
 a { color: #ffffff; text-decoration: none; }
-h1, h2, h3 { font-family: Spectral, sans-serif; font-weight: 600; }
-h1 { font-size: 2.8rem; margin-bottom: 2rem; text-align: center; }
-h2 { border-bottom: 1px solid #333; font-size: 1.8rem; margin-bottom: 1.5rem; padding-bottom: 1rem; }
-h3 { font-size: 1.1rem; margin-bottom: 1rem; }
+h1 { font-family: Spectral, sans-serif; font-size: 2.8rem; font-weight: 600; margin-bottom: 2rem; text-align: center; }
+h2 { border-bottom: 1px solid #333; font-family: Spectral, sans-serif; font-size: 1.8rem; font-weight: 600; margin-bottom: 1.5rem; padding-bottom: 1rem; }
+h3 { font-family: Spectral, sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
 p { color: #cccccc; line-height: 1.6; }
 ul { list-style: none; margin: 0; padding: 0; }
 .apply-filters-btn { background-color: #ffffff; border: 1px solid #ffffff; border-radius: 6px; color: #121212; cursor: pointer; font-size: 1rem; font-weight: bold; padding: 0.75rem 1rem; text-align: center; transition: background-color 0.3s, color 0.3s; width: 100%; }

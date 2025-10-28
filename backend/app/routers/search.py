@@ -44,6 +44,7 @@ async def search(
                     retailPrice= product_dict.retail_price,
                     releaseDate= product_dict.release_date,
                     productType= product_dict.product_type,
+                    lowestAskingPrice= product_dict.lowest_asking_price,
                     sizes= [
                         SizeInfo(
                             size= size_dict['size_value'],
@@ -78,6 +79,7 @@ async def search_by_product_id(product_id: str, session: AsyncSession = Depends(
         retailPrice=product_dict.retail_price,
         releaseDate=product_dict.release_date,
         productType=product_dict.product_type,
+        lowestAskingPrice=product_dict.lowest_asking_price,
         sizes=[
             CompleteSizeInfo(
                 size=size_dict['size_value'],
@@ -91,7 +93,7 @@ async def search_by_product_id(product_id: str, session: AsyncSession = Depends(
                 lowestAskingPrice={
                     condition: AskInfo(
                         price=ask_data.get('price'),
-                        listingId=ask_data.get('listing_id')
+                        listingId= str(ask_data.get('listing_id'))
                     ) for condition, ask_data in size_dict['lowest_ask'].items() if ask_data
                 }
             ) for size_dict in make_json_safe(product_dict.sizes)

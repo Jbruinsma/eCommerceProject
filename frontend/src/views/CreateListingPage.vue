@@ -6,22 +6,10 @@
           <div class="spinner"></div>
           <p>Submitting your listing...</p>
         </div>
-
         <div v-else-if="submissionResult" class="submission-result-screen">
           <div v-if="submissionResult.success">
-            <svg
-              class="result-icon success"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-              />
+            <svg class="result-icon success" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
             </svg>
             <h2 class="listing-created-header">
               {{ submissionResult.type === 'sale' ? 'Item Sold!' : 'Listing Created!' }}
@@ -34,7 +22,7 @@
               }}
             </p>
             <div class="result-summary">
-              <p><strong>Item:</strong> {{ selectedProduct.name }}</p>
+              <p><strong>Item:</strong> {{ selectedProductInfo.name }}</p>
               <p><strong>Size:</strong> {{ selectedSizeValue }}</p>
               <p v-if="submissionResult.type === 'ask'">
                 <strong>Asking Price:</strong> {{ formatCurrency(submissionResult.data.price) }}
@@ -54,19 +42,8 @@
             </button>
           </div>
           <div v-else>
-            <svg
-              class="result-icon error"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
-              />
+            <svg class="result-icon error" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/>
             </svg>
             <h2>Something Went Wrong</h2>
             <p>
@@ -86,7 +63,6 @@
             <h2>Create a Listing</h2>
             <p>Step {{ currentStep }} of 5: {{ stepTitle }}</p>
           </div>
-
           <div v-if="currentStep === 1" class="step-content">
             <div class="selection-grid">
               <button
@@ -101,7 +77,6 @@
               </button>
             </div>
           </div>
-
           <div v-if="currentStep === 2" class="step-content">
             <input
               type="text"
@@ -129,7 +104,6 @@
               </button>
             </div>
           </div>
-
           <div v-if="currentStep === 3" class="step-content">
             <input
               type="text"
@@ -147,12 +121,12 @@
               <div
                 v-else
                 v-for="product in filteredProducts"
-                :key="product.product_id"
+                :key="product.productId"
                 class="product-item"
-                :class="{ selected: listingData.product_id === product.product_id }"
+                :class="{ selected: listingData.product_id === product.productId }"
                 @click="selectProduct(product)"
               >
-                <img :src="product.image_url" :alt="product.name" />
+                <img :src="product.imageUrl" :alt="product.name" />
                 <span>{{ product.name }}</span>
               </div>
             </div>
@@ -178,27 +152,12 @@
               <div v-if="availableSizesForListing.length > 0" class="radio-group size-group">
                 <button
                   v-for="size in availableSizesForListing"
-                  :key="size.size_id"
+                  :key="size.sizeId"
                   class="radio-btn"
-                  :class="{
-                    selected: listingData.size_id === size.size_id,
-                    'size-bid-btn': listingData.listing_type === 'sale',
-                  }"
-                  @click="listingData.size_id = size.size_id"
+                  :class="{ selected: listingData.size_id === size.sizeId }"
+                  @click="listingData.size_id = size.sizeId"
                 >
-                  <span class="size-value">{{ size.size_value }}</span>
-                  <span
-                    v-if="listingData.listing_type === 'sale'"
-                    class="highest-bid-value"
-                  >
-                    {{
-                      formatCurrency(
-                        activeBidsData[
-                          `${listingData.product_id}-${size.size_id}-${listingData.item_condition}`
-                          ]?.highest_bid,
-                      )
-                    }}
-                  </span>
+                  <span class="size-value">{{ size.size }}</span>
                 </button>
               </div>
               <div v-else-if="listingData.listing_type === 'sale'" class="no-results">
@@ -207,6 +166,23 @@
                     listingData.item_condition
                   }}" condition. Please go back and create an "Ask" to list this item.
                 </p>
+              </div>
+
+              <div
+                v-if="listingData.size_id && detailedProductData"
+                class="market-data-panel"
+              >
+                <h4>Market for Size {{ selectedSizeValue }} ({{listingData.item_condition}})</h4>
+                <div class="market-data-content">
+                  <div class="data-point">
+                    <span class="data-label">Highest Bid</span>
+                    <span class="data-value bid">{{ formatCurrency(highestBid) }}</span>
+                  </div>
+                  <div v-if="listingData.listing_type === 'ask'" class="data-point">
+                    <span class="data-label">Lowest Ask</span>
+                    <span class="data-value ask">{{ formatCurrency(lowestAsk) }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -221,7 +197,9 @@
                 placeholder="$0.00"
                 class="price-input"
               />
-              <p class="input-note">Minimum asking price is {{ formatCurrency(MINIMUM_PRICE) }}</p>
+              <p class="input-note">
+                Minimum asking price is {{ formatCurrency(minimumAskPrice) }}
+              </p>
             </div>
             <div v-else class="form-group locked-price">
               <label>Sale Price (Locked to Highest Bid)</label>
@@ -236,9 +214,9 @@
                 <span>Your Payout</span> <span>{{ formatCurrency(sellerPayout) }}</span>
               </div>
             </div>
-            <div class="listing-review">
+            <div class="listing-review" v-if="selectedProductInfo">
               <h4>Review Your Listing</h4>
-              <p><strong>Item:</strong> {{ selectedProduct.name }}</p>
+              <p><strong>Item:</strong> {{ selectedProductInfo.name }}</p>
               <p>
                 <strong>Size:</strong> {{ selectedSizeValue }} | <strong>Condition:</strong>
                 {{ listingData.item_condition }}
@@ -246,13 +224,12 @@
               <p><strong>Listing Type:</strong> {{ listingData.listing_type }}</p>
               <div class="market-context">
                 <p>
-                  <strong>Retail Price:</strong> {{ formatCurrency(selectedProduct.retail_price) }}
+                  <strong>Retail Price:</strong> {{ formatCurrency(selectedProductInfo.retailPrice) }}
                 </p>
                 <p><strong>Highest Bid:</strong> {{ formatCurrency(highestBid) }}</p>
               </div>
             </div>
           </div>
-
           <div class="wizard-footer">
             <button v-if="currentStep > 1" @click="prevStep" class="btn btn-secondary">Back</button>
             <button
@@ -302,7 +279,17 @@ const brands = ref([])
 const authStore = useAuthStore()
 const isLoading = ref(false)
 const submissionResult = ref(null)
-const activeBidsData = ref({})
+
+const productSearchQuery = ref('')
+const brandSearchQuery = ref('')
+const productsResults = ref([])
+const detailedProductData = ref(null)
+
+const listingTypes = [
+  { value: 'ask', label: 'Ask', description: 'Set a specific price for your item.' },
+  { value: 'sale', label: 'Sale', description: 'Sell immediately to the highest bidder.' },
+]
+const conditions = ['new', 'used', 'worn']
 
 onMounted(async () => {
   if (!authStore.isLoggedIn) {
@@ -310,32 +297,17 @@ onMounted(async () => {
     return
   }
   try {
-
-    console.log("Brand Products: ", await fetchFromAPI('/search/?brand_id=1'))
-
-    console.log("Product: ", await fetchFromAPI('/search/?product_id=1'))
-
     const sellerFeeInfo = await getSellerFee()
     if (sellerFeeInfo && sellerFeeInfo.id) {
       transactionFeeRate.value = sellerFeeInfo.seller_fee_percentage
       feeId.value = sellerFeeInfo.id
     }
-
     const brandsResponse = await fetchFromAPI('/product/brands')
     brands.value = brandsResponse || []
   } catch (error) {
     console.error('Failed during component setup:', error)
   }
 })
-
-const listingTypes = [
-  { value: 'ask', label: 'Ask', description: 'Set a specific price for your item.' },
-  { value: 'sale', label: 'Sale', description: 'Sell immediately to the highest bidder.' },
-]
-const conditions = ['new', 'used', 'worn']
-const productSearchQuery = ref('')
-const productsResults = ref([])
-const brandSearchQuery = ref('')
 
 const stepTitle = computed(() => {
   return (
@@ -344,42 +316,68 @@ const stepTitle = computed(() => {
       ] || ''
   )
 })
+
 const filteredBrands = computed(() => {
   if (!brandSearchQuery.value) return brands.value
   return brands.value.filter((b) =>
     b.brand_name.toLowerCase().includes(brandSearchQuery.value.toLowerCase()),
   )
 })
+
 const filteredProducts = computed(() =>
   productsResults.value.filter((p) =>
     p.name.toLowerCase().includes(productSearchQuery.value.toLowerCase()),
   ),
 )
-const selectedProduct = computed(() =>
-  productsResults.value.find((p) => p.product_id === listingData.product_id),
-)
-const selectedSizeValue = computed(
-  () => selectedProduct.value?.sizes.find((s) => s.size_id === listingData.size_id)?.size_value,
-)
+
+const selectedProductInfo = computed(() => {
+  return detailedProductData.value || productsResults.value.find(p => p.productId === listingData.product_id)
+});
+
+const selectedSizeValue = computed(() => {
+  if (!detailedProductData.value) return ''
+  const sizeInfo = detailedProductData.value.sizes.find(s => s.sizeId === listingData.size_id)
+  return sizeInfo ? sizeInfo.size : ''
+})
+
 const feePercentage = computed(() => `${(transactionFeeRate.value * 100).toFixed(1)}%`)
 const transactionFee = computed(() => (listingData.price || 0) * transactionFeeRate.value)
 const sellerPayout = computed(() => (listingData.price || 0) - transactionFee.value)
+
 const highestBid = computed(() => {
-  if (!listingData.product_id || !listingData.size_id || !listingData.item_condition) return 0
-  const key = `${listingData.product_id}-${listingData.size_id}-${listingData.item_condition}`
-  return activeBidsData.value[key]?.highest_bid || 0
+  if (!detailedProductData.value || !listingData.size_id || !listingData.item_condition) return null
+  const sizeInfo = detailedProductData.value.sizes.find(s => s.sizeId === listingData.size_id)
+  return sizeInfo?.highestBid[listingData.item_condition]?.amount
 })
+
+const lowestAsk = computed(() => {
+  if (!detailedProductData.value || !listingData.size_id || !listingData.item_condition) return null
+  const sizeInfo = detailedProductData.value.sizes.find(s => s.sizeId === listingData.size_id)
+  return sizeInfo?.lowestAskingPrice[listingData.item_condition]?.price
+})
+
+// NEW: Dynamic minimum ask price
+const minimumAskPrice = computed(() => {
+  if (listingData.listing_type === 'ask' && highestBid.value > 0) {
+    return highestBid.value + 1.00;
+  }
+  return MINIMUM_PRICE;
+});
+
 const availableSizesForListing = computed(() => {
-  if (!selectedProduct.value || !Array.isArray(selectedProduct.value.sizes)) return []
-  if (listingData.listing_type === 'ask') return selectedProduct.value.sizes
+  if (!detailedProductData.value || !Array.isArray(detailedProductData.value.sizes)) return []
+  if (listingData.listing_type === 'ask') {
+    return detailedProductData.value.sizes
+  }
   if (listingData.listing_type === 'sale') {
-    return selectedProduct.value.sizes.filter((size) => {
-      const key = `${listingData.product_id}-${size.size_id}-${listingData.item_condition}`
-      return activeBidsData.value[key] && activeBidsData.value[key].highest_bid > 0
+    return detailedProductData.value.sizes.filter(size => {
+      const bidInfo = size.highestBid[listingData.item_condition]
+      return bidInfo && bidInfo.amount > 0
     })
   }
   return []
 })
+
 const isStepValid = computed(() => {
   switch (currentStep.value) {
     case 1:
@@ -389,69 +387,53 @@ const isStepValid = computed(() => {
     case 3:
       return !!listingData.product_id
     case 4:
-      return (
-        !!listingData.size_id &&
-        !!listingData.item_condition &&
-        (listingData.listing_type === 'ask' || availableSizesForListing.value.length > 0)
-      )
-    case 5:
-      return listingData.listing_type === 'sale' || listingData.price >= MINIMUM_PRICE
+      return !!listingData.size_id && !!listingData.item_condition
+    case 5: // MODIFIED: Uses new minimumAskPrice
+      return listingData.listing_type === 'sale' || (listingData.price && listingData.price >= minimumAskPrice.value)
     default:
       return false
   }
 })
-
-async function searchForBrandProducts(brandId) {
-  if (!brandId) {
-    productsResults.value = []
-    return
-  }
-  try {
-    const rawProducts = await fetchFromAPI(`/search/?brand_id=${brandId}`)
-
-    console.log(rawProducts)
-
-  } catch (err) {
-    console.error('Product search failed', err)
-    productsResults.value = []
-  }
-}
-
-async function retrieveProductData(product) {
-  const response = await fetchFromAPI(`/search/?product_id=${product.product_id}`)
-}
 
 async function searchForProducts() {
   if (!listingData.brand_id) {
     productsResults.value = []
     return
   }
-  const chosenBrandId = listingData.brand_id
-  const query = productSearchQuery.value || ''
   try {
-    const rawProducts = await fetchFromAPI(`/search/?brand_id=${chosenBrandId}`)
-
-    console.log(rawProducts)
-
-
-
-    productsResults.value = (rawProducts || []).map((product) => {
-      let sizesArray = []
-      if (typeof product.sizes === 'string') {
-        try {
-          sizesArray = JSON.parse(product.sizes)
-        } catch (e) {
-          console.error(`Failed to parse sizes for product ${product.product_id}:`, e)
-          sizesArray = []
-        }
-      }
-      return { ...product, sizes: sizesArray }
-    })
+    const response = await fetchFromAPI(`/search/?brand_id=${listingData.brand_id}`)
+    productsResults.value = response.products || []
   } catch (err) {
-    console.error('Product search failed', err)
+    console.error('Product search failed:', err)
     productsResults.value = []
   }
 }
+
+// NEW: Watcher to format price input
+watch(() => listingData.price, (newValue) => {
+  if (typeof newValue !== 'number') return;
+  const valueStr = String(newValue);
+  const decimalPart = valueStr.split('.')[1];
+  if (decimalPart && decimalPart.length > 2) {
+    setTimeout(() => {
+      listingData.price = parseFloat(newValue.toFixed(2));
+    }, 10);
+  }
+});
+
+watch(
+  () => listingData.brand_id,
+  (newBrandId) => {
+    productSearchQuery.value = ''
+    listingData.product_id = null
+    listingData.size_id = null
+    productsResults.value = []
+    detailedProductData.value = null
+    if (newBrandId) {
+      searchForProducts()
+    }
+  },
+)
 
 watch(
   () => listingData.item_condition,
@@ -459,6 +441,7 @@ watch(
     listingData.size_id = null
   },
 )
+
 watch(
   () => listingData.size_id,
   (newSizeId) => {
@@ -467,65 +450,33 @@ watch(
     }
   },
 )
-watch(productSearchQuery, (newQuery) => {
-  if (newQuery.length >= 2 || newQuery.length === 0) {
-    searchForProducts()
-  }
-})
-watch(
-  () => listingData.brand_id,
-  () => {
-    productSearchQuery.value = ''
-    listingData.product_id = null
-    productsResults.value = []
-    activeBidsData.value = {}
-    searchForProducts()
-  },
-)
 
 function selectListingType(type) {
   listingData.listing_type = type
   listingData.price = null
 }
+
 function selectBrand(brandId) {
   listingData.brand_id = brandId
 }
 
 async function selectProduct(product) {
-  activeBidsData.value = {}
+  listingData.product_id = product.productId
+  detailedProductData.value = null
 
-  if (listingData.listing_type === 'sale') {
-    try {
-      const activeBidsResponse = await fetchFromAPI(`/bids/${product.product_id}/all`)
-      const formattedBids = {}
-
-      for (const sizeValue in activeBidsResponse) {
-        const sizeData = activeBidsResponse[sizeValue]
-        const sizeId = sizeData.sizeId
-
-        for (const condition in sizeData.bids) {
-          const bidInfo = sizeData.bids[condition]
-          if (bidInfo && bidInfo.bidAmount > 0) {
-            const componentCondition = condition.toLowerCase()
-            const key = `${product.product_id}-${sizeId}-${componentCondition}`
-            formattedBids[key] = {
-              highest_bid: bidInfo.bidAmount,
-              bid_id: bidInfo.bidId,
-            }
-          }
-        }
-      }
-      activeBidsData.value = formattedBids
-    } catch (error) {
-      console.error('Failed to fetch active bids:', error)
-      activeBidsData.value = {}
-    }
+  try {
+    const response = await fetchFromAPI(`/search/${product.productId}`)
+    detailedProductData.value = response
+  } catch (error) {
+    console.error(`Failed to fetch detailed data for product ${product.productId}:`, error)
+    detailedProductData.value = null
   }
-  listingData.product_id = product.product_id
 }
+
 function nextStep() {
   if (isStepValid.value) currentStep.value++
 }
+
 function prevStep() {
   if (currentStep.value > 1) currentStep.value--
 }
@@ -547,11 +498,11 @@ async function submitListing() {
     if (listingType === 'ask') {
       response = await postToAPI(`/listings/${authStore.uuid}/create`, payload)
     } else if (listingType === 'sale') {
-      const bidKey = `${listingData.product_id}-${listingData.size_id}-${listingData.item_condition}`
-      const bidData = activeBidsData.value[bidKey]
+      const selectedSize = detailedProductData.value?.sizes.find(s => s.sizeId === listingData.size_id)
+      const bidInfo = selectedSize?.highestBid[listingData.item_condition]
 
-      if (bidData && bidData.bid_id) {
-        payload.target_bid_id = bidData.bid_id
+      if (bidInfo && bidInfo.bidId) {
+        payload.target_bid_id = bidInfo.bidId
       } else {
         throw new Error('Could not find the corresponding bid to sell to.')
       }
@@ -559,10 +510,7 @@ async function submitListing() {
       response = await postToAPI(`/listings/${authStore.uuid}/fulfill`, payload)
     }
 
-    const isAskSuccess = listingType === 'ask' && response && response.listing_id
-    const isSaleSuccess = listingType === 'sale' && response && response.order_id
-
-    if (isAskSuccess || isSaleSuccess) {
+    if ((listingType === 'ask' && response?.listing_id) || (listingType === 'sale' && response?.order_id)) {
       submissionResult.value = { success: true, data: response, type: listingType }
     } else {
       throw new Error('Invalid response from server.')
@@ -579,15 +527,12 @@ async function submitListing() {
 }
 
 function navigateToNext() {
-  if (submissionResult.value?.type === 'sale') {
-    router.push('/my-sales')
-  } else {
-    router.push('/my-listings')
-  }
+  const route = submissionResult.value?.type === 'sale' ? '/my-sales' : '/my-listings';
+  router.push(route);
 }
 
 const formatCurrency = (amount) => {
-  if (typeof amount !== 'number') return '$--.--'
+  if (typeof amount !== 'number') return '---'
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
 }
 </script>
@@ -601,6 +546,11 @@ a { color: #ffffff; text-decoration: none; }
 .btn:disabled { background-color: #333; border-color: #444; color: #888; cursor: not-allowed; }
 .create-content { display: flex; justify-content: center; padding: 4rem 5%; }
 .create-listing-container { color: #ffffff; font-family: Spectral, sans-serif; }
+.data-label { color: #888; display: block; font-size: 0.8rem; margin-bottom: 0.25rem; }
+.data-point { text-align: center; }
+.data-value { font-size: 1.2rem; font-weight: bold; }
+.data-value.ask { color: #f06e6e; }
+.data-value.bid { color: #6ef0a3; }
 .earnings-summary { border-top: 1px solid #333; margin: 1.5rem 0; padding-top: 1.5rem; }
 .form-group { margin-bottom: 1.5rem; }
 .form-group label { display: block; font-weight: bold; margin-bottom: 0.75rem; }
@@ -616,15 +566,18 @@ h2 { font-size: 1.8rem; margin-bottom: 0.5rem; text-align: left; }
 .logo { font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; }
 .market-context { border-top: 1px solid #333; margin-top: 1rem; padding-top: 1rem; }
 .market-context p { margin: 0.5rem 0; }
+.market-data-content { display: flex; gap: 1rem; justify-content: space-around; }
+.market-data-panel { animation: fadeIn 0.3s ease; background-color: #121212; border: 1px solid #2a2a2a; border-radius: 8px; margin-top: 1.5rem; padding: 1rem; text-transform: capitalize; }
+.market-data-panel h4 { color: #aaa; font-size: 1rem; font-weight: normal; margin-bottom: 1rem; margin-top: 0; text-align: center; }
 .negative { color: #f06e6e; }
 .no-results { color: #888; padding: 2rem; text-align: center; }
 .page-header { align-items: center; border-bottom: 1px solid #2a2a2a; display: flex; justify-content: space-between; padding: 1.5rem 5%; }
 .price-display { background-color: #2c2c2c; border: 1px solid #444; border-radius: 8px; font-size: 1.5rem; font-weight: bold; padding: 0.75rem; text-align: center; }
 .price-input { background-color: #2c2c2c; border: 1px solid #444; border-radius: 8px; color: #ffffff; font-size: 1.5rem; font-weight: bold; padding: 0.75rem; width: 100%; }
 .product-item { align-items: center; border: 2px solid transparent; border-radius: 8px; cursor: pointer; display: flex; gap: 1rem; padding: 0.75rem; }
-.product-item:hover { background-color: #2c2c2c; }
 .product-item img { border-radius: 4px; height: 50px; width: 50px; }
 .product-item.selected { border-color: #ffffff; }
+.product-item:hover { background-color: #2c2c2c; }
 .product-results { max-height: 250px; overflow-y: auto; }
 .progress { background-color: #ffffff; height: 100%; transition: width 0.3s ease; }
 .progress-bar { background-color: #2c2c2c; height: 8px; width: 100%; }
@@ -643,7 +596,6 @@ h2 { font-size: 1.8rem; margin-bottom: 0.5rem; text-align: left; }
 .selection-card .card-title.with-logo { margin-top: 0; }
 .selection-card.selected { background-color: #383838; border-color: #ffffff; }
 .selection-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-.size-bid-btn { align-items: center; display: flex; flex-direction: column; gap: 4px; height: auto; line-height: 1.2; padding: 0.75rem 1.25rem; }
 .size-value { font-weight: 600; }
 .spinner { animation: spin 1s linear infinite; border: 4px solid #333; border-radius: 50%; border-top: 4px solid #ffffff; height: 50px; width: 50px; }
 .step-content { min-height: 300px; padding: 1rem 2rem; }
@@ -656,6 +608,6 @@ h2 { font-size: 1.8rem; margin-bottom: 0.5rem; text-align: left; }
 .wizard-footer { align-items: center; background-color: #121212; border-top: 1px solid #2a2a2a; display: flex; justify-content: space-between; padding: 1.5rem 2rem; }
 .wizard-header { padding: 2rem 2rem 1rem; }
 .wizard-header p { color: #888; margin: 0; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
-

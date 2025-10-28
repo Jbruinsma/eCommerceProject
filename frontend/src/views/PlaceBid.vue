@@ -114,6 +114,9 @@
               <p v-if="bidMatchesHighestError" class="error-message">
                 Your bid cannot be the same as the current highest bid.
               </p>
+              <p v-if="bidExceedsLowestAskError" class="error-message">
+                Bid cannot be higher than the lowest ask. To buy now, match the lowest ask price.
+              </p>
               <ul class="fee-breakdown">
                 <li>
                   <span>Your Bid</span>
@@ -272,9 +275,18 @@ const bidMatchesHighestError = computed(() => {
   )
 })
 
+// NEW: Computed property to check if bid is over the lowest ask
+const bidExceedsLowestAskError = computed(() => {
+  return (
+    marketInfo.value.lowestAsk !== null &&
+    bidAmount.value > marketInfo.value.lowestAsk
+  );
+});
+
 const isStepReady = computed(() => {
   if (currentStep.value === 1) {
-    return isBidAmountValid.value && !bidMatchesHighestError.value
+    // MODIFIED: Added new validation check
+    return isBidAmountValid.value && !bidMatchesHighestError.value && !bidExceedsLowestAskError.value
   }
   if (currentStep.value === 2) return !!paymentMethod.value
   return false
@@ -284,6 +296,7 @@ const isBidValid = computed(
   () =>
     isBidAmountValid.value &&
     !bidMatchesHighestError.value &&
+    !bidExceedsLowestAskError.value && // MODIFIED: Added new validation check
     !!paymentMethod.value &&
     selectedSize.value &&
     selectedCondition.value
@@ -413,8 +426,6 @@ async function submitBid() {
 </script>
 
 <style scoped>
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-@media (max-width: 768px) { .bid-grid { grid-template-columns: 1fr; } .product-summary { margin-bottom: 2rem; } }
 h1, h2, h3, h4 { font-family: Spectral, sans-serif; font-weight: 600; }
 h1.page-title { border-bottom: 1px solid #333; font-size: 2.2rem; margin-bottom: 3rem; padding-bottom: 1.5rem; text-align: center; }
 h2 { flex-grow: 1; font-size: 1.8rem; margin: 0; text-align: center; }
@@ -476,4 +487,6 @@ p { color: #cccccc; line-height: 1.6; }
 .spinner { animation: spin 1s linear infinite; border: 4px solid #333; border-radius: 50%; border-top: 4px solid #ffffff; height: 50px; width: 50px; }
 .submission-result-screen { align-items: center; display: flex; flex-direction: column; justify-content: center; min-height: 500px; padding: 2rem; }
 .total-cost { border-top: 1px solid #333; font-size: 1.2rem !important; font-weight: bold; margin-top: 1rem; padding-top: 1rem; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@media (max-width: 768px) { .bid-grid { grid-template-columns: 1fr; } .product-summary { margin-bottom: 2rem; } }
 </style>

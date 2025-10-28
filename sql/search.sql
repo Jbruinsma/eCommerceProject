@@ -50,7 +50,8 @@ BEGIN
             p.product_type,
             JSON_ARRAYAGG(
                 JSON_OBJECT('size_id', s.size_id, 'size_value', s.size_value)
-            ) AS sizes
+            ) AS sizes,
+            (SELECT MIN(price) FROM listings l WHERE l.product_id = p.product_id AND l.status = 'active') AS lowest_asking_price
         FROM
             products p
             JOIN brands b ON p.brand_id = b.brand_id
@@ -78,7 +79,8 @@ BEGIN
             p.product_type,
             JSON_ARRAYAGG(
                 JSON_OBJECT('size_id', s.size_id, 'size_value', s.size_value)
-            ) AS sizes
+            ) AS sizes,
+            (SELECT MIN(price) FROM listings l WHERE l.product_id = p.product_id AND l.status = 'active') AS lowest_asking_price
         FROM
             products p
             JOIN brands b ON p.brand_id = b.brand_id
@@ -171,7 +173,8 @@ BEGIN
             LEFT JOIN LowestAsks la_used ON ps.product_id = la_used.product_id AND s.size_id = la_used.size_id AND la_used.item_condition = 'used' AND la_used.rn = 1
             LEFT JOIN LowestAsks la_worn ON ps.product_id = la_worn.product_id AND s.size_id = la_worn.size_id AND la_worn.item_condition = 'worn' AND la_worn.rn = 1
             WHERE ps.product_id = p.product_id -- Correlate with the outer query
-        ) AS sizes
+        ) AS sizes,
+        (SELECT MIN(price) FROM listings l WHERE l.product_id = p.product_id AND l.status = 'active') AS lowest_asking_price
     FROM
         products p
     JOIN brands b ON p.brand_id = b.brand_id
