@@ -3,8 +3,8 @@
     <a class="logo" href="/">NAME</a>
     <ul class="nav-links">
       <li class="nav-customization"><a href="/search?category=sneakers">Sneakers</a></li>
-      <li class="nav-customization"><a href="#">Apparel</a></li>
-      <li class="nav-customization"><a href="#">Collectibles</a></li>
+      <li class="nav-customization"><a href="/search?category=apparel">Apparel</a></li>
+      <li class="nav-customization"><a href="/search?category=collectibles">Collectibles</a></li>
     </ul>
 
     <div class="nav-icons">

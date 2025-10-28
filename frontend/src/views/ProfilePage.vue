@@ -140,7 +140,7 @@ onMounted(async() => {
 // Logout Function
 async function logout() {
   await authStore.logout();
-  router.push('/login');
+  await router.push('/login');
 }
 </script>
 
