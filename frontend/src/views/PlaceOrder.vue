@@ -8,8 +8,18 @@
 
       <div v-else-if="submissionResult" class="submission-result-screen">
         <div class="success-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+            />
           </svg>
         </div>
         <h2 class="result-title">Purchase Confirmed!</h2>
@@ -17,9 +27,16 @@
 
         <div class="result-summary">
           <ul>
-            <li><span>Order ID</span><span>{{ submissionResult.order_id }}</span></li>
-            <li><span>Date</span><span>{{ formatOrderDate(submissionResult.created_at) }}</span></li>
-            <li class="total"><span>Total Amount</span><span>{{ formatCurrency(submissionResult.total_price) }}</span></li>
+            <li>
+              <span>Order ID</span><span>{{ submissionResult.order_id }}</span>
+            </li>
+            <li>
+              <span>Date</span><span>{{ formatOrderDate(submissionResult.created_at) }}</span>
+            </li>
+            <li class="total">
+              <span>Total Amount</span
+              ><span>{{ formatCurrency(submissionResult.total_price) }}</span>
+            </li>
           </ul>
         </div>
 
@@ -29,12 +46,43 @@
         </div>
       </div>
 
+      <div v-else-if="submissionError" class="submission-result-screen error-screen">
+        <div class="error-icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+            />
+          </svg>
+        </div>
+        <h2 class="result-title">Purchase Failed</h2>
+        <p class="result-subtitle">
+          {{ submissionError.message || 'An unexpected error occurred.' }}
+        </p>
+
+        <div class="result-actions">
+          <router-link to="/" class="btn btn-secondary">Go to Homepage</router-link>
+          <button @click="retryOrder" class="btn btn-primary">Try Again</button>
+        </div>
+      </div>
+
       <template v-else-if="listing">
         <h1 class="page-title">Confirm Your Purchase</h1>
         <div class="order-grid">
           <div class="product-summary-col">
             <div class="product-summary">
-              <img :src="listing.product_image_url" :alt="listing.product_name" class="product-image" />
+              <img
+                :src="listing.product_image_url"
+                :alt="listing.product_name"
+                class="product-image"
+              />
               <div class="product-info">
                 <h3 class="product-name">{{ listing.product_name }}</h3>
                 <p class="product-details">Size: {{ listing.size_value }}</p>
@@ -48,54 +96,128 @@
               <div class="section-header">
                 <h2>Shipping Address</h2>
                 <button @click="nextStep" :disabled="!isStepReady" class="btn-nav">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"
+                    />
                   </svg>
                 </button>
               </div>
               <div class="form-grid">
-                <div class="form-group full-width"><label for="name">Full Name</label><input type="text" id="name" v-model="shippingInfo.name" /></div>
-                <div class="form-group full-width"><label for="address_line_1">Address Line 1</label><input type="text" id="address_line_1" v-model="shippingInfo.address_line_1" /></div>
-                <div class="form-group full-width"><label for="address_line_2">Address Line 2 (Optional)</label><input type="text" id="address_line_2" v-model="shippingInfo.address_line_2" /></div>
-                <div class="form-group"><label for="city">City</label><input type="text" id="city" v-model="shippingInfo.city" /></div>
-                <div class="form-group"><label for="state">State</label><input type="text" id="state" v-model="shippingInfo.state" /></div>
-                <div class="form-group"><label for="zip_code">Zip Code</label><input type="text" id="zip_code" v-model="shippingInfo.zip_code" /></div>
-                <div class="form-group"><label for="country">Country</label><input type="text" id="country" v-model="shippingInfo.country" /></div>
+                <div class="form-group full-width">
+                  <label for="name">Full Name</label
+                  ><input type="text" id="name" v-model="shippingInfo.name" />
+                </div>
+                <div class="form-group full-width">
+                  <label for="address_line_1">Address Line 1</label
+                  ><input type="text" id="address_line_1" v-model="shippingInfo.address_line_1" />
+                </div>
+                <div class="form-group full-width">
+                  <label for="address_line_2">Address Line 2 (Optional)</label
+                  ><input type="text" id="address_line_2" v-model="shippingInfo.address_line_2" />
+                </div>
+                <div class="form-group">
+                  <label for="city">City</label
+                  ><input type="text" id="city" v-model="shippingInfo.city" />
+                </div>
+                <div class="form-group">
+                  <label for="state">State</label
+                  ><input type="text" id="state" v-model="shippingInfo.state" />
+                </div>
+                <div class="form-group">
+                  <label for="zip_code">Zip Code</label
+                  ><input type="text" id="zip_code" v-model="shippingInfo.zip_code" />
+                </div>
+                <div class="form-group">
+                  <label for="country">Country</label
+                  ><input type="text" id="country" v-model="shippingInfo.country" />
+                </div>
               </div>
             </div>
 
             <div v-if="currentStep === 2" class="info-section payment-section">
               <div class="section-header">
                 <button @click="prevStep" class="btn-nav">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18"
+                    />
                   </svg>
                 </button>
                 <h2>Payment Method</h2>
                 <button @click="nextStep" :disabled="!isStepReady" class="btn-nav">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"
+                    />
                   </svg>
                 </button>
               </div>
               <div class="payment-options">
-                <div class="payment-option" :class="{ selected: paymentMethod === 'account_balance', disabled: !canUseBalance }" @click="selectPaymentMethod('account_balance')">
+                <div
+                  class="payment-option"
+                  :class="{
+                    selected: paymentMethod === 'account_balance',
+                    disabled: !canUseBalance,
+                  }"
+                  @click="selectPaymentMethod('account_balance')"
+                >
                   <span class="option-name">Account Balance</span>
                   <span class="option-detail">{{ formatCurrency(userBalance) }}</span>
                 </div>
-                <div class="payment-option" :class="{ selected: paymentMethod === 'credit_card' }" @click="selectPaymentMethod('credit_card')">
+                <div
+                  class="payment-option"
+                  :class="{ selected: paymentMethod === 'credit_card' }"
+                  @click="selectPaymentMethod('credit_card')"
+                >
                   <span class="option-name">Credit Card</span>
                   <span class="option-detail">**** 1234</span>
                 </div>
               </div>
-              <p v-if="!canUseBalance" class="balance-insufficient">Insufficient balance for this purchase.</p>
+              <p v-if="!canUseBalance" class="balance-insufficient">
+                Insufficient balance for this purchase.
+              </p>
             </div>
 
             <div v-if="currentStep === 3" class="info-section order-details">
               <div class="section-header">
                 <button @click="prevStep" class="btn-nav">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18"
+                    />
                   </svg>
                 </button>
                 <h2>Order Summary</h2>
@@ -105,20 +227,37 @@
                 <h4>Shipping To</h4>
                 <p class="address-line">{{ shippingInfo.name }}</p>
                 <p class="address-line">{{ shippingInfo.address_line_1 }}</p>
-                <p v-if="shippingInfo.address_line_2" class="address-line">{{ shippingInfo.address_line_2 }}</p>
-                <p class="address-line">{{ shippingInfo.city }}, {{ shippingInfo.state }} {{ shippingInfo.zip_code }}</p>
+                <p v-if="shippingInfo.address_line_2" class="address-line">
+                  {{ shippingInfo.address_line_2 }}
+                </p>
+                <p class="address-line">
+                  {{ shippingInfo.city }}, {{ shippingInfo.state }} {{ shippingInfo.zip_code }}
+                </p>
                 <p class="address-line">{{ shippingInfo.country }}</p>
               </div>
               <ul class="order-summary-list">
                 <li class="payment-method-summary">
                   <span>Payment Method</span>
-                  <span>{{ paymentMethod === 'account_balance' ? 'Account Balance' : 'Credit Card' }}</span>
+                  <span>{{
+                      paymentMethod === 'account_balance' ? 'Account Balance' : 'Credit Card'
+                    }}</span>
                 </li>
-                <li><span>Item Price</span><span>{{ formatCurrency(purchasePrice) }}</span></li>
-                <li><span>Transaction Fee ({{ (transactionFeeRate * 100).toFixed(1) }}%)</span><span>+ {{ formatCurrency(transactionFee) }}</span></li>
-                <li class="total-cost"><span>Total</span><span>{{ formatCurrency(totalCost) }}</span></li>
+                <li>
+                  <span>Item Price</span><span>{{ formatCurrency(purchasePrice) }}</span>
+                </li>
+                <li>
+                  <span>Transaction Fee ({{ (transactionFeeRate * 100).toFixed(1) }}%)</span
+                  ><span>+ {{ formatCurrency(transactionFee) }}</span>
+                </li>
+                <li class="total-cost">
+                  <span>Total</span><span>{{ formatCurrency(totalCost) }}</span>
+                </li>
               </ul>
-              <button @click="submitOrder" :disabled="!isReadyToSubmit" class="btn-confirm-purchase">
+              <button
+                @click="submitOrder"
+                :disabled="!isReadyToSubmit"
+                class="btn-confirm-purchase"
+              >
                 Confirm Purchase
               </button>
               <p class="disclaimer">By confirming, you agree to purchase this item.</p>
@@ -131,23 +270,24 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { fetchFromAPI, postToAPI } from '@/utils/index.js';
-import { useAuthStore } from '@/stores/authStore.js';
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { fetchFromAPI, postToAPI } from '@/utils/index.js'
+import { useAuthStore } from '@/stores/authStore.js'
 
-const route = useRoute();
-const router = useRouter();
-const authStore = useAuthStore();
-const listingId = route.params.listingId;
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
+const listingId = route.params.listingId
 
-const currentStep = ref(1);
-const totalSteps = 3;
+const currentStep = ref(1)
+const totalSteps = 3
 
-const listing = ref(null);
-const isLoading = ref(true);
-const loadingMessage = ref('Loading order details...');
-const submissionResult = ref(null);
+const listing = ref(null)
+const isLoading = ref(true)
+const loadingMessage = ref('Loading order details...')
+const submissionResult = ref(null)
+const submissionError = ref(null)
 
 const shippingInfo = ref({
   name: '',
@@ -157,110 +297,118 @@ const shippingInfo = ref({
   state: '',
   zip_code: '',
   country: 'United States',
-});
+})
 
-const userBalance = ref(0);
-const paymentMethod = ref('credit_card');
+const userBalance = ref(0)
+const paymentMethod = ref('credit_card')
 
-const transactionFeeRate = 0.05;
+const transactionFeeRate = ref(0.01)
+const transactionFeeStructureId = ref(1)
 
-const purchasePrice = computed(() => listing.value?.price || null);
-const transactionFee = computed(() => (purchasePrice.value || 0) * transactionFeeRate);
-const totalCost = computed(() => (purchasePrice.value || 0) + transactionFee.value);
-const canUseBalance = computed(() => userBalance.value >= totalCost.value);
+const purchasePrice = computed(() => listing.value?.price || null)
+const transactionFee = computed(() => (purchasePrice.value || 0) * transactionFeeRate.value)
+const totalCost = computed(() => (purchasePrice.value || 0) + transactionFee.value)
+const canUseBalance = computed(() => userBalance.value >= totalCost.value)
 
-const isOrderValid = computed(() => listing.value && typeof listing.value.price === 'number' && listing.value.price > 0);
+const isOrderValid = computed(
+  () => listing.value && typeof listing.value.price === 'number' && listing.value.price > 0,
+)
 const isFormComplete = computed(() => {
-  const { name, address_line_1, city, state, zip_code, country } = shippingInfo.value;
-  const requiredFields = [name, address_line_1, city, state, zip_code, country];
-  return requiredFields.every(field => field && field.trim() !== '');
-});
-const isReadyToSubmit = computed(() => isOrderValid.value && isFormComplete.value);
+  const { name, address_line_1, city, state, zip_code, country } = shippingInfo.value
+  const requiredFields = [name, address_line_1, city, state, zip_code, country]
+  return requiredFields.every((field) => field && field.trim() !== '')
+})
+const isReadyToSubmit = computed(() => isOrderValid.value && isFormComplete.value)
 
 const isStepReady = computed(() => {
-  if (currentStep.value === 1) return isFormComplete.value;
-  if (currentStep.value === 2) return !!paymentMethod.value;
-  return isReadyToSubmit.value;
-});
+  if (currentStep.value === 1) return isFormComplete.value
+  if (currentStep.value === 2) return !!paymentMethod.value
+  return isReadyToSubmit.value
+})
 
 const formatCurrency = (amount) => {
-  if (typeof amount !== 'number' || isNaN(amount)) return '—';
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-};
+  if (typeof amount !== 'number' || isNaN(amount)) return '—'
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+}
 
-// NEW: Helper function to format the order date
 const formatOrderDate = (dateString) => {
-  if (!dateString) return 'N/A';
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString('en-US', options);
-};
+  if (!dateString) return 'N/A'
+  const options = { year: 'numeric', month: 'long', day: 'numeric' }
+  return new Date(dateString).toLocaleDateString('en-US', options)
+}
 
 onMounted(async () => {
   try {
     const [listingData, balanceData, feeData] = await Promise.all([
       fetchFromAPI(`/listings/active/id/${listingId}`),
       fetchFromAPI(`/users/${authStore.uuid}/balance`),
-      fetchFromAPI('/fees/buyer_fee_percentage')
-    ]);
+      fetchFromAPI('/fees/buyer_fee_percentage'),
+    ])
 
-    console.log('Listing Data:', feeData);
+    transactionFeeRate.value = feeData.buyer_fee_percentage
+    transactionFeeStructureId.value = feeData.id
 
     if (listingData && listingData.listing_id) {
-      listing.value = listingData;
+      listing.value = listingData
     } else {
-      throw new Error('This listing is no longer available.');
+      throw new Error('This listing is no longer available.')
     }
 
     if (balanceData && typeof balanceData.balance === 'number') {
-      userBalance.value = balanceData.balance;
+      userBalance.value = balanceData.balance
     }
   } catch (error) {
-    console.error('Error fetching initial data:', error);
-    router.back();
+    console.error('Error fetching initial data:', error)
+    router.back()
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-});
+})
 
 function selectPaymentMethod(method) {
-  if (method === 'account_balance' && !canUseBalance.value) return;
-  paymentMethod.value = method;
+  if (method === 'account_balance' && !canUseBalance.value) return
+  paymentMethod.value = method
 }
 
 function nextStep() {
-  if (currentStep.value < totalSteps) currentStep.value++;
+  if (currentStep.value < totalSteps) currentStep.value++
 }
 
 function prevStep() {
-  if (currentStep.value > 1) currentStep.value--;
+  if (currentStep.value > 1) currentStep.value--
 }
 
-// MODIFIED: submitOrder now handles loading state and sets the result
 async function submitOrder() {
+  submissionError.value = null
+
   const orderData = {
     buyer_id: authStore.uuid,
     shipping_info: shippingInfo.value,
     listing_id: parseInt(listingId, 10),
     purchase_price: purchasePrice.value,
-    transaction_fee: transactionFee.value,
+    transaction_structure_fee_id: transactionFeeStructureId.value,
     payment_method: paymentMethod.value,
-  };
+  }
 
-  console.log('Submitting order:', orderData);
-
-  isLoading.value = true;
-  loadingMessage.value = 'Processing your order...';
+  isLoading.value = true
+  loadingMessage.value = 'Processing your order...'
 
   try {
-    const response = await postToAPI(`/orders/${listingId}`, orderData);
-    submissionResult.value = response; // Set the response to show the confirmation screen
+    submissionResult.value = await postToAPI(`/orders/${listingId}`, orderData)
   } catch (error) {
-    console.error('Failed to submit order:', error);
-    // You could add an error message to the UI here
-    alert('There was an error submitting your order. Please try again.');
+    console.error('Failed to submit order:', error)
+    submissionError.value = {
+      message:
+        error.response?.data?.detail ||
+        'There was a problem connecting to the server. Please try again.',
+    }
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
+}
+
+function retryOrder() {
+  submissionError.value = null
 }
 </script>
 
@@ -268,7 +416,7 @@ async function submitOrder() {
 /* --- Styles --- */
 h1, h2, h3, h4 { font-family: Spectral, sans-serif; font-weight: 600; }
 h1.page-title { border-bottom: 1px solid #333; font-size: 2.2rem; margin-bottom: 3rem; padding-bottom: 1.5rem; text-align: center; }
-h2 { font-size: 1.8rem; margin: 0; text-align: center; flex-grow: 1; }
+h2 { flex-grow: 1; font-size: 1.8rem; margin: 0; text-align: center; }
 h3.product-name { font-size: 1.5rem; margin: 0.25rem 0 0; }
 p { color: #cccccc; line-height: 1.6; }
 .order-container { color: #ffffff; padding: 4rem 5%; }
@@ -286,7 +434,7 @@ p { color: #cccccc; line-height: 1.6; }
 .btn-nav:hover:not(:disabled) { background-color: #2a2a2a; border-color: #666; color: #fff; }
 .btn-nav:disabled { cursor: not-allowed; opacity: 0.4; }
 .btn-nav svg { height: 24px; width: 24px; }
-.nav-placeholder { width: 44px; height: 44px; }
+.nav-placeholder { height: 44px; width: 44px; }
 .form-grid { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; }
 .form-group { display: flex; flex-direction: column; }
 .form-group.full-width { grid-column: 1 / -1; }
@@ -313,25 +461,32 @@ p { color: #cccccc; line-height: 1.6; }
 .option-name { font-weight: 600; }
 .option-detail { color: #aaa; }
 .balance-insufficient { color: #ff6b6b; font-size: 0.9rem; margin-top: 1rem; text-align: center; }
-.payment-method-summary { border-top: 1px solid #333; padding-top: 1rem; margin-top: 1rem;}
+.payment-method-summary { border-top: 1px solid #333; margin-top: 1rem; padding-top: 1rem; }
 
-/* --- NEW: Submission Result Screen Styles --- */
-.submission-result-screen { text-align: center; padding: 4rem 2rem; background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; max-width: 600px; margin: 4rem auto 0; }
+/* --- Submission Result Screen Styles --- */
+.submission-result-screen { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; margin: 4rem auto 0; max-width: 600px; padding: 4rem 2rem; text-align: center; }
 .success-icon { color: #6ef0a3; margin-bottom: 1.5rem; }
-.success-icon svg { width: 80px; height: 80px; }
+.success-icon svg { height: 80px; width: 80px; }
 .result-title { font-size: 2.5rem; margin-bottom: 0.5rem; }
 .result-subtitle { color: #aaa; font-size: 1.1rem; margin-bottom: 2.5rem; }
-.result-summary { text-align: left; border-top: 1px solid #333; border-bottom: 1px solid #333; margin-bottom: 2.5rem; padding: 1.5rem 0; }
+.result-summary { border-bottom: 1px solid #333; border-top: 1px solid #333; margin-bottom: 2.5rem; padding: 1.5rem 0; text-align: left; }
 .result-summary ul { list-style: none; padding: 0; }
 .result-summary li { display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
 .result-summary span:first-child { color: #aaa; }
 .result-summary li.total { font-size: 1.1rem; font-weight: bold; margin-top: 1rem; }
 .result-actions { display: flex; gap: 1rem; justify-content: center; }
-.btn { padding: 0.8rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.2s ease; }
-.btn-primary { background-color: #6ef0a3; color: #121212; }
+.btn { border-radius: 8px; cursor: pointer; font-weight: 600; padding: 0.8rem 1.5rem; text-decoration: none; transition: all 0.2s ease; }
+.btn-primary { background-color: #6ef0a3; border: none; color: #121212; }
 .btn-primary:hover { background-color: #8affbe; }
 .btn-secondary { background-color: #2c2c2c; border: 1px solid #444; color: #fff; }
 .btn-secondary:hover { background-color: #383838; }
+
+/* --- Error Screen Specific Styles --- */
+.error-screen .result-title { color: #ff8a8a; }
+.error-icon { color: #ff6b6b; margin-bottom: 1.5rem; }
+.error-icon svg { height: 80px; width: 80px; }
+.error-screen .btn-primary { background-color: #ff6b6b; }
+.error-screen .btn-primary:hover { background-color: #ff8a8a; }
 
 @media (max-width: 900px) {
   .order-grid { grid-template-columns: 1fr; }

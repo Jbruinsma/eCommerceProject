@@ -1,3 +1,4 @@
+
 <template>
   <div class="marketplace-container">
     <header class="page-header">
@@ -133,11 +134,55 @@ watch(searchQuery, async (newQuery) => {
 })
 
 watch(activeFilters.value, () => {
-  console.log('Active filters changed:', activeFilters.value)
+  console.log('Active filters changed:', activeFilters.value);
 
+  const noFilters =
+    !activeFilters.value.brand.length &&
+    !activeFilters.value.category.length &&
+    activeFilters.value.price.min === null &&
+    activeFilters.value.price.max === null;
 
+  if (noFilters) {
+    searchResults.value = searchResultStorage.value.slice();
+    return;
+  }
 
-})
+  let filteredResults = searchResultStorage.value.slice();
+
+  if (activeFilters.value.price.min !== null || activeFilters.value.price.max !== null) {
+    filteredResults = filteredResults.filter(item => {
+      const price = item.price;
+      const MinPriceByUser = activeFilters.value.price.min;
+      const MaxPriceByUser = activeFilters.value.price.max;
+      return (MinPriceByUser === null || price >= MinPriceByUser) &&
+        (MaxPriceByUser === null || price <= MaxPriceByUser);
+    });
+  }
+
+  if (activeFilters.value.brand.length) {
+    filteredResults = filteredResults.filter(item =>
+      activeFilters.value.brand.includes(item.brand)
+    );
+  }
+
+  if (activeFilters.value.category.length) {
+    filteredResults = filteredResults.filter(item =>
+      activeFilters.value.category.includes(item.category)
+    );
+  }
+
+  filteredResults = filteredResults.sort((a, b) => a.brand.localeCompare(b.brand));
+  if (filteredResults.length) {
+    filteredResults = filteredResults.sort((a, b) => {
+      const brandA = a.brand || '';
+      const brandB = b.brand || '';
+      return brandA.localeCompare(brandB);
+    });
+
+  }
+
+  searchResults.value = filteredResults;
+});
 
 function applyFilter(filterType, filterValue) {
   if (['category', 'brand'].includes(filterType)) {
@@ -186,6 +231,9 @@ async function searchProducts(searchQuery = null, category = null) {
     searchResults.value = response.products || []
     searchResultStorage.value = response.products || []
     filterOptions.value = response.filters || {}
+
+    console.log('Search results:', searchResults.value)
+
   } catch (error) {
     console.error('Error fetching search results:', error)
     searchResults.value = []
@@ -201,8 +249,10 @@ const formatCurrency = (amount) => {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Abel&family=Bodoni+Moda+SC:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inclusive+Sans&family=Inconsolata:wght@200;300;400;500;600&family=Manrope:wght@600;700;800&family=Mulish:ital,wght@0,300;0,400;0,700;1,200;1,400;1,600&family=Nanum+Myeongjo&family=Quicksand:wght@300..700&family=Scope+One&family=Sono:wght@200;300;400&family=Spectral:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&family=Zeyada&display=swap');
+
 a { color: #ffffff; text-decoration: none; }
-h1 { font-family: Spectral, sans-serif; font-size: 2.8rem; font-weight: 600; margin-bottom: 2rem; text-align: center; }
+h1 { font-family: Bodoni Moda, BlinkMacSystemFont; font-size: 2.8rem; font-weight: 600; margin-bottom: 2rem; text-align: center; }
 h2 { border-bottom: 1px solid #333; font-family: Spectral, sans-serif; font-size: 1.8rem; font-weight: 600; margin-bottom: 1.5rem; padding-bottom: 1rem; }
 h3 { font-family: Spectral, sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
 p { color: #cccccc; line-height: 1.6; }
@@ -214,7 +264,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .filter-options label { align-items: center; color: #cccccc; cursor: pointer; display: flex; margin-bottom: 0.75rem; }
 .filter-options label:hover { color: #ffffff; }
 .filters-sidebar { border-right: 1px solid #2a2a2a; flex: 0 0 260px; padding-right: 2rem; }
-.main-content { display: flex; gap: 2rem; padding: 0 5%; }
+.main-content { display: flex; gap: 1rem; padding: 0 5%; }
 .marketplace-container { color: #ffffff; padding: 4rem 0; }
 .no-results { color: #888; padding: 4rem 2rem; text-align: center; }
 .no-results h2 { border-bottom: none; font-size: 1.8rem; margin-bottom: 1rem; }
@@ -227,12 +277,12 @@ ul { list-style: none; margin: 0; padding: 0; }
 .price-inputs { align-items: center; display: flex; gap: 0.5rem; }
 .price-inputs input { background-color: #1a1a1a; border: 1px solid #555; border-radius: 4px; color: #ffffff; padding: 0.5rem; width: 100%; }
 .price-inputs span { color: #888; }
-.product-brand { color: #888; font-size: 0.9rem; margin: 0.25rem 0; }
-.product-card { background-color: #1a1a1a; border: 1px solid #2a2a2a; cursor: pointer; display: block; padding: 1.5rem; text-align: left; transition: box-shadow 0.3s ease, transform 0.3s ease; }
+.product-brand { font-family: Bodoni Moda, BlinkMacSystemFont; color: black; font-size: 1.2rem; margin: 0.25rem 0; font-weight: bold; }
+.product-card { background-color: #ffffff; border: 1px solid #2a2a2a; cursor: pointer; display: block; padding: 1.5rem; text-align: left; transition: box-shadow 0.3s ease, transform 0.3s ease; }
 .product-card:hover { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); transform: translateY(-5px); }
 .product-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, 250px); justify-content: start; }
-.product-image { aspect-ratio: 1 / 1; margin-bottom: 1rem; object-fit: cover; width: 100%; }
-.product-price { font-size: 1.2rem; font-weight: bold; margin-top: 0.5rem; }
+.product-image { width: 100%; height: auto; border-radius: 6px; object-fit: cover; }
+.product-price { font-family: Bodoni Moda, BlinkMacSystemFont; color: #3c862a; text-shadow: 1px 1px 1px gray; font-size: 1.2rem; font-weight: bold; margin-top: 0.5rem; }
 .results-container { flex: 1; }
 .results-header { align-items: center; display: flex; justify-content: space-between; margin-bottom: 2rem; }
 .results-header p { color: #888; margin: 0; }

@@ -17,6 +17,21 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
     if listing_id != new_order_summary.listing_id:
         return ErrorMessage(message="Listing ID does not match shipping info listing ID", error="ListingIDMismatch")
 
+    buyer_payment_origin = new_order_summary.payment_method
+
+    if buyer_payment_origin not in ('account_balance', 'credit_card', 'other'):
+        return ErrorMessage(message="Invalid payment origin", error="InvalidPaymentOrigin")
+
+    if buyer_payment_origin == 'account_balance':
+        statement = text("CALL retrieveUserBalanceById(:input_uuid);")
+        result = await session.execute(statement, {"input_uuid": new_order_summary.buyer_id})
+        row = result.mappings().first()
+        if not row:
+            return ErrorMessage(message="User not found", error="UserNotFound")
+        user_balance = row.balance
+        if new_order_summary.purchase_price > user_balance:
+            return ErrorMessage(message="Purchase price exceeds user balance", error="PurchasePriceExceedsUserBalance")
+
     address = new_order_summary.shipping_info
 
     statement = text("CALL retrieveSpecificActiveListing(:input_listing_id);")
@@ -52,18 +67,74 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
     })
     await session.commit()
 
-    statement = text("CALL newOrder(:input_buyer_id, :input_listing_id, :input_transaction_fee, :input_payment_method)")
+    statement = text("CALL createNewOrder(:input_buyer_id, :input_listing_id, :input_transaction_fee)")
     result = await session.execute(statement, {
         "input_buyer_id": new_order_summary.buyer_id,
         "input_listing_id": new_order_summary.listing_id,
-        "input_transaction_fee": new_order_summary.transaction_fee,
-        "input_payment_method": new_order_summary.payment_method,
+        "input_transaction_fee": new_order_summary.transaction_structure_fee_id,
+    })
+    await session.commit()
+    new_order = result.mappings().first()
+
+    if not new_order:
+        return ErrorMessage(message="Order could not be fulfilled", error="OrderFulfillmentFailed")
+
+    statement = text("CALL fulfillListing(:input_listing_id);")
+    await session.execute(statement, {"input_listing_id": listing_id})
+    await session.commit()
+
+    order_id = new_order.order_id
+
+    # Record Transaction for buyer
+
+    buyer_id = new_order.buyer_id
+    buyer_amount = new_order.buyer_final_price
+
+    if buyer_payment_origin == 'account_balance':
+        statement = text("CALL updateBalance(:input_uuid, :input_email, :input_balance_adjustment_amount);")
+        await session.execute(statement, {
+            "input_uuid": buyer_id,
+            "input_email": None,
+            "input_balance_adjustment_amount": -1 * buyer_amount,
+        })
+        await session.commit()
+
+    buyer_transaction_status = 'completed'
+    buyer_payment_destination = 'account_balance'
+    buyer_payment_purpose = 'purchase_funds'
+
+    statement = text("CALL recordTransaction(:input_user_id, :input_order_id, :input_amount, :input_transaction_status, :input_payment_origin, :input_payment_destination, :input_payment_purpose);")
+    await session.execute(statement, {
+        "input_user_id": buyer_id,
+        "input_order_id": order_id,
+        "input_amount": buyer_amount,
+        "input_transaction_status": buyer_transaction_status,
+        "input_payment_origin": buyer_payment_origin,
+        "input_payment_destination": buyer_payment_destination,
+        "input_payment_purpose": buyer_payment_purpose,
     })
     await session.commit()
 
-    new_order = result.mappings().first()
-    if not new_order:
-        return ErrorMessage(message="Order could not be fulfilled", error="OrderFulfillmentFailed")
+    # Record Transaction for seller
+
+    seller_id = new_order.seller_id
+    seller_amount = new_order.seller_final_payout
+    seller_transaction_status = 'completed'
+    seller_payment_origin = 'account_balance'
+    seller_payment_destination = 'account_balance'
+    seller_payment_purpose = 'sale_proceeds'
+
+    statement = text("CALL recordTransaction(:input_user_id, :input_order_id, :input_amount, :input_transaction_status, :input_payment_origin, :input_payment_destination, :input_payment_purpose);")
+    await session.execute(statement, {
+        "input_user_id": seller_id,
+        "input_order_id": order_id,
+        "input_amount": seller_amount,
+        "input_transaction_status": seller_transaction_status,
+        "input_payment_origin": seller_payment_origin,
+        "input_payment_destination": seller_payment_destination,
+        "input_payment_purpose": seller_payment_purpose,
+    })
+    await session.commit()
 
     return dict(new_order)
 

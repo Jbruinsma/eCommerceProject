@@ -162,8 +162,6 @@ BEGIN
     SET status = 'pending'
     WHERE listing_id = input_listing_id;
 
-
-
 end //
 
 DELIMITER ;

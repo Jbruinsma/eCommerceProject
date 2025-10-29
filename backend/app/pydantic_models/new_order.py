@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.pydantic_models.shipping_info import ShippingInfo
+from ..pydantic_models.shipping_info import ShippingInfo
 
 
 class NewOrder(BaseModel):
@@ -8,5 +8,5 @@ class NewOrder(BaseModel):
     shipping_info: ShippingInfo
     listing_id: int
     purchase_price: float
-    transaction_fee: float
+    transaction_structure_fee_id: int
     payment_method: str
