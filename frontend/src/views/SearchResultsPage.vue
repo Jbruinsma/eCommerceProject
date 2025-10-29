@@ -91,14 +91,6 @@
           <h2>No Results Found</h2>
           <p>Try adjusting your search or filters to find what you're looking for.</p>
         </div>
-
-        <!--        <nav class="pagination" v-if="searchResults.length > 0">-->
-        <!--          <a href="#" class="page-link prev">‹ Prev</a>-->
-        <!--          <a href="#" class="page-link active">1</a>-->
-        <!--          <a href="#" class="page-link">2</a>-->
-        <!--          <a href="#" class="page-link">3</a>-->
-        <!--          <a href="#" class="page-link next">Next ›</a>-->
-        <!--        </nav>-->
       </main>
     </div>
   </div>
