@@ -46,13 +46,21 @@
         <div class="filter-group">
           <h3>Price Range</h3>
           <div class="price-inputs">
-            <input type="number" placeholder="Min" />
+            <input
+              type="number"
+              placeholder="Min"
+              v-model="minPrice"
+              @change="applyPriceFilter"
+            />
             <span>–</span>
-            <input type="number" placeholder="Max" />
+            <input
+              type="number"
+              placeholder="Max"
+              v-model="maxPrice"
+              @change="applyPriceFilter"
+            />
           </div>
         </div>
-
-        <button class="apply-filters-btn">Apply Filters</button>
       </aside>
 
       <main class="results-container">
@@ -107,6 +115,9 @@ const searchResultStorage = ref([])
 const filterOptions = ref({})
 const route = useRoute()
 
+const minPrice = ref(null)
+const maxPrice = ref(null)
+
 const activeFilters = ref({
   category: [],
   brand: [],
@@ -153,6 +164,17 @@ function applyFilter(filterType, filterValue) {
   }
 }
 
+function applyPriceFilter() {
+  if (minPrice.value < 0) return
+  if (maxPrice.value < 0) return
+  if (maxPrice.value && minPrice.value && maxPrice.value < minPrice.value) return
+
+  applyFilter('price', {
+    min: minPrice.value,
+    max: maxPrice.value,
+  })
+}
+
 async function searchProducts(searchQuery = null, category = null) {
   const params = new URLSearchParams()
 
@@ -187,249 +209,44 @@ const formatCurrency = (amount) => {
 </script>
 
 <style scoped>
-a {
-  color: #ffffff;
-  text-decoration: none;
-}
-h1 {
-  font-family: Spectral, sans-serif;
-  font-size: 2.8rem;
-  font-weight: 600;
-  margin-bottom: 2rem;
-  text-align: center;
-}
-h2 {
-  border-bottom: 1px solid #333;
-  font-family: Spectral, sans-serif;
-  font-size: 1.8rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-}
-h3 {
-  font-family: Spectral, sans-serif;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-p {
-  color: #cccccc;
-  line-height: 1.6;
-}
-ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.apply-filters-btn {
-  background-color: #ffffff;
-  border: 1px solid #ffffff;
-  border-radius: 6px;
-  color: #121212;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  padding: 0.75rem 1rem;
-  text-align: center;
-  transition:
-    background-color 0.3s,
-    color 0.3s;
-  width: 100%;
-}
-.apply-filters-btn:hover {
-  background-color: transparent;
-  color: #ffffff;
-}
-.filter-group {
-  margin-bottom: 2rem;
-}
-.filter-options input[type='checkbox'] {
-  accent-color: #ffffff;
-  background-color: #333;
-  border: 1px solid #555;
-  border-radius: 3px;
-  cursor: pointer;
-  height: 16px;
-  margin-right: 0.75rem;
-  vertical-align: middle;
-  width: 16px;
-}
-.filter-options label {
-  align-items: center;
-  color: #cccccc;
-  cursor: pointer;
-  display: flex;
-  margin-bottom: 0.75rem;
-}
-.filter-options label:hover {
-  color: #ffffff;
-}
-.filters-sidebar {
-  border-right: 1px solid #2a2a2a;
-  flex: 0 0 260px;
-  padding-right: 2rem;
-}
-.main-content {
-  display: flex;
-  gap: 2rem;
-  padding: 0 5%;
-}
-.marketplace-container {
-  color: #ffffff;
-  padding: 4rem 0;
-}
-.no-results {
-  color: #888;
-  padding: 4rem 2rem;
-  text-align: center;
-}
-.no-results h2 {
-  border-bottom: none;
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-}
-.no-results p {
-  font-size: 1.1rem;
-  margin: 0 auto;
-  max-width: 400px;
-}
-.page-header {
-  margin: 0 auto;
-  max-width: 1200px;
-  padding: 0 5% 4rem;
-}
-.page-link {
-  background-color: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  border-radius: 4px;
-  color: #ffffff;
-  padding: 0.5rem 1rem;
-  transition:
-    background-color 0.3s,
-    border-color 0.3s;
-}
-.page-link-ellipsis {
-  color: #888;
-  padding: 0.5rem 0;
-}
-.page-link.active,
-.page-link:hover {
-  background-color: #ffffff;
-  border-color: #ffffff;
-  color: #121212;
-}
-.pagination {
-  align-items: center;
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  margin-top: 3rem;
-}
-.price-inputs {
-  align-items: center;
-  display: flex;
-  gap: 0.5rem;
-}
-.price-inputs input {
-  background-color: #1a1a1a;
-  border: 1px solid #555;
-  border-radius: 4px;
-  color: #ffffff;
-  padding: 0.5rem;
-  width: 100%;
-}
-.price-inputs span {
-  color: #888;
-}
-.product-brand {
-  color: #888;
-  font-size: 0.9rem;
-  margin: 0.25rem 0;
-}
-.product-card {
-  background-color: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  cursor: pointer;
-  display: block;
-  padding: 1.5rem;
-  text-align: left;
-  transition:
-    box-shadow 0.3s ease,
-    transform 0.3s ease;
-}
-.product-card:hover {
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
-  transform: translateY(-5px);
-}
-.product-grid {
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: repeat(auto-fit, 250px);
-  justify-content: start;
-}
-.product-image {
-  aspect-ratio: 1 / 1;
-  margin-bottom: 1rem;
-  object-fit: cover;
-  width: 100%;
-}
-.product-price {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-top: 0.5rem;
-}
-.results-container {
-  flex: 1;
-}
-.results-header {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-}
-.results-header p {
-  color: #888;
-  margin: 0;
-}
-.search-bar {
-  display: flex;
-  margin: 0 auto;
-  max-width: 700px;
-}
-.search-bar button {
-  background-color: #ffffff;
-  border: 1px solid #ffffff;
-  border-bottom-right-radius: 6px;
-  border-top-right-radius: 6px;
-  color: #121212;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  padding: 0.75rem 1.5rem;
-  transition:
-    background-color 0.3s,
-    color 0.3s;
-}
-.search-bar button:hover {
-  background-color: #121212;
-  color: #ffffff;
-}
-.search-bar input {
-  background-color: #1a1a1a;
-  border: 1px solid #555;
-  border-bottom-left-radius: 6px;
-  border-right: none;
-  border-top-left-radius: 6px;
-  color: #ffffff;
-  flex-grow: 1;
-  font-size: 1rem;
-  padding: 0.75rem 1rem;
-}
-.sort-dropdown {
-  background-color: #1a1a1a;
-  border: 1px solid #555;
-  border-radius: 4px;
-  color: #ffffff;
-  padding: 0.5rem;
-}
+a { color: #ffffff; text-decoration: none; }
+h1 { font-family: Spectral, sans-serif; font-size: 2.8rem; font-weight: 600; margin-bottom: 2rem; text-align: center; }
+h2 { border-bottom: 1px solid #333; font-family: Spectral, sans-serif; font-size: 1.8rem; font-weight: 600; margin-bottom: 1.5rem; padding-bottom: 1rem; }
+h3 { font-family: Spectral, sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
+p { color: #cccccc; line-height: 1.6; }
+ul { list-style: none; margin: 0; padding: 0; }
+.apply-filters-btn { background-color: #ffffff; border: 1px solid #ffffff; border-radius: 6px; color: #121212; cursor: pointer; font-size: 1rem; font-weight: bold; padding: 0.75rem 1rem; text-align: center; transition: background-color 0.3s, color 0.3s; width: 100%; }
+.apply-filters-btn:hover { background-color: transparent; color: #ffffff; }
+.filter-group { margin-bottom: 2rem; }
+.filter-options input[type='checkbox'] { accent-color: #ffffff; background-color: #333; border: 1px solid #555; border-radius: 3px; cursor: pointer; height: 16px; margin-right: 0.75rem; vertical-align: middle; width: 16px; }
+.filter-options label { align-items: center; color: #cccccc; cursor: pointer; display: flex; margin-bottom: 0.75rem; }
+.filter-options label:hover { color: #ffffff; }
+.filters-sidebar { border-right: 1px solid #2a2a2a; flex: 0 0 260px; padding-right: 2rem; }
+.main-content { display: flex; gap: 2rem; padding: 0 5%; }
+.marketplace-container { color: #ffffff; padding: 4rem 0; }
+.no-results { color: #888; padding: 4rem 2rem; text-align: center; }
+.no-results h2 { border-bottom: none; font-size: 1.8rem; margin-bottom: 1rem; }
+.no-results p { font-size: 1.1rem; margin: 0 auto; max-width: 400px; }
+.page-header { margin: 0 auto; max-width: 1200px; padding: 0 5% 4rem; }
+.page-link { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; color: #ffffff; padding: 0.5rem 1rem; transition: background-color 0.3s, border-color 0.3s; }
+.page-link-ellipsis { color: #888; padding: 0.5rem 0; }
+.page-link.active, .page-link:hover { background-color: #ffffff; border-color: #ffffff; color: #121212; }
+.pagination { align-items: center; display: flex; gap: 0.5rem; justify-content: center; margin-top: 3rem; }
+.price-inputs { align-items: center; display: flex; gap: 0.5rem; }
+.price-inputs input { background-color: #1a1a1a; border: 1px solid #555; border-radius: 4px; color: #ffffff; padding: 0.5rem; width: 100%; }
+.price-inputs span { color: #888; }
+.product-brand { color: #888; font-size: 0.9rem; margin: 0.25rem 0; }
+.product-card { background-color: #1a1a1a; border: 1px solid #2a2a2a; cursor: pointer; display: block; padding: 1.5rem; text-align: left; transition: box-shadow 0.3s ease, transform 0.3s ease; }
+.product-card:hover { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); transform: translateY(-5px); }
+.product-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, 250px); justify-content: start; }
+.product-image { aspect-ratio: 1 / 1; margin-bottom: 1rem; object-fit: cover; width: 100%; }
+.product-price { font-size: 1.2rem; font-weight: bold; margin-top: 0.5rem; }
+.results-container { flex: 1; }
+.results-header { align-items: center; display: flex; justify-content: space-between; margin-bottom: 2rem; }
+.results-header p { color: #888; margin: 0; }
+.search-bar { display: flex; margin: 0 auto; max-width: 700px; }
+.search-bar button { background-color: #ffffff; border: 1px solid #ffffff; border-bottom-right-radius: 6px; border-top-right-radius: 6px; color: #121212; cursor: pointer; font-size: 1rem; font-weight: bold; padding: 0.75rem 1.5rem; transition: background-color 0.3s, color 0.3s; }
+.search-bar button:hover { background-color: #121212; color: #ffffff; }
+.search-bar input { background-color: #1a1a1a; border: 1px solid #555; border-bottom-left-radius: 6px; border-right: none; border-top-left-radius: 6px; color: #ffffff; flex-grow: 1; font-size: 1rem; padding: 0.75rem 1rem; }
+.sort-dropdown { background-color: #1a1a1a; border: 1px solid #555; border-radius: 4px; color: #ffffff; padding: 0.5rem; }
 </style>
