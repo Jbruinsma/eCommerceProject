@@ -60,7 +60,6 @@ BEGIN
         input_payment_purpose,
         CURRENT_TIMESTAMP
     );
-
     SELECT * FROM transactions WHERE transaction_id = LAST_INSERT_ID();
 
 END //

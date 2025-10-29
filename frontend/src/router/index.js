@@ -21,6 +21,7 @@ import ManageFunds from '@/views/ManageFunds.vue'
 import BidsPage from '@/views/BidsPage.vue'
 import OrderDetailPage from '@/views/OrderDetailPage.vue'
 import ManageUsers from "@/views/ManageUsers.vue";
+import ManageOrders from '@/views/ManageOrders.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,6 +30,7 @@ const router = createRouter({
     { name: 'AdminDashboard', path: '/admin', component: AdminDashboard },
     { name: 'ManageFunds', path: '/admin/funds', component: ManageFunds },
     { name: 'ManageUsers', path: '/admin/users', component: ManageUsers },
+    { name: 'ManageOrders', path: '/admin/orders', component: ManageOrders },
     { name: 'Login', path: '/login', component: LoginPage },
     { name: 'Register', path: '/register', component: RegisterPage },
     { name: 'ForgotPassword', path: '/account-recovery', component: ForgotPassword },

@@ -18,6 +18,7 @@ BEGIN
         p.image_url AS product_image_url,
         b.brand_name,
         s.size_value,
+        o.product_condition AS product_condition,
         CASE
             WHEN o.seller_id = input_user_id THEN 'sell'
             ELSE 'buy'
@@ -133,7 +134,10 @@ BEGIN
     DECLARE new_order_id CHAR(36);
     DECLARE calculated_seller_id CHAR(36);
     DECLARE calculated_product_id INT UNSIGNED;
+
     DECLARE calculated_size_id INT UNSIGNED;
+    DECLARE calculated_product_condition ENUM('new', 'used');
+
     DECLARE calculated_sale_price DECIMAL(10,2);
 
     DECLARE calculated_buyer_transaction_fee_percentage DECIMAL(10,4);
@@ -156,6 +160,10 @@ BEGIN
     WHERE listing_id = input_listing_id;
 
     SELECT size_id INTO calculated_size_id
+    FROM listings
+    WHERE listing_id = input_listing_id;
+
+    SELECT item_condition INTO calculated_product_condition
     FROM listings
     WHERE listing_id = input_listing_id;
 
@@ -188,6 +196,7 @@ BEGIN
                        seller_id,
                        product_id,
                        size_id,
+                       product_condition,
                        sale_price,
                        buyer_transaction_fee,
                        buyer_fee_structure_id,
@@ -205,6 +214,7 @@ BEGIN
                 calculated_seller_id,
                 calculated_product_id,
                calculated_size_id,
+                calculated_product_condition,
                 calculated_sale_price,
                calculated_buyer_transaction_fee,
                input_buyer_transaction_fee_structure_id,
@@ -237,6 +247,50 @@ BEGIN
     WHERE order_id = input_order_id;
 
     SELECT * FROM orders WHERE order_id = input_order_id;
+
+end //
+
+DROP PROCEDURE IF EXISTS completeOrder;
+
+CREATE PROCEDURE completeOrder(
+    IN input_order_id CHAR(36),
+    IN input_seller_id CHAR(36)
+)
+
+BEGIN
+
+    DECLARE calculated_final_seller_payout DECIMAL(10,2);
+
+    UPDATE orders
+    SET
+        order_status = 'completed',
+        updated_at = CURRENT_TIMESTAMP
+    WHERE
+        order_id = input_order_id
+      AND
+        seller_id = input_seller_id;
+
+    UPDATE transactions
+    SET
+        transaction_status = 'completed'
+    WHERE
+        order_id = input_order_id
+      AND
+        user_id = input_seller_id
+      AND
+        payment_purpose = 'sale_proceeds';
+
+    SELECT seller_final_payout
+    INTO calculated_final_seller_payout
+    FROM orders
+    WHERE
+        order_id = input_order_id
+      AND
+        seller_id = input_seller_id;
+
+    UPDATE account_balance
+    SET balance = balance + calculated_final_seller_payout
+    WHERE user_id = input_seller_id;
 
 end //
 

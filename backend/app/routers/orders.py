@@ -6,6 +6,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..pydantic_models.new_order import NewOrder
+from ..utils.orders import retrieve_user_orders
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
@@ -85,8 +86,6 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
 
     order_id = new_order.order_id
 
-    # Record Transaction for buyer
-
     buyer_id = new_order.buyer_id
     buyer_amount = new_order.buyer_final_price
 
@@ -115,11 +114,9 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
     })
     await session.commit()
 
-    # Record Transaction for seller
-
     seller_id = new_order.seller_id
     seller_amount = new_order.seller_final_payout
-    seller_transaction_status = 'completed'
+    seller_transaction_status = 'pending'
     seller_payment_origin = 'account_balance'
     seller_payment_destination = 'account_balance'
     seller_payment_purpose = 'sale_proceeds'
@@ -140,17 +137,7 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
 
 @router.get("/{user_uuid}")
 async def orders(user_uuid: str, session: AsyncSession = Depends(get_session)):
-    if not user_uuid:
-        return ErrorMessage(message="User UUID is required", error="MissingUserUUID")
-
-    statement = text("CALL retrieveAllOrdersByUserId(:input_user_id);")
-    result = await session.execute(statement, {"input_user_id": user_uuid})
-    rows = result.mappings().all()
-
-    if not rows:
-        return ErrorMessage(message="No orders found", error="NoOrdersFound")
-
-    return list(rows)
+    return await retrieve_user_orders(user_uuid, session)
 
 @router.get("/{user_uuid}/{order_id}")
 async def order_details(user_uuid: str, order_id: str, session: AsyncSession = Depends(get_session)):

@@ -155,6 +155,7 @@ CREATE TABLE orders(
     seller_id CHAR(36) NOT NULL,
     product_id INT UNSIGNED NOT NULL,
     size_id INT UNSIGNED NOT NULL,
+    product_condition ENUM('new', 'used', 'worn') NOT NULL,
 
     sale_price DECIMAL(10, 2) NOT NULL,
 

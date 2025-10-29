@@ -10,7 +10,9 @@ import re
 import uuid
 
 from ..pydantic_models.modified_balance_info import ModifiedBalanceInfo
+from ..pydantic_models.updated_order import UpdatedOrder
 from ..pydantic_models.updated_user import UpdatedUser
+from ..utils.orders import retrieve_user_orders
 from ..utils.users import update_user
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -49,15 +51,13 @@ def identify_identifier(val: str) -> str:
 
 @router.get("/{user_identifier}/balance")
 async def get_balance(user_identifier: str, session: AsyncSession = Depends(get_session)):
-    if not user_identifier:
-        return ErrorMessage(message="User identifier is required", error="MissingUserIdentifier")
-
-    id_type = identify_identifier(user_identifier)
-    if id_type == "unknown":
-        return ErrorMessage(message="User identifier must be an email or UUID", error="InvalidIdentifier")
+    try:
+        user_uuid, user_email = retrieve_uuid_and_email(user_identifier, session)
+    except Exception as e:
+        return ErrorMessage(message=str(e), error="InvalidIdentifier")
 
     statement = text("CALL retrieveCompleteUserProfile(:input_uuid, :input_email)")
-    result = await session.execute(statement, {"input_uuid": user_identifier, "input_email": user_identifier})
+    result = await session.execute(statement, {"input_uuid": user_uuid, "input_email": user_email})
     row = result.mappings().first()
 
     if not row:
@@ -67,25 +67,10 @@ async def get_balance(user_identifier: str, session: AsyncSession = Depends(get_
 
 @router.post("/{user_identifier}/balance")
 async def modify_balance(user_identifier: str, modified_balance_info: ModifiedBalanceInfo, session: AsyncSession = Depends(get_session)):
-
-    if not user_identifier:
-        return ErrorMessage(message="User identifier is required", error="MissingUserIdentifier")
-
-    id_type = identify_identifier(user_identifier)
-
-    if id_type == "unknown":
-        return ErrorMessage(message="User identifier must be an email or UUID", error="InvalidIdentifier")
-
-    user_uuid = None
-
-    if id_type != "uuid":
-        statement = text("CALL retrieveCompleteUserProfile(:input_uuid, :input_email);")
-        result = await session.execute(statement, {"input_uuid": user_identifier, "input_email": user_identifier})
-        row = result.mappings().first()
-        user_uuid = row.uuid
-    else:
-        user_uuid = user_identifier
-
+    try:
+        user_uuid, user_email = retrieve_uuid_and_email(user_identifier, session)
+    except Exception as e:
+        return ErrorMessage(message=str(e), error="InvalidIdentifier")
 
     if user_uuid != modified_balance_info.uuid:
         return ErrorMessage(message="User identifier does not match UUID", error="InvalidIdentifier")
@@ -129,32 +114,10 @@ async def modify_balance(user_identifier: str, modified_balance_info: ModifiedBa
 
 @router.get("/users/{user_identifier:path}")
 async def get_user_info(user_identifier: str, session: AsyncSession = Depends(get_session)):
-    if not user_identifier:
-        return ErrorMessage(message="User identifier is required", error="MissingUserIdentifier")
-
-    id_type = identify_identifier(user_identifier)
-    if id_type == "unknown":
-        return ErrorMessage(message="User identifier must be an email or UUID", error="InvalidIdentifier")
-
-    user_uuid = None
-    user_email = None
-
-    if id_type == "uuid":
-        user_uuid = user_identifier
-        statement = text("SELECT email FROM users WHERE uuid = :input_uuid;")
-        result = await session.execute(statement, {"input_uuid": user_identifier})
-        row = result.mappings().first()
-        if not row:
-            return ErrorMessage(message="User not found", error="UserNotFound")
-        user_email = row.email
-    else:
-        user_email = user_identifier
-        statement = text("SELECT uuid FROM users WHERE email = :input_email;")
-        result = await session.execute(statement, {"input_email": user_identifier})
-        row = result.mappings().first()
-        if not row:
-            return ErrorMessage(message="User not found", error="UserNotFound")
-        user_uuid = row.uuid
+    try:
+        user_uuid, user_email = retrieve_uuid_and_email(user_identifier, session)
+    except Exception as e:
+        return ErrorMessage(message=str(e), error="InvalidIdentifier")
 
     statement = text("CALL retrieveCompleteUserProfile(:input_uuid, :input_email);")
     result = await session.execute(statement, {"input_uuid": user_uuid, "input_email": user_email})
@@ -173,3 +136,88 @@ async def modify_user(user_uuid: str, updated_user_settings : UpdatedUser, sessi
         return ErrorMessage(message="User UUID does not match user info UUID", error="UserUUIDMismatch")
 
     return await update_user(updated_user_settings, session)
+
+@router.get("/orders/{user_identifier:path}")
+async def get_orders(user_identifier: str, session: AsyncSession = Depends(get_session)):
+    try:
+        user_uuid, user_email = await retrieve_uuid_and_email(user_identifier, session)
+    except Exception as e:
+        return ErrorMessage(message=str(e), error="InvalidIdentifier")
+
+    return await retrieve_user_orders(user_uuid, session)
+
+@router.post("/orders/{user_identifier:path}/{order_id}")
+async def modify_order(user_identifier: str, order_id: str, updated_order: UpdatedOrder, session: AsyncSession = Depends(get_session)):
+    try:
+        user_uuid, user_email = await retrieve_uuid_and_email(user_identifier, session)
+    except Exception as e:
+        return ErrorMessage(message=str(e), error="InvalidIdentifier")
+
+    if updated_order.user_identifier not in (user_uuid, user_email):
+        return ErrorMessage(message="User identifier does not match order info user identifier", error="UserUUIDMismatch")
+
+    statement = text("CALL retrieveOrderById(:input_order_id);")
+    result = await session.execute(statement, {"input_order_id": order_id})
+    order_row = result.mappings().first()
+
+    if not order_row:
+        return ErrorMessage(message="Order not found", error="OrderNotFound")
+
+    seller_id = order_row.seller_id
+
+    if user_uuid not in (order_row.buyer_id, seller_id):
+        return ErrorMessage(message="User does not have permission to modify order", error="PermissionDenied")
+
+    order_status = order_row.status
+
+    if order_status not in ("pending", "completed", "cancelled"):
+        return ErrorMessage(message="Invalid order status", error="InvalidOrderStatus")
+
+    updated_order_row = None
+
+    if order_status != "completed" and updated_order.status == "completed":
+        statement = text("CALL completeOrder(:input_order_id, :input_seller_id);")
+        result = await session.execute(statement, {"input_order_id": order_id, "input_seller_id": seller_id})
+        await session.commit()
+        updated_order_row = result.mappings().first()
+    else:
+        statement = text("CALL updateOrderStatus(:input_order_id, :input_status);")
+        result = await session.execute(statement, {"input_order_id": order_id, "input_status": updated_order.status})
+        await session.commit()
+        updated_order_row = result.mappings().first()
+
+    if not updated_order_row:
+        return ErrorMessage(message="Order status could not be updated", error="OrderUpdateFailed")
+    return dict(updated_order_row)
+
+async def retrieve_uuid_and_email(user_identifier: str, session: AsyncSession = Depends(get_session)):
+    if not user_identifier:
+        return ErrorMessage(message="User identifier is required", error="MissingUserIdentifier")
+
+    id_type = identify_identifier(user_identifier)
+    if id_type == "unknown":
+        return ErrorMessage(message="User identifier must be an email or UUID", error="InvalidIdentifier")
+
+    user_uuid = None
+    user_email = None
+
+    if id_type == "uuid":
+        user_uuid = user_identifier
+        statement = text("SELECT email FROM users WHERE uuid = :input_uuid;")
+        result = await session.execute(statement, {"input_uuid": user_identifier})
+        row = result.mappings().first()
+        if not row:
+            raise Exception("User not found")
+        user_email = row.email
+    elif id_type == "email":
+        user_email = user_identifier
+        statement = text("SELECT uuid FROM users WHERE email = :input_email;")
+        result = await session.execute(statement, {"input_email": user_identifier})
+        row = result.mappings().first()
+        if not row:
+            return Exception("User not found")
+        user_uuid = row.uuid
+    else:
+        raise Exception("Invalid identifier type")
+
+    return user_uuid, user_email
