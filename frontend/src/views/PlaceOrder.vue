@@ -35,14 +35,14 @@
             </li>
             <li class="total">
               <span>Total Amount</span
-              ><span>{{ formatCurrency(submissionResult.total_price) }}</span>
+              ><span>{{ formatCurrency(submissionResult.buyer_final_price) }}</span>
             </li>
           </ul>
         </div>
 
         <div class="result-actions">
           <router-link to="/" class="btn btn-secondary">Continue Shopping</router-link>
-          <router-link to="/profile/orders" class="btn btn-primary">View My Orders</router-link>
+          <router-link to="/orders" class="btn btn-primary">View My Orders</router-link>
         </div>
       </div>
 
