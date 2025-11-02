@@ -133,56 +133,41 @@ watch(searchQuery, async (newQuery) => {
   await searchProducts(newQuery)
 })
 
-watch(activeFilters.value, () => {
-  console.log('Active filters changed:', activeFilters.value);
+watch(activeFilters, () => {
+  const categoryFilters = activeFilters.value.category;
+  const brandFilters = activeFilters.value.brand;
+  const minPrice = activeFilters.value.price.min;
+  const maxPrice = activeFilters.value.price.max;
 
-  const noFilters =
-    !activeFilters.value.brand.length &&
-    !activeFilters.value.category.length &&
-    activeFilters.value.price.min === null &&
-    activeFilters.value.price.max === null;
+  let filteredResults = searchResultStorage.value;
 
-  if (noFilters) {
-    searchResults.value = searchResultStorage.value.slice();
-    return;
-  }
-
-  let filteredResults = searchResultStorage.value.slice();
-
-  if (activeFilters.value.price.min !== null || activeFilters.value.price.max !== null) {
-    filteredResults = filteredResults.filter(item => {
-      const price = item.price;
-      const MinPriceByUser = activeFilters.value.price.min;
-      const MaxPriceByUser = activeFilters.value.price.max;
-      return (MinPriceByUser === null || price >= MinPriceByUser) &&
-        (MaxPriceByUser === null || price <= MaxPriceByUser);
-    });
-  }
-
-  if (activeFilters.value.brand.length) {
-    filteredResults = filteredResults.filter(item =>
-      activeFilters.value.brand.includes(item.brand)
+  if (categoryFilters.length > 0) {
+    filteredResults = filteredResults.filter(product =>
+      categoryFilters.includes(product.productType)
     );
   }
 
-  if (activeFilters.value.category.length) {
-    filteredResults = filteredResults.filter(item =>
-      activeFilters.value.category.includes(item.category)
+  if (brandFilters.length > 0) {
+    filteredResults = filteredResults.filter(product =>
+      brandFilters.includes(product.brandName)
     );
   }
 
-  filteredResults = filteredResults.sort((a, b) => a.brand.localeCompare(b.brand));
-  if (filteredResults.length) {
-    filteredResults = filteredResults.sort((a, b) => {
-      const brandA = a.brand || '';
-      const brandB = b.brand || '';
-      return brandA.localeCompare(brandB);
-    });
+  if (minPrice !== null) {
+    filteredResults = filteredResults.filter(product =>
+      product.lowestAskingPrice !== null && product.lowestAskingPrice >= minPrice
+    );
+  }
 
+  if (maxPrice !== null) {
+    filteredResults = filteredResults.filter(product =>
+      product.lowestAskingPrice !== null && product.lowestAskingPrice <= maxPrice
+    );
   }
 
   searchResults.value = filteredResults;
-});
+
+}, { deep: true });
 
 function applyFilter(filterType, filterValue) {
   if (['category', 'brand'].includes(filterType)) {
