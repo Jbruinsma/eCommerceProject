@@ -6,23 +6,12 @@
         <p>Search for a user by ID or email to view and edit their balance.</p>
       </header>
 
-      <section class="card search-card">
-        <h2>Find User Account</h2>
-        <form @submit.prevent="searchUser" class="search-form">
-          <div class="input-group">
-            <label for="search-query">User ID or Email</label>
-            <input
-              type="text"
-              id="search-query"
-              v-model="searchQuery"
-              placeholder="e.g., 12345 or user@example.com"
-            />
-          </div>
-          <button type="submit" class="btn btn-primary" :disabled="loading">
-            {{ loading ? 'Searching...' : 'Search' }}
-          </button>
-        </form>
-      </section>
+      <UserSearch
+        title="Find User Account"
+        v-model="searchQuery"
+        :loading="loading"
+        @submit="searchUser"
+      />
 
       <div v-if="message && messageType === 'error'" :class="['api-message', messageType]">
         {{ message }}
@@ -138,6 +127,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { fetchFromAPI, postToAPI } from '@/utils/index.js'
 import { authenticateAdmin } from '@/utils/authenticateUser.js'
+// UPDATED: Import the new component
+import UserSearch from '@/components/UserSearch.vue'
 
 const searchQuery = ref('')
 const loading = ref(false)
@@ -214,7 +205,7 @@ async function searchUser() {
     messageType.value = 'error'
   }
   loading.value = false
-  searchQuery.value = ''
+  searchQuery.value = '' // This was in your original, keeps the search bar clean
 }
 
 function openConfirmationModal() {
@@ -320,8 +311,6 @@ p { color: #cccccc; line-height: 1.6; }
 .modify-balance-form h3 { text-align: center; }
 .page-header { margin-bottom: 3rem; text-align: center; }
 .page-header p { color: #888; font-size: 1.1rem; }
-.search-form { align-items: flex-end; display: flex; gap: 1rem; }
-.search-form .input-group { flex-grow: 1; margin-bottom: 0; }
 .subtract { color: #f87171; font-weight: 600; }
 .user-details-card { display: flex; flex-wrap: wrap; gap: 2rem; }
 .user-info { flex: 1; min-width: 300px; }
@@ -330,4 +319,3 @@ p { color: #cccccc; line-height: 1.6; }
   .page-header { padding: 1rem 3%; }
 }
 </style>
-

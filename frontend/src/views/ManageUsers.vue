@@ -8,23 +8,12 @@
         <p>Search for a user by ID or email to view and edit their details.</p>
       </header>
 
-      <section class="card search-card">
-        <h2>Find User Account</h2>
-        <form @submit.prevent="searchUser" class="search-form">
-          <div class="input-group">
-            <label for="search-query">User ID or Email</label>
-            <input
-              type="text"
-              id="search-query"
-              v-model="searchQuery"
-              placeholder="e.g., user@example.com or UUID"
-            />
-          </div>
-          <button type="submit" class="btn btn-primary" :disabled="loading">
-            {{ loading ? 'Searching...' : 'Search' }}
-          </button>
-        </form>
-      </section>
+      <UserSearch
+        title="Find User Account"
+        v-model="searchQuery"
+        :loading="loading"
+        @submit="searchUser"
+      />
 
       <form v-if="user.uuid" @submit.prevent="openConfirm('save')" class="settings-form">
         <div class="form-section">
@@ -94,7 +83,6 @@
         </div>
 
         <div class="form-actions">
-          <button type="button" class="btn-funds" @click="goToManageFunds">Manage Funds</button>
           <div class="spacer"></div>
           <button type="button" class="btn-secondary" @click="openConfirm('cancel')">Cancel</button>
           <button type="submit" class="btn-primary">Save Changes</button>
@@ -125,8 +113,8 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import router from '@/router/index.js'
 import { fetchFromAPI, postToAPI } from '@/utils/index.js'
+import UserSearch from '@/components/UserSearch.vue'
 
 const searchQuery = ref('');
 const loading = ref(false);
@@ -140,7 +128,7 @@ let originalUser = {};
 function formatTimestamp(dateStr) {
   if (!dateStr) return 'N/A';
   const d = new Date(dateStr);
-  if (Number.isNaN(d.getTime())) return dateStr;
+  if (Number.isNaN(d.getTime())) return 'N/A';
   return d.toLocaleString();
 }
 
@@ -271,11 +259,6 @@ function handleCancelConfirmed() {
   messageType.value = 'info';
   setTimeout(() => { message.value = ''; messageType.value = '' }, 2000);
 }
-
-function goToManageFunds() {
-  if (!user.value.uuid) return;
-  router.push(`/admin/funds?search=${encodeURIComponent(user.value.email || user.value.uuid)}`);
-}
 </script>
 
 <style scoped>
@@ -288,11 +271,6 @@ p { color: #cccccc; line-height: 1.6; }
 .manage-users-content { margin: 0 auto; max-width: 900px; padding: 4rem 5%; }
 .page-header { margin-bottom: 3rem; text-align: center; }
 .page-header p { color: #888; font-size: 1.1rem; }
-
-.card { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; margin-bottom: 2rem; padding: 2rem; }
-.search-form { align-items: flex-end; display: flex; gap: 1rem; }
-.search-form .input-group { flex-grow: 1; margin-bottom: 0; }
-
 .settings-form { display: flex; flex-direction: column; gap: 2rem; }
 .form-section { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 2rem; }
 .form-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
@@ -302,7 +280,6 @@ p { color: #cccccc; line-height: 1.6; }
 .user-id { background-color: #2c2c2c; border: 1px solid #444; border-radius: 6px; color: #aaa; font-family: monospace; font-size: 0.8rem; padding: 0.25rem 0.5rem; }
 .form-actions { align-items: center; display: flex; gap: 1rem; justify-content: flex-start; margin-top: 1rem; }
 .spacer { flex-grow: 1; }
-
 .info-section h3 { border-bottom: 1px solid #333; padding-bottom: 1rem; }
 .info-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
 .info-item { display: flex; flex-direction: column; gap: 0.25rem; }
@@ -312,39 +289,29 @@ p { color: #cccccc; line-height: 1.6; }
 .balance-negative { color: #f06e6e; }
 .balance-positive { color: #4ade80; }
 .balance-zero { color: #ffffff; }
-
 input[type='text'], input[type='email'], input[type='date'], input[type='password'], select { background-color: #2c2c2c; border: 1px solid #444; border-radius: 8px; color: #ffffff; font-family: inherit; font-size: 1rem; padding: 0.75rem; transition: border-color 0.3s ease; }
 input[type='text']:focus, input[type='email']:focus, input[type='date']:focus, input[type='password']:focus, select:focus { border-color: #ffffff; outline: none; }
 label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; }
-
 .btn-primary, .btn-secondary, .btn-funds { border: 1px solid transparent; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: bold; padding: 0.75rem 1.5rem; transition: all 0.3s ease; }
 .btn-primary { background-color: #ffffff; color: #121212; }
 .btn-primary:hover { background-color: #cccccc; }
 .btn-primary:disabled { background-color: #555; color: #999; cursor: not-allowed; }
 .btn-secondary { background-color: #2c2c2c; border-color: #444; color: #ffffff; }
 .btn-secondary:hover { background-color: #383838; border-color: #666; }
-.btn-funds { background-color: #1a5e3a; border-color: #2a7e4a; color: #e0ffe0; }
-.btn-funds:hover { background-color: #2a7e4a; border-color: #3cb063; }
-
 .modal-overlay { align-items: center; background: rgba(0,0,0,0.6); display: flex; inset: 0; justify-content: center; position: fixed; z-index: 1000; }
 .modal { background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.6); max-width: 520px; padding: 1.5rem; width: 92%; }
 .modal h3 { color: #fff; margin-top: 0; }
 .modal p { color: #ccc; margin-bottom: 1.5rem; }
 .modal-actions { display: flex; gap: 1rem; justify-content: flex-end; }
 .modal .btn-primary:disabled { background-color: #555; color: #999; }
-
 .api-message { border-radius: 8px; font-weight: 600; margin: 0 auto 2rem auto; max-width: 900px; padding: 1rem 1.5rem; text-align: center; }
 .api-message.success { background: #0f5132; border: 1px solid #0b2f1f; color: #d1e7dd; }
 .api-message.error { background: #5a1414; border: 1px solid #3e0b0b; color: #f8d7da; }
 .api-message.info { background: #0c5460; border: 1px solid #0a424a; color: #d1ecf1; }
-
 .field-error { color: #ffb3b3; font-size: 0.85rem; margin-top: 0.4rem; }
-
 @media (max-width: 640px) {
-  .search-form { align-items: stretch; flex-direction: column; gap: 1rem; }
   .info-grid { grid-template-columns: 1fr; }
   .form-actions { flex-wrap: wrap; }
   .spacer { display: none; }
 }
 </style>
-

@@ -49,10 +49,10 @@ def identify_identifier(val: str) -> str:
     return "unknown"
 
 
-@router.get("/{user_identifier}/balance")
+@router.get("/{user_identifier:path}/balance")
 async def get_balance(user_identifier: str, session: AsyncSession = Depends(get_session)):
     try:
-        user_uuid, user_email = retrieve_uuid_and_email(user_identifier, session)
+        user_uuid, user_email = await retrieve_uuid_and_email(user_identifier, session)
     except Exception as e:
         return ErrorMessage(message=str(e), error="InvalidIdentifier")
 
@@ -65,16 +65,15 @@ async def get_balance(user_identifier: str, session: AsyncSession = Depends(get_
 
     return dict(row)
 
-@router.post("/{user_identifier}/balance")
+@router.post("/{user_identifier:path}/balance")
 async def modify_balance(user_identifier: str, modified_balance_info: ModifiedBalanceInfo, session: AsyncSession = Depends(get_session)):
     try:
-        user_uuid, user_email = retrieve_uuid_and_email(user_identifier, session)
+        user_uuid, user_email = await retrieve_uuid_and_email(user_identifier, session)
     except Exception as e:
         return ErrorMessage(message=str(e), error="InvalidIdentifier")
 
     if user_uuid != modified_balance_info.uuid:
         return ErrorMessage(message="User identifier does not match UUID", error="InvalidIdentifier")
-
 
     statement = text("CALL recordTransaction(:input_user_id, :input_order_id, :input_amount, :input_transaction_status, :input_payment_origin, :input_payment_destination, :input_payment_purpose);")
     result = await session.execute(statement, {
@@ -115,7 +114,7 @@ async def modify_balance(user_identifier: str, modified_balance_info: ModifiedBa
 @router.get("/users/{user_identifier:path}")
 async def get_user_info(user_identifier: str, session: AsyncSession = Depends(get_session)):
     try:
-        user_uuid, user_email = retrieve_uuid_and_email(user_identifier, session)
+        user_uuid, user_email = await retrieve_uuid_and_email(user_identifier, session)
     except Exception as e:
         return ErrorMessage(message=str(e), error="InvalidIdentifier")
 
