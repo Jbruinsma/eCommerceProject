@@ -84,26 +84,15 @@ html {
 
 
 <style scoped>
-.home-container { color: #ffffff; font-family: Bodoni Moda, BlinkMacSystemFont; min-height: 100vh; width: 100%; }
+.home-container { color: #ffffff; font-family: Bodoni Moda, BlinkMacSystemFont,serif; min-height: 100vh; width: 100%; }
 h1, h2, h3 { font-weight: 600; }
 h1 { font-size: 3rem; margin-bottom: 1rem; }
 h2 { border-bottom: 1px solid #333; font-size: 1.8rem; margin-bottom: 2rem; padding-bottom: 1rem; text-align: center; }
 h3 { font-size: 1.1rem; margin-top: 1rem; }
 p { color: #cccccc; line-height: 1.6; }
 a { color: #ffffff; text-decoration: none; }
-.navbar { align-items: center; background-color: #1a1a1a; display: flex; justify-content: space-between; padding: 1rem 5%; }
-.logo { font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; }
-.nav-links { align-items: center; display: flex; gap: 2rem; list-style: none; }
 .nav-links a { transition: color 0.3s ease; }
 .nav-links a:hover { color: #bbbbbb; }
-.nav-customization { font-size: 20px; font-weight: 500; display: inline-flex; }
-.nav-icons { align-items: center; display: flex; gap: 1.5rem; }
-.account-icon { cursor: pointer; height: 28px; width: 28px; }
-.cart-icon { cursor: pointer; height: 28px; width: 28px; }
-.search-bar { align-items: center; background-color: #2c2c2c; border-radius: 12px; display: flex; padding: 0.3rem 0.8rem; }
-.search-icon { fill: #888; height: 30px; margin-right: 0.5rem; width: 15px; }
-.search-input { background-color: transparent; border: none; color: #ffffff; font-size: 0.9rem; outline: none; width: 200px; }
-.search-input::placeholder { color: #888; }
 .hero-section { background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.2)), url('/images/MaisonMargielaBanner.png') no-repeat center center/cover; min-height: 60vh; padding: 5rem 5%; text-align: center; }
 .hero-content { margin: 0 auto; max-width: 800px; text-shadow: 2px 2px 2px black;}
 .hero-info { font-size: 1.2rem; margin-bottom: 1rem; color: white; text-shadow: 1px 1px 1px black;}

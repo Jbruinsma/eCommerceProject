@@ -1,4 +1,3 @@
-
 <template>
   <div class="marketplace-container">
     <header class="page-header">
@@ -82,7 +81,7 @@
             class="product-card"
           >
             <img :src="product.imageUrl" :alt="product.name" class="product-image" />
-            <h3>{{ product.name }}</h3>
+            <h3 class="product-name">{{ product.name }}</h3>
             <p class="product-brand">{{ product.brandName }}</p>
             <p class="product-price">{{ formatCurrency(product.lowestAskingPrice) }}</p>
           </router-link>
@@ -242,8 +241,6 @@ h2 { border-bottom: 1px solid #333; font-family: Spectral, sans-serif; font-size
 h3 { font-family: Spectral, sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
 p { color: #cccccc; line-height: 1.6; }
 ul { list-style: none; margin: 0; padding: 0; }
-.apply-filters-btn { background-color: #ffffff; border: 1px solid #ffffff; border-radius: 6px; color: #121212; cursor: pointer; font-size: 1rem; font-weight: bold; padding: 0.75rem 1rem; text-align: center; transition: background-color 0.3s, color 0.3s; width: 100%; }
-.apply-filters-btn:hover { background-color: transparent; color: #ffffff; }
 .filter-group { margin-bottom: 2rem; }
 .filter-options input[type='checkbox'] { accent-color: #ffffff; background-color: #333; border: 1px solid #555; border-radius: 3px; cursor: pointer; height: 16px; margin-right: 0.75rem; vertical-align: middle; width: 16px; }
 .filter-options label { align-items: center; color: #cccccc; cursor: pointer; display: flex; margin-bottom: 0.75rem; }
@@ -262,12 +259,13 @@ ul { list-style: none; margin: 0; padding: 0; }
 .price-inputs { align-items: center; display: flex; gap: 0.5rem; }
 .price-inputs input { background-color: #1a1a1a; border: 1px solid #555; border-radius: 4px; color: #ffffff; padding: 0.5rem; width: 100%; }
 .price-inputs span { color: #888; }
-.product-brand { font-family: Bodoni Moda, BlinkMacSystemFont; color: black; font-size: 1.2rem; margin: 0.25rem 0; font-weight: bold; }
-.product-card { background-color: #ffffff; border: 1px solid #2a2a2a; cursor: pointer; display: block; padding: 1.5rem; text-align: left; transition: box-shadow 0.3s ease, transform 0.3s ease; }
+.product-brand { color: black; display: none; font-family: Bodoni Moda, BlinkMacSystemFont; font-size: 1.2rem; font-weight: bold; margin: 0.25rem 0; }
+.product-card { background-color: #ffffff; border: 1px solid #7e7e7e; color: black; cursor: pointer; display: block; padding: 2rem; text-align: center; transition: box-shadow 0.3s ease, transform 0.3s ease; }
 .product-card:hover { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); transform: translateY(-5px); }
 .product-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, 250px); justify-content: start; }
-.product-image { width: 100%; height: auto; border-radius: 6px; object-fit: cover; }
-.product-price { font-family: Bodoni Moda, BlinkMacSystemFont; color: #3c862a; text-shadow: 1px 1px 1px gray; font-size: 1.2rem; font-weight: bold; margin-top: 0.5rem; }
+.product-image { aspect-ratio: 4 / 3; object-fit: cover; width: 100%; }
+.product-name { font-family: 'Bodoni Moda', BlinkMacSystemFont, serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 0; margin-top: 1rem; }
+.product-price { color: #3c862a; font-family: Bodoni Moda, BlinkMacSystemFont; font-size: 1.2rem; margin-top: 0.5rem; }
 .results-container { flex: 1; }
 .results-header { align-items: center; display: flex; justify-content: space-between; margin-bottom: 2rem; }
 .results-header p { color: #888; margin: 0; }
