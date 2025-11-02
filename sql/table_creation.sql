@@ -16,6 +16,8 @@ DROP TABLE IF EXISTS brands;
 DROP TABLE IF EXISTS sizes;
 DROP TABLE IF EXISTS fee_structures;
 
+
+
 CREATE TABLE users(
     uuid CHAR(36) PRIMARY KEY NOT NULL,
     email VARCHAR(225) NOT NULL UNIQUE,
@@ -40,6 +42,15 @@ CREATE TABLE sizes(
   size_value VARCHAR(50)
 );
 
+CREATE TABLE fee_structures (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    seller_fee_percentage DECIMAL(10, 4) NOT NULL,
+    buyer_fee_percentage DECIMAL(10, 4) NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Dependent tables
 CREATE TABLE account_balance(
     user_id CHAR(36) PRIMARY KEY,
     balance DECIMAL(15, 2) DEFAULT 0.00,
@@ -56,9 +67,48 @@ CREATE TABLE products(
     retail_price DECIMAL(10, 2),
     release_date DATE,
     image_url VARCHAR(2083),
-    product_type ENUM('sneakers', 'apparel', 'accessories', 'other'),
+    product_type VARCHAR(100),
 
     FOREIGN KEY (brand_id) REFERENCES brands(brand_id)
+);
+
+CREATE TABLE products_sizes(
+    product_id INT UNSIGNED,
+    size_id INT UNSIGNED,
+
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (size_id) REFERENCES sizes(size_id),
+    PRIMARY KEY(product_id, size_id)
+);
+
+CREATE TABLE orders(
+    order_id CHAR(36) PRIMARY KEY NOT NULL,
+    buyer_id CHAR(36) NOT NULL,
+    seller_id CHAR(36) NOT NULL,
+    product_id INT UNSIGNED NOT NULL,
+    size_id INT UNSIGNED NOT NULL,
+    product_condition ENUM('new', 'used', 'worn') NOT NULL,
+
+    sale_price DECIMAL(10, 2) NOT NULL,
+
+    buyer_transaction_fee DECIMAL(10, 2) NOT NULL,
+    buyer_fee_structure_id INT UNSIGNED,
+    buyer_final_price DECIMAL(10, 2) NOT NULL,
+
+    seller_transaction_fee DECIMAL(10, 2) NOT NULL,
+    seller_fee_structure_id INT UNSIGNED,
+    seller_final_payout DECIMAL(10, 2) NOT NULL,
+
+    order_status ENUM('pending', 'paid', 'shipped', 'completed', 'cancelled', 'refunded') NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (buyer_id) REFERENCES users(uuid),
+    FOREIGN KEY (seller_id) REFERENCES users(uuid),
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (size_id) REFERENCES sizes(size_id),
+    FOREIGN KEY (buyer_fee_structure_id) REFERENCES fee_structures(id) ON DELETE SET NULL,
+    FOREIGN KEY (seller_fee_structure_id) REFERENCES fee_structures(id) ON DELETE SET NULL
 );
 
 CREATE TABLE addresses(
@@ -76,23 +126,6 @@ CREATE TABLE addresses(
 
     FOREIGN KEY (user_id) REFERENCES users(uuid),
     FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE SET NULL
-);
-
-CREATE TABLE products_sizes(
-    product_id INT UNSIGNED,
-    size_id INT UNSIGNED,
-
-    FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (size_id) REFERENCES sizes(size_id),
-    PRIMARY KEY(product_id, size_id)
-);
-
-CREATE TABLE fee_structures (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    seller_fee_percentage DECIMAL(10, 4) NOT NULL,
-    buyer_fee_percentage DECIMAL(10, 4) NOT NULL,
-    is_active TINYINT(1) NOT NULL DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE listings(
@@ -132,7 +165,7 @@ CREATE TABLE bids(
     bid_id CHAR(36) PRIMARY KEY NOT NULL,
     user_id CHAR(36),
     product_id INT UNSIGNED,
-    product_size_id INT UNSIGNED,
+    size_id INT UNSIGNED,
     product_condition ENUM('new', 'used', 'worn'),
     bid_amount DECIMAL(10, 2),
     transaction_fee DECIMAL(10, 2),
@@ -145,38 +178,8 @@ CREATE TABLE bids(
 
     FOREIGN KEY (user_id) REFERENCES users(uuid),
     FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (product_size_id) REFERENCES sizes(size_id),
-    FOREIGN KEY (fee_structure_id) REFERENCES fee_structures(id)
-);
-
-CREATE TABLE orders(
-    order_id CHAR(36) PRIMARY KEY NOT NULL,
-    buyer_id CHAR(36) NOT NULL,
-    seller_id CHAR(36) NOT NULL,
-    product_id INT UNSIGNED NOT NULL,
-    size_id INT UNSIGNED NOT NULL,
-    product_condition ENUM('new', 'used', 'worn') NOT NULL,
-
-    sale_price DECIMAL(10, 2) NOT NULL,
-
-    buyer_transaction_fee DECIMAL(10, 2) NOT NULL,
-    buyer_fee_structure_id INT UNSIGNED,
-    buyer_final_price DECIMAL(10, 2) NOT NULL,
-
-    seller_transaction_fee DECIMAL(10, 2) NOT NULL,
-    seller_fee_structure_id INT UNSIGNED,
-    seller_final_payout DECIMAL(10, 2) NOT NULL,
-
-    order_status ENUM('pending', 'paid', 'shipped', 'completed', 'cancelled', 'refunded') NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (buyer_id) REFERENCES users(uuid),
-    FOREIGN KEY (seller_id) REFERENCES users(uuid),
-    FOREIGN KEY (product_id) REFERENCES products(product_id),
     FOREIGN KEY (size_id) REFERENCES sizes(size_id),
-    FOREIGN KEY (buyer_fee_structure_id) REFERENCES fee_structures(id) ON DELETE SET NULL,
-    FOREIGN KEY (seller_fee_structure_id) REFERENCES fee_structures(id) ON DELETE SET NULL
+    FOREIGN KEY (fee_structure_id) REFERENCES fee_structures(id)
 );
 
 CREATE TABLE transactions(

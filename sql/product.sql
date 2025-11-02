@@ -8,12 +8,10 @@ CREATE PROCEDURE retrieveProductById(
     IN input_product_id INT UNSIGNED
 )
 BEGIN
-
     SELECT brand_name, name, sku, colorway, retail_price, release_date, image_url
     FROM products p
     JOIN brands ON p.brand_id = brands.brand_id
     WHERE product_id = input_product_id;
-
 END//
 
 DROP PROCEDURE IF EXISTS retrieveProductPreviewById;
@@ -22,9 +20,7 @@ CREATE PROCEDURE retrieveProductPreviewById(
     IN input_product_id INT UNSIGNED
 )
 BEGIN
-
     CALL retrieveProductById(input_product_id);
-
 END//
 
 DROP PROCEDURE IF EXISTS retrieveProductByBrandId;
@@ -32,15 +28,12 @@ DROP PROCEDURE IF EXISTS retrieveProductByBrandId;
 CREATE PROCEDURE retrieveProductByBrandId(
     IN input_brand_id INT UNSIGNED
 )
-
 BEGIN
-
     SELECT product_id, name, sku, colorway, retail_price, release_date, image_url
     FROM products
     WHERE brand_id = input_brand_id
     ORDER BY release_date DESC;
-
-END //
+END//
 
 DROP PROCEDURE IF EXISTS retrieveAllProductSizes;
 
@@ -53,27 +46,28 @@ BEGIN
     JOIN sizes s ON ps.size_id = s.size_id
     WHERE ps.product_id = input_product_id
     ORDER BY s.size_value;
-end //
+END//
 
 DROP PROCEDURE IF EXISTS retrieveProductsByCategory;
 
+-- =================================================================
+-- FIXED THIS PROCEDURE
+-- 1. Changed ENUM parameter to VARCHAR(100) to match the table.
+-- 2. Changed WHERE clause from '=' to 'LIKE' for flexible searching.
+-- =================================================================
 CREATE PROCEDURE retrieveProductsByCategory(
-    IN input_category ENUM('sneakers', 'apparel', 'accessories', 'other'),
+    IN input_category VARCHAR(100),
     IN result_limit INT UNSIGNED
 )
-
 BEGIN
-
     SELECT DISTINCT *
     FROM products
         JOIN ecommerce.brands b
-            ON
-                products.brand_id = b.brand_id
-    WHERE product_type = input_category
+            ON products.brand_id = b.brand_id
+    WHERE product_type LIKE CONCAT(input_category, '%')
     ORDER BY release_date DESC
     LIMIT result_limit;
-
-end //
+END//
 
 DROP PROCEDURE IF EXISTS productSearch;
 
@@ -161,8 +155,7 @@ BEGIN
         LIMIT result_limit;
 
     END IF;
-
-END //
+END//
 
 DROP PROCEDURE IF EXISTS generalProductSearch;
 
@@ -290,7 +283,6 @@ BEGIN
         LIMIT result_limit;
 
     END IF;
-
-END //
+END//
 
 DELIMITER ;
