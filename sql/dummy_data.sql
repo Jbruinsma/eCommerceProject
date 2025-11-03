@@ -150,7 +150,7 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (8, 'Air Jordan 3 Retro ''El Vuelo''', 'IO1752-100', 'Summit White/Metallic Gold/Pine Green/Dragon Red/Sail', 'Sneakers', 230.00, '2025-09-16', '/products/IO1752-100.avif'),
 (8, 'Air Jordan 1 Retro High OG ''Pro Green'' (Women''s)', 'FD2596-101', 'Pale Ivory/Pro Green-Fir-Coconut Milk', 'Sneakers', 185.00, '2025-10-18', '/products/FD2596-101.avif'),
 (8, 'Air Jordan 1 Retro Low OG ''Black Toe''', 'CZ0790-106', 'White/Black/Varsity Red', 'Sneakers', 140.00, '2023-08-04', '/products/CZ0790-106.jpg'),
-(8, 'A Ma Maniére x Air Jordan 4 ''A Ma Maniére While You Were Sleeping (Women''s)''', 'FZ4810-200', 'Fossil Stone/Metallic Pewter/Burgundy Crush', 'Sneakers', 225.00, '2025-12-12', '/products/IF3102-200'),
+(8, 'A Ma Maniére x Air Jordan 4 ''A Ma Maniére While You Were Sleeping (Women''s)''', 'FZ4810-200', 'Fossil Stone/Metallic Pewter/Burgundy Crush', 'Sneakers', 225.00, '2025-12-12', '/products/IF3102-200.jpg'),
 (8, 'A Ma Maniére x Air Jordan 4 ''Violet Ore''', 'DV6773-220', 'Violet Ore/Medium Ash-Black-Muslin-Burgundy Crush', 'Sneakers', 225.00, '2025-12-12', '/products/DV6773-220.avif'),
 (8, 'Travis Scott x Jordan Jumpman Jack "Bright Cactus"', 'FZ8117-102', 'Muslin/Black/Bright Cactus', 'Sneakers', 200.00, '2025-04-30', '/products/FZ8117-102.avif'),
 
