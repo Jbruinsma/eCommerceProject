@@ -2,6 +2,7 @@ USE ecommerce;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+TRUNCATE TABLE fee_structures;
 TRUNCATE TABLE account_balance;
 TRUNCATE TABLE users;
 TRUNCATE TABLE brands;
@@ -10,6 +11,11 @@ TRUNCATE TABLE products;
 TRUNCATE TABLE products_sizes;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+INSERT INTO fee_structures
+(id, seller_fee_percentage, buyer_fee_percentage, is_active)
+VALUES(1, 0.10, 0.025, true);
+
 
 DROP PROCEDURE IF EXISTS InsertDummyUsers;
 
@@ -76,7 +82,8 @@ BEGIN
 END$$
 DELIMITER ;
 
--- Run the procedure
+
+
 CALL InsertDummyUsers();
 
 INSERT INTO account_balance (user_id)
@@ -232,13 +239,7 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 
 -- Palace
 (14, 'Palace Zodiac Tri-Ferg Hood ''Black''', 'P28CS080', 'Grey Marl', 'Apparel - Hoodie', 138.00, '2025-02-07', '/products/P28CS080.webp'),
-# (14, 'Palace Zodiac Tri-Ferg Hood ''Navy''', NULL, 'Navy', 'Apparel - Hoodie', 138.00, '2025-02-07', NULL),
-# (14, 'Palace ''Basically a Tri-Ferg'' T-Shirt ''Black''', NULL, 'Black', 'Apparel - T-Shirt', 48.00, '2021-02-12', NULL),
-# (14, 'Palace ''Basically a Tri-Ferg'' T-Shirt ''White''', NULL, 'White', 'Apparel - T-Shirt', 48.00, '2021-02-12', NULL),
 (14, 'Palace 09 Tri-Ferg T-Shirt ''Grey Marl''', 'P29TS149', 'Grey Marl', 'Apparel - T-Shirt', 48.00, '2025-10-17', '/products/P29TS149.avif'),
-# (14, 'Palace S-Line Hood ''Grey Marl''', NULL, 'Grey Marl', 'Apparel - Hoodie', 148.00, '2018-12-07', NULL),
-# (14, 'Palace S-Line Hood ''Black''', NULL, 'Black', 'Apparel - Hoodie', 148.00, '2018-12-07', NULL),
-# (14, 'Palace Shell Out Joggers ''Black''', NULL, 'Black', 'Apparel - Pants', 128.00, '2021-05-07', NULL),
 (14, 'Palace Shell Jogger ''Navy''', 'P29JG028', 'Navy', 'Apparel - Pants', 158.00, '2025-10-24', '/products/P29JG028.avif'),
 (14, 'Palace Barbour Field Casual Jacket ''Kelp Forest Camo''', 'MCA1079GN51', 'Kelp Forest Camo', 'Apparel - Jacket', 970.00, '2025-10-24', '/products/MCA1079GN51.avif'),
 (14, 'Palace Horses Jacket ''Navy/Red''', 'P29JK082', 'Navy/Red', 'Apparel - Jacket', 288.00, '2025-10-24', '/products/P29JK082.avif'),
