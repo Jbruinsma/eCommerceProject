@@ -138,31 +138,21 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (1, 'adidas Fear of God Athletics Basketball 2 "Ash Silver"', 'JS0979', 'Ash Silver/Ash Silver/Ash Silver', 'Sneakers', 180.00, '2025-09-17'),
 (1, 'Bad Bunny x adidas Adiracer GT', 'HQ2570', 'Branch/Sand/Cinder', 'Sneakers', 160.00, '2025-10-24'),
 
-<<<<<<< HEAD
--- Photos uploaded up to hear
-=======
->>>>>>> b586519 (Recovery: Saving all current work)
 -- Jordan
 (8, 'Air Jordan 1 Retro High OG ''Chicago'' (Lost & Found)', 'DZ5485-612', 'Varsity Red/Black/Sail/Muslin', 'Sneakers', 180.00, '2022-11-19'),
 (8, 'Air Jordan 1 Retro High OG ''Shattered Backboard''', '555088-005', 'Black/Starfish-Sail', 'Sneakers', 160.00, '2015-06-27'),
 (8, 'Air Jordan 3 Retro ''White Cement'' (Reimagined)', 'DN3707-100', 'Summit White/Fire Red/Black/Cement Grey', 'Sneakers', 210.00, '2023-03-11'),
 (8, 'Air Jordan 4 Retro ''Bred'' (Reimagined)', 'FV5029-006', 'Black/Fire Red/Cement Grey/Summit White', 'Sneakers', 215.00, '2024-02-17'),
 (8, 'Air Jordan 11 Retro ''Concord'' (2018)', '378037-100', 'White/Black-Dark Concord', 'Sneakers', 220.00, '2018-12-08'),
-<<<<<<< HEAD
 (8, 'Air Jordan 5 Retro ''Fire Red'' (2020)', 'DA1911-102', 'White/Black-Metallic Silver-Fire Red', 'Sneakers', 200.00, '2020-05-02'),
-=======
 (8, 'Air Jordan 5 Retro ''Fire Red Silver Tongue'' (2020)', 'DA1911-102', 'White/Black-Metallic Silver-Fire Red', 'Sneakers', 200.00, '2020-05-02'),
->>>>>>> b586519 (Recovery: Saving all current work)
 (8, 'Air Jordan 4 Retro ''Black Cat'' (2025)', 'FV5029-010', 'Black/Black-Light Graphite', 'Sneakers', 225.00, '2025-11-28'),
 (8, 'Air Jordan 1 Mid ''White/Black''', 'DQ8426-132', 'White/Black-White-Black', 'Sneakers', 125.00, '2023-12-12'),
 (8, 'Air Jordan 3 Retro ''El Vuelo''', 'IO1752-100', 'Summit White/Metallic Gold/Pine Green/Dragon Red/Sail', 'Sneakers', 230.00, '2025-09-16'),
 (8, 'Air Jordan 1 Retro High OG ''Pro Green'' (Women''s)', 'FD2596-101', 'Pale Ivory/Pro Green-Fir-Coconut Milk', 'Sneakers', 185.00, '2025-10-18'),
 (8, 'Air Jordan 1 Retro Low OG ''Black Toe''', 'CZ0790-106', 'White/Black/Varsity Red', 'Sneakers', 140.00, '2023-08-04'),
-<<<<<<< HEAD
 (8, 'A Ma Maniére x Air Jordan 4 ''Dark Mocha''', 'IF3102-200', 'Dark Mocha/Bronze Eclipse/Black/Violet Ore', 'Sneakers', 225.00, '2025-12-12'),
-=======
 (8, 'A Ma Maniére x Air Jordan 4 ''Violet Ore''', 'DV6773-220', 'Violet Ore/Medium Ash-Black-Muslin-Burgundy Crush', 'Sneakers', 225.00, '2025-12-12'),
->>>>>>> b586519 (Recovery: Saving all current work)
 (8, 'Travis Scott x Jordan Jumpman Jack "Bright Cactus"', 'FZ8117-102', 'Muslin/Black/Bright Cactus', 'Sneakers', 200.00, '2025-04-30'),
 
 -- Supreme
@@ -180,27 +170,21 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (19, 'Supreme Hanes Tagless Tees (3 Pack) ''White''', 'SS21', 'White', 'Apparel - T-Shirt', 38.00, '2021-08-19'),
 
 -- Balenciaga
-<<<<<<< HEAD
 (3, 'Balenciaga Triple S Sneaker ''Black''', '534217W2CA11000', 'Black', 'Sneakers', 1150.00, '2018-02-14'),
 (3, 'Balenciaga Triple S Sneaker ''Beige''', '809496190', 'Beige', 'Sneakers', 1150.00, '2019-01-01'),
-=======
 (3, 'Balenciaga Triple S Sneaker ''Black''', '534217W2CA11000', 'Black', 'Sneakers', 1100.00, '2018-02-14'),
 (3, 'Balenciaga Triple S Sneaker ''White Tan''', '534217W2CA19000', 'White/Tan', 'Sneakers', 1100.00, '2019-01-01'),
->>>>>>> b586519 (Recovery: Saving all current work)
 (3, 'Balenciaga Triple S Clear Sole Sneaker ''White''', '541624W2FB19000', 'White', 'Sneakers', 1150.00, '2017-09-21'),
 (3, 'Balenciaga Speed 2.0 Full Clear Sole Sneaker ''Black''', '617239W2DC41000', 'Black', 'Sneakers', 1100.00, '2020-07-01'),
 (3, 'Balenciaga Speed 2.0 LT Sock Sneaker ''Black/White''', '617239W2DB21015', 'Black/White', 'Sneakers', 995.00, '2020-07-01'),
 (3, 'Balenciaga Runner Sneaker ''White''', '772774W3RMU9000', 'White', 'Sneakers', 1190.00, '2024-12-19'),
 (3, 'Balenciaga Runner Sneaker ''Multicolor''', '677403W3RB68123', 'Multicolor', 'Sneakers', 1190.00, '2022-04-07'),
 (3, 'Balenciaga Track Sneaker ''White''', '542023W1GB19000', 'White', 'Sneakers', 1150.00, '2019-01-01'),
-<<<<<<< HEAD
 (3, 'Balenciaga Track Trail Sneaker ''Black''', '800592WTRHK1000', 'Black/Orange', 'Sneakers', 1250.00, '2024-04-22'),
 (3, 'Balenciaga 3XL Extreme Lace Sneaker ''White''', '778698W3XLL9114', 'White/Grey', 'Sneakers', 1290.00, '2025-03-01'),
 (3, 'Balenciaga Political Campaign Hoodie ''White''', '600583TKVI99084', 'White', 'Apparel - Hoodie', 1150.00, '2017-01-01'),
 (3, 'Balenciaga Political Campaign Hoodie ''Black''', '620947TKVI99034', 'Black', 'Apparel - Hoodie', 1150.00, '2017-01-01'),
 (3, 'Balenciaga 10XL Sneaker ''Grey''', '792779-W2MV2-9110', 'White/Black/Grey', 'Sneakers', 1290.00, '2023-12-02'),
-
-=======
 (3, 'Balenciaga Track Trail Sneaker ''Grey Red''', '800592WTRHK1000', 'Black/Orange', 'Sneakers', 1250.00, '2024-04-22'),
 (3, 'Balenciaga 3XL Extreme Lace Sneaker ''White''', '778698W3XLL1261', 'Grey/Red/Black', 'Sneakers', 1290.00, '2025-03-01'),
 (3, 'Balenciaga Political Campaign Hoodie ''White''', '600583TKVI99084', 'White', 'Apparel - Hoodie', 1150.00, '2017-01-01'),
@@ -208,7 +192,6 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (3, 'Balenciaga 10XL Sneaker ''Worn-Out Grey White Red''', '792779W2MV21960', 'Grey/White/Red', 'Sneakers', 1290.00, '2023-12-02'),
 
 -- Images saved up to here
->>>>>>> b586519 (Recovery: Saving all current work)
 -- Off-White
 (13, 'Off-White x Nike Air Jordan 1 ''Chicago'' (The Ten)', 'AA3834-101', 'White/Black-Varsity Red', 'Sneakers', 190.00, '2017-11-09'),
 (13, 'Off-White x Nike Blazer ''The Ten''', 'AA3832-100', 'White/Black-Muslin', 'Sneakers', 130.00, '2017-09-06'),
@@ -269,7 +252,6 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (14, 'Palace Pertex Puffa Beanie ''Black''', 'P29BN021', 'Black', 'Accessory', 52.00, '2025-10-24'),
 
 -- Kith
-<<<<<<< HEAD
 (9, 'Kith Classic Logo Hoodie ''Sand''', 'Apparel - Hoodie', NULL, 'FW17', NULL, 150.00),
 (9, 'Kith Classic Logo Hoodie ''Tiger Camo''', 'Apparel - Hoodie', NULL, 'FW17', '2017-12-04', 150.00),
 (9, 'Kith Classic Logo Williams II Hoodie ''Heather Grey''', 'Apparel - Hoodie', NULL, 'FW18', '2018-11-26', 160.00),
@@ -282,7 +264,6 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (9, 'Kith x New Balance 990v3 ''Daytona''', 'Sneakers', 'M990KH3', NULL, '2022-06-16', 235.00),
 (9, 'Kith x New Balance 990v2 ''Cyclades''', 'Sneakers', 'M990KC2', NULL, '2022-06-17', 225.00),
 (9, 'Kith x New Balance 990v6 ''MSG (Sandrift)''', 'Sneakers', 'NBU990KN6', NULL, '2023-11-06', 220.00),
-=======
 (9, 'Kith Classic Logo Hoodie ''Sand''', NULL, 'Sand', 'Apparel - Hoodie', 150.00, '2017-12-04'),
 (9, 'Kith Classic Logo Hoodie ''Tiger Camo''', NULL, 'Tiger Camo', 'Apparel - Hoodie', 150.00, '2017-12-04'),
 (9, 'Kith Classic Logo Williams II Hoodie ''Heather Grey''', NULL, 'Heather Grey', 'Apparel - Hoodie', 160.00, '2018-11-26'),
@@ -295,7 +276,6 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (9, 'Kith x New Balance 990v3 ''Daytona''', 'M990KH3', 'Daytona', 'Sneakers', 235.00, '2022-06-16'),
 (9, 'Kith x New Balance 990v2 ''Cyclades''', 'M990KC2', 'Cyclades', 'Sneakers', 225.00, '2022-06-17'),
 (9, 'Kith x New Balance 990v6 ''MSG (Sandrift)''', 'NBU990KN6', 'Sandrift/Methyl Blue', 'Sneakers', 220.00, '2023-11-06'),
->>>>>>> b586519 (Recovery: Saving all current work)
 
 -- Fear of God
 (7, 'Fear of God Athletics Pullover Hoodie ''Black''', 'IM8935', 'Black', 'Apparel - Hoodie', 230.00, '2023-12-03'),
@@ -312,51 +292,50 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (7, 'Fear of God Athletics Adilette Slide Sandals ''Black''', NULL, 'Black', 'Sneakers', 100.00, NULL),
 
 -- New Balance
-<<<<<<< HEAD
-(11, 'New Balance 9060 ''Rain Cloud''', 'Sneakers', 159.99),
-(11, 'New Balance 9060 ''Black Cat''', 'Sneakers', 160.00),
-(11, 'New Balance 9060 ''Mushroom''', 'Sneakers', 159.99),
-(11, 'New Balance 2002R ''Protection Pack - Rain Cloud''', 'Sneakers', 145.00),
-(11, 'New Balance 2002R ''Arid Stone/Black Coffee''', 'Sneakers', 145.00),
-(11, 'New Balance 574 Core ''Grey''', 'Sneakers', 99.99),
-(11, 'New Balance 574 Core ''Navy''', 'Sneakers', 99.99),
-(11, 'New Balance Made in USA 993 ''Grey''', 'Sneakers', 199.99),
-(11, 'New Balance Made in USA 990v6 ''Grey''', 'Sneakers', 199.99),
-(11, 'New Balance 997H ''Team Red''', 'Sneakers', 90.00),
-(11, 'New Balance 580 ''Black''', 'Sneakers', 150.00),
-(11, 'New Balance 57/40 ''White''', 'Sneakers', 100.00),
-(11, 'New Balance Fresh Foam X 1080v14 ''White''', 'Sneakers', 164.99),
+(11, 'New Balance 9060 ''Rain Cloud''', 'U9060GRY', 'Rain Cloud/Castlerock/Grey', 'Sneakers', 159.99, '2022-08-13'),
+(11, 'New Balance 9060 ''Black Cat''', 'U9060BCG', 'Black/Phantom', 'Sneakers', 160.00, '2023-11-23'),
+(11, 'New Balance 9060 ''Mushroom''', 'U9060MUS', 'Mushroom/Aluminium/Grey', 'Sneakers', 159.99, '2023-08-04'),
+(11, 'New Balance 2002R ''Protection Pack - Rain Cloud''', 'M2002RDA', 'Rain Cloud/Phantom/Grey', 'Sneakers', 145.00, '2021-08-20'),
+(11, 'New Balance 2002R ''Arid Stone/Black Coffee''', 'M2002RCH', 'Arid Stone/Black Coffee/Moon Shadow', 'Sneakers', 145.00, '2024-03-21'),
+(11, 'New Balance 574 Core ''Grey''', 'ML574EVG', 'Grey/White', 'Sneakers', 99.99, '2018-01-01'),
+(11, 'New Balance 574 Core ''Navy''', 'ML574EVN', 'Navy/White', 'Sneakers', 99.99, '2018-01-01'),
+(11, 'New Balance Made in USA 993 ''Grey''', 'MR993GL', 'Grey/White', 'Sneakers', 199.99, '2008-01-01'),
+(11, 'New Balance Made in USA 990v6 ''Grey''', 'M990GL6', 'Grey/White/Navy', 'Sneakers', 199.99, '2022-11-04'),
+(11, 'New Balance 997H ''Team Red''', 'CM997HTR', 'Team Red/Pigment', 'Sneakers', 90.00, '2019-02-01'),
+(11, 'New Balance 580 ''Black''', 'MT580MBK', 'Black/White', 'Sneakers', 150.00, '2023-01-13'),
+(11, 'New Balance 57/40 ''White''', 'M5740PG1', 'White/Ghost Pepper', 'Sneakers', 100.00, '2021-01-29'),
+(11, 'New Balance Fresh Foam X 1080v14 ''White''', 'M1080W14', 'White/Sea Salt/Black', 'Sneakers', 164.99, '2024-03-01'),
 
 -- ASICS
-(2, 'ASICS GEL-KAYANO 14 ''White/Midnight''', 'Sneakers', 150.00),
-(2, 'ASICS GEL-KAYANO 14 ''White/Pure Silver''', 'Sneakers', 150.00),
-(2, 'ASICS GEL-1130 ''Clay Canyon''', 'Sneakers', 95.00),
-(2, 'ASICS GEL-1130 ''White/Oatmeal''', 'Sneakers', 100.00),
-(2, 'ASICS GEL-1130 ''Black/Slate Grey''', 'Sneakers', 99.99),
-(2, 'ASICS GEL-NYC ''White''', 'Sneakers', 130.00),
-(2, 'ASICS GEL-NYC ''Cream/Oyster Grey''', 'Sneakers', 140.00),
-(2, 'ASICS GT-2160 ''White/Pure Silver''', 'Sneakers', 130.00),
-(2, 'ASICS GEL-LYTE III OG ''Hydrangea''', 'Sneakers', 130.00),
-(2, 'ASICS GEL-NIMBUS 9 ''White''', 'Sneakers', 160.00),
-(2, 'ASICS GEL-QUANTUM KINETIC ''Black''', 'Sneakers', 250.00),
-(2, 'ASICS GEL-TERRAIN ''Black''', 'Sneakers', 120.00),
-(2, 'ASICS SKYHAND OG ''White/Blue''', 'Sneakers', 100.00),
+(2, 'ASICS GEL-KAYANO 14 ''White/Midnight''', '1201A019-107', 'White/Midnight', 'Sneakers', 150.00, '2022-08-01'),
+(2, 'ASICS GEL-KAYANO 14 ''White/Pure Silver''', '1201A019-108', 'White/Pure Silver', 'Sneakers', 150.00, '2023-11-17'),
+(2, 'ASICS GEL-1130 ''Clay Canyon''', '1201A256-200', 'Clay Canyon/Simply Taupe', 'Sneakers', 95.00, '2022-08-19'),
+(2, 'ASICS GEL-1130 ''White/Oatmeal''', '1201A256-120', 'White/Oatmeal', 'Sneakers', 100.00, '2023-08-10'),
+(2, 'ASICS GEL-1130 ''Black/Slate Grey''', '1201A256-004', 'Black/Slate Grey', 'Sneakers', 99.99, '2023-03-01'),
+(2, 'ASICS GEL-NYC ''White''', '1201A789-106', 'White/Steel Grey', 'Sneakers', 130.00, '2023-03-01'),
+(2, 'ASICS GEL-NYC ''Cream/Oyster Grey''', '1201A789-103', 'Cream/Oyster Grey', 'Sneakers', 140.00, '2023-01-13'),
+(2, 'ASICS GT-2160 ''White/Pure Silver''', '1203A275-102', 'White/Pure Silver', 'Sneakers', 130.00, '2023-07-07'),
+(2, 'ASICS GEL-LYTE III OG ''Hydrangea''', '1201A832-400', 'Hydrangea/Oyster Grey', 'Sneakers', 130.00, '2023-07-21'),
+(2, 'ASICS GEL-NIMBUS 9 ''White''', '1201A424-100', 'White/Pure Silver', 'Sneakers', 160.00, '2022-01-20'),
+(2, 'ASICS GEL-QUANTUM KINETIC ''Black''', '1203A270-001', 'Black/Black', 'Sneakers', 250.00, '2023-04-06'),
+(2, 'ASICS GEL-TERRAIN ''Black''', '1203A331-001', 'Black/Black', 'Sneakers', 120.00, '2023-11-10'),
+(2, 'ASICS SKYHAND OG ''White/Blue''', '1201A382-101', 'White/Directoire Blue', 'Sneakers', 100.00, '2021-08-01'),
 
 -- Salomon
-(17, 'Salomon XT-6 ''White/Lunar Rock''', 'Sneakers', 180.00),
-(17, 'Salomon XT-6 GORE-TEX ''Black''', 'Sneakers', 200.00),
-(17, 'Salomon XT-6 ''Black/Phantom''', 'Sneakers', 180.00),
-(17, 'Salomon XT-6 EXPANSE ''Almond Milk''', 'Sneakers', 160.00),
-(17, 'Salomon XT-4 OG ''Fiery Red''', 'Sneakers', 190.00),
-(17, 'Salomon XT-4 OG ''White''', 'Sneakers', 190.00),
-(17, 'Salomon ACS Pro ''Black''', 'Sneakers', 200.00),
-(17, 'Salomon ACS Pro ''Almond Milk/Cement''', 'Sneakers', 230.00),
-(17, 'Salomon ACS Pro LEATHER ''Black''', 'Sneakers', 200.00),
-(17, 'Salomon XT-WINGS 2 ''Black''', 'Sneakers', 160.00),
-(17, 'Salomon RX MOC 3.0 ''Black''', 'Sneakers', 100.00),
-(17, 'Salomon Speedcross 3 ''Black''', 'Sneakers', 140.00),
-(17, 'Salomon XA Pro 3D v8 ''Black''', 'Sneakers', 130.00),
-=======
+(17, 'Salomon XT-6 ''White/Lunar Rock''', 'L41086700', 'White/Lunar Rock/White', 'Sneakers', 180.00, '2019-03-28'),
+(17, 'Salomon XT-6 GORE-TEX ''Black''', 'L41760300', 'Black/Ebony/Lunar Rock', 'Sneakers', 200.00, '2022-10-06'),
+(17, 'Salomon XT-6 ''Black/Phantom''', 'L41086600', 'Black/Black/Phantom', 'Sneakers', 180.00, '2021-03-01'),
+(17, 'Salomon XT-6 EXPANSE ''Almond Milk''', 'L47134200', 'Almond Milk/Moth/Vanilla Ice', 'Sneakers', 160.00, '2023-02-01'),
+(17, 'Salomon XT-4 OG ''Fiery Red''', 'L47024100', 'Fiery Red/Black/Empire Yellow', 'Sneakers', 190.00, '2023-03-01'),
+(17, 'Salomon XT-4 OG ''White''', 'L47024200', 'White/Ebony/Lunar Rock', 'Sneakers', 190.00, '2023-03-01'),
+(17, 'Salomon ACS Pro ''Black''', 'L47132200', 'Black/Black/Black', 'Sneakers', 200.00, '2022-09-01'),
+(17, 'Salomon ACS Pro ''Almond Milk/Cement''', 'L47432700', 'Almond Milk/Cement/Falcon', 'Sneakers', 230.00, '2024-02-01'),
+(17, 'Salomon ACS Pro LEATHER ''Black''', 'L47493600', 'Black/Black/Black', 'Sneakers', 200.00, '2024-03-14'),
+(17, 'Salomon XT-WINGS 2 ''Black''', 'L41085700', 'Black/Black/Magnet', 'Sneakers', 160.00, '2020-03-01'),
+(17, 'Salomon RX MOC 3.0 ''Black''', 'L47131000', 'Black/Black/Phantom', 'Sneakers', 100.00, '2023-01-20'),
+(17, 'Salomon Speedcross 3 ''Black''', 'L41765300', 'Black/Black/Quiet Shade', 'Sneakers', 140.00, '2022-08-01'),
+(17, 'Salomon XA Pro 3D v8 ''Black''', 'L41689800', 'Black/Black/Magnet', 'Sneakers', 130.00, '2020-01-01'),
+
 (11, 'New Balance 9060 ''Rain Cloud''', 'U9060GRY', 'Rain Cloud/Castlerock/Grey', 'Sneakers', 159.99, '2022-08-13'),
 (11, 'New Balance 9060 ''Black Cat''', 'U9060BCG', 'Black/Phantom', 'Sneakers', 160.00, '2023-11-23'),
 (11, 'New Balance 9060 ''Mushroom''', 'U9060MUS', 'Mushroom/Aluminium/Grey', 'Sneakers', 159.99, '2023-08-04'),
@@ -400,7 +379,6 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (17, 'Salomon RX MOC 3.0 ''Black''', 'L47131000', 'Black/Black/Phantom', 'Sneakers', 100.00, '2023-01-20'),
 (17, 'Salomon Speedcross 3 ''Black''', 'L41765300', 'Black/Black/Quiet Shade', 'Sneakers', 140.00, '2022-08-01'),
 (17, 'Salomon XA Pro 3D v8 ''Black''', 'L41689800', 'Black/Black/Magnet', 'Sneakers', 130.00, '2020-01-01'),
->>>>>>> b586519 (Recovery: Saving all current work)
 
 -- Vans
 (20, 'Vans Premium Old Skool Black & White', 'VN000CQDBA2', 'Black & White', 'Sneaker', 90, '2025-01-24'),
