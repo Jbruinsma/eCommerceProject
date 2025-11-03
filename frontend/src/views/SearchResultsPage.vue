@@ -66,7 +66,7 @@
       <main class="results-container">
         <div class="results-header">
           <p>{{ searchResults.length }} Results</p>
-          <select class="sort-dropdown">
+          <select v-model="sortOption" class="sort-dropdown">
             <option value="newest">Sort by: Newest</option>
             <option value="price-asc">Sort by: Price (Low to High)</option>
             <option value="price-desc">Sort by: Price (High to Low)</option>
@@ -109,6 +109,8 @@ const route = useRoute()
 
 const minPrice = ref(null)
 const maxPrice = ref(null)
+
+const sortOption = ref('newest')
 
 const activeFilters = ref({
   category: [],
@@ -164,9 +166,43 @@ watch(activeFilters, () => {
     );
   }
 
-  searchResults.value = filteredResults;
+  searchResults.value = filteredResults
+  sortResultsByPrice(sortOption.value)
 
 }, { deep: true });
+
+watch(sortOption, (newValue) => {
+  if (['newest', 'price-asc', 'price-desc'].includes(newValue)) {
+    sortResultsByPrice(newValue)
+  } else {
+    console.error('Invalid sort option:', newValue)
+  }
+})
+
+function sortResultsByPrice(filterValue) {
+  if (filterValue === 'newest') {
+    sortResultsByNewest()
+  } else if (filterValue === 'price-asc') {
+    sortResultsLowToHigh()
+  } else if (filterValue === 'price-desc') {
+    sortResultsHighToLow()
+  } else {
+    console.error('Invalid sort option:', filterValue)
+  }
+}
+
+function sortResultsByNewest() {
+  searchResults.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+}
+
+function sortResultsLowToHigh() {
+  console.log("sorting low to high")
+  searchResults.value.sort()
+}
+
+function sortResultsHighToLow() {
+  console.log("sorting high to low")
+}
 
 function applyFilter(filterType, filterValue) {
   if (['category', 'brand'].includes(filterType)) {
@@ -242,7 +278,8 @@ h3 { font-family: Spectral, sans-serif; font-size: 1.1rem; font-weight: 600; mar
 p { color: #cccccc; line-height: 1.6; }
 ul { list-style: none; margin: 0; padding: 0; }
 .filter-group { margin-bottom: 2rem; }
-.filter-options input[type='checkbox'] { accent-color: #ffffff; background-color: #333; border: 1px solid #555; border-radius: 3px; cursor: pointer; height: 16px; margin-right: 0.75rem; vertical-align: middle; width: 16px; }
+.filter-options input[type='checkbox'] { -moz-appearance: none; -webkit-appearance: none; appearance: none; background-color: #1a1a1a; border: 1px solid #555; border-radius: 3px; cursor: pointer; height: 16px; margin-right: 0.75rem; position: relative; transition: background-color 0.2s, border-color 0.2s; vertical-align: middle; width: 16px; }
+.filter-options input[type='checkbox']:checked { background-color: #ffffff; border-color: #ffffff; transition: background-color 0.2s, border-color 0.2s; }
 .filter-options label { align-items: center; color: #cccccc; cursor: pointer; display: flex; margin-bottom: 0.75rem; }
 .filter-options label:hover { color: #ffffff; }
 .filters-sidebar { border-right: 1px solid #2a2a2a; flex: 0 0 260px; padding-right: 2rem; }
@@ -258,6 +295,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .pagination { align-items: center; display: flex; gap: 0.5rem; justify-content: center; margin-top: 3rem; }
 .price-inputs { align-items: center; display: flex; gap: 0.5rem; }
 .price-inputs input { background-color: #1a1a1a; border: 1px solid #555; border-radius: 4px; color: #ffffff; padding: 0.5rem; width: 100%; }
+.price-inputs input::placeholder { color: #777; opacity: 1; }
 .price-inputs span { color: #888; }
 .product-brand { color: black; display: none; font-family: Bodoni Moda, BlinkMacSystemFont; font-size: 1.2rem; font-weight: bold; margin: 0.25rem 0; }
 .product-card { background-color: #ffffff; border: 1px solid #7e7e7e; color: black; cursor: pointer; display: block; padding: 2rem; text-align: center; transition: box-shadow 0.3s ease, transform 0.3s ease; }
