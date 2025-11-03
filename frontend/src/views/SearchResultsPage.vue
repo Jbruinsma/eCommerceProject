@@ -216,7 +216,7 @@ async function searchProducts(searchQuery = null, category = null) {
     searchResultStorage.value = response.products || []
     filterOptions.value = response.filters || {}
 
-    console.log('Search results:', searchResults.value)
+    route.query.q = queryString
 
   } catch (error) {
     console.error('Error fetching search results:', error)

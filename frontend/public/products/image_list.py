@@ -21,6 +21,9 @@ def create_extension_map(image_dir):
         for filename in os.listdir(image_dir):
             base_name, extension = os.path.splitext(filename)
             if extension:
+                # This check prevents the script from reading itself
+                if base_name == "image_list" and extension == ".py":
+                    continue
                 extension_map[base_name] = extension
                 print(f"  > Found: {base_name} -> {extension}")
 
