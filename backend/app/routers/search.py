@@ -20,7 +20,7 @@ async def search(
         q: Optional[str] = None,
         category: Optional[str] = None,
         brand_id: Optional[int] = None,
-        result_limit: Optional[int] = 50,
+        result_limit: Optional[int] = 100,
         session: AsyncSession = Depends(get_session)
 ):
     statement = text("CALL searchProducts(:input_search_term, :input_category, :input_brand_id, :result_limit);")
