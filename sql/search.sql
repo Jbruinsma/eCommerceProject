@@ -1,6 +1,7 @@
 USE ecommerce;
 
 DROP PROCEDURE IF EXISTS searchProducts;
+
 DELIMITER //
 
 CREATE PROCEDURE searchProducts(
@@ -100,11 +101,11 @@ BEGIN
     WITH HighestBids AS (
         SELECT
             b.product_id,
-            b.product_size_id,
+            b.size_id,
             b.product_condition,
             b.bid_amount,
             b.bid_id,
-            ROW_NUMBER() OVER(PARTITION BY b.product_id, b.product_size_id, b.product_condition ORDER BY b.bid_amount DESC) as rn
+            ROW_NUMBER() OVER(PARTITION BY b.product_id, b.size_id, b.product_condition ORDER BY b.bid_amount DESC) as rn
         FROM bids b
         WHERE b.bid_status = 'active'
     ),
@@ -148,9 +149,9 @@ BEGIN
                 )
             FROM products_sizes ps
             JOIN sizes s ON ps.size_id = s.size_id
-            LEFT JOIN HighestBids hb_new ON ps.product_id = hb_new.product_id AND s.size_id = hb_new.product_size_id AND hb_new.product_condition = 'new' AND hb_new.rn = 1
-            LEFT JOIN HighestBids hb_used ON ps.product_id = hb_used.product_id AND s.size_id = hb_used.product_size_id AND hb_used.product_condition = 'used' AND hb_used.rn = 1
-            LEFT JOIN HighestBids hb_worn ON ps.product_id = hb_worn.product_id AND s.size_id = hb_worn.product_size_id AND hb_worn.product_condition = 'worn' AND hb_worn.rn = 1
+            LEFT JOIN HighestBids hb_new ON ps.product_id = hb_new.product_id AND s.size_id = hb_new.size_id AND hb_new.product_condition = 'new' AND hb_new.rn = 1
+            LEFT JOIN HighestBids hb_used ON ps.product_id = hb_used.product_id AND s.size_id = hb_used.size_id AND hb_used.product_condition = 'used' AND hb_used.rn = 1
+            LEFT JOIN HighestBids hb_worn ON ps.product_id = hb_worn.product_id AND s.size_id = hb_worn.size_id AND hb_worn.product_condition = 'worn' AND hb_worn.rn = 1
             LEFT JOIN LowestAsks la_new ON ps.product_id = la_new.product_id AND s.size_id = la_new.size_id AND la_new.item_condition = 'new' AND la_new.rn = 1
             LEFT JOIN LowestAsks la_used ON ps.product_id = la_used.product_id AND s.size_id = la_used.size_id AND la_used.item_condition = 'used' AND la_used.rn = 1
             LEFT JOIN LowestAsks la_worn ON ps.product_id = la_worn.product_id AND s.size_id = la_worn.size_id AND la_worn.item_condition = 'worn' AND la_worn.rn = 1

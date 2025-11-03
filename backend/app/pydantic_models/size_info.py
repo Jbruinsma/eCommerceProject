@@ -1,6 +1,8 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
 class SizeInfo(BaseModel):
-    size: str | int
-    sizeId: int
+    size: Optional[str | int] = None
+    sizeId: Optional[int] = None

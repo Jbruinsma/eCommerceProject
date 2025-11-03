@@ -9,7 +9,7 @@ from ..pydantic_models.ask_info import AskInfo
 from ..pydantic_models.bid_info import BidInfo
 from ..pydantic_models.complete_size_info import CompleteSizeInfo
 from ..pydantic_models.error_message import ErrorMessage
-from ..pydantic_models.product import Product
+from ..pydantic_models.product import ProductSearch, ProductDetail
 from ..pydantic_models.size_info import SizeInfo
 from ..utils.formatting import format_size_dict, make_json_safe
 
@@ -35,7 +35,7 @@ async def search(
     return {
         "products":
             [
-                Product(
+                ProductSearch(
                     productId= product_dict.product_id,
                     name= product_dict.name,
                     brandId= product_dict.brand_id,
@@ -50,6 +50,7 @@ async def search(
                             size= size_dict['size_value'],
                             sizeId= size_dict['size_id']
                         ) for size_dict in make_json_safe(product_dict.sizes)
+                        if size_dict and size_dict.get('size_id') is not None
                     ]
                 ) for product_dict in product_rows
             ],
@@ -70,7 +71,7 @@ async def search_by_product_id(product_id: str, session: AsyncSession = Depends(
 
     product_dict = product_rows[0]
 
-    return Product(
+    return ProductDetail(
         productId=product_dict.product_id,
         name=product_dict.name,
         brandId=product_dict.brand_id,
@@ -97,6 +98,7 @@ async def search_by_product_id(product_id: str, session: AsyncSession = Depends(
                     ) for condition, ask_data in size_dict['lowest_ask'].items() if ask_data
                 }
             ) for size_dict in make_json_safe(product_dict.sizes)
+            if size_dict and size_dict.get('size_id') is not None
         ]
     )
 

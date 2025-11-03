@@ -8,14 +8,19 @@ from pydantic import BaseModel
 from .complete_size_info import CompleteSizeInfo
 from ..pydantic_models.size_info import SizeInfo
 
-class Product(BaseModel):
+class ProductBase(BaseModel):
     productId: int
     name: str
     brandId: int
     brandName: str
-    imageUrl: str
-    retailPrice: float
-    releaseDate: date | None
+    imageUrl: Optional[str] = None,
+    retailPrice: Optional[float | int] = None,
+    releaseDate: Optional[date] = None,
     productType: str
     lowestAskingPrice: Optional[float] = None,
-    sizes: List[SizeInfo | CompleteSizeInfo]
+
+class ProductSearch(ProductBase):
+    sizes: List[SizeInfo]
+
+class ProductDetail(ProductBase):
+    sizes: List[CompleteSizeInfo]
