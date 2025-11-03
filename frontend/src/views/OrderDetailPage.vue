@@ -318,13 +318,10 @@ const formatDate = (dateString) => {
 <style scoped>
 address { font-style: normal; line-height: 1.6; }
 h1 { font-size: 2.2rem; margin: 0; }
-<<<<<<< HEAD
 h2 { border-bottom: 1px solid #333; font-size: 1.8rem; margin-bottom: 2rem; padding-bottom: 1rem; }
 h3 { font-size: 1.4rem; margin: 0; }
-=======
 h2 { font-family: Bodoni Moda, BlinkMacSystemFont; border-bottom: 1px solid #333; font-size: 1.8rem; margin-bottom: 2rem; padding-bottom: 1rem; }
 h3 { font-family: Bodoni Moda, BlinkMacSystemFont; text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3); font-size: 1.4rem; margin: 0; color: black }
->>>>>>> b586519 (Recovery: Saving all current work)
 h4 { font-size: 1.4rem; margin: 0 0 0.5rem; }
 p { color: #ccc; line-height: 1.6; }
 ul { list-style: none; padding: 0; }
@@ -351,19 +348,16 @@ ul { list-style: none; padding: 0; }
 .order-header { align-items: flex-start; border-bottom: 1px solid #333; display: flex; justify-content: space-between; padding-bottom: 1.5rem; }
 .order-header p { color: #888; margin: 0.25rem 0 0; }
 .order-sidebar { display: flex; flex-direction: column; gap: 2rem; }
-<<<<<<< HEAD
 .product-details p { color: #ccc; margin: 0.5rem 0; }
 .product-details p span { color: #888; font-weight: bold; }
 .product-image { background-color: #111; border-radius: 8px; flex-shrink: 0; height: 150px; width: 150px; }
 .product-image img { border-radius: 8px; height: 100%; object-fit: contain; width: 100%; }
 .product-summary { align-items: center; display: flex; gap: 2rem; }
-=======
 .product-details p { font-family: Bodoni Moda, BlinkMacSystemFont; font-weight: bold; color: black; margin: 0.5rem 0; }
 .product-details p span { color: rgba(0, 0, 0, 0.5); font-weight: bold; }
 .product-image { background-color: white; border-radius: 8px; flex-shrink: 0; height: 150px; width: 150px; }
 .product-image img { border-radius: 8px; height: 100%; object-fit: contain; width: 100%; }
 .product-summary { align-items: center; display: flex; gap: 2rem; background-color: white; }
->>>>>>> b586519 (Recovery: Saving all current work)
 .role-indicator { padding: 1rem 2rem; text-align: center; }
 .role-indicator p { font-size: 1.1rem; margin: 0; text-transform: capitalize; }
 .role-indicator strong { color: #6ef0a3; }
