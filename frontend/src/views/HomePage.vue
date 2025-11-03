@@ -6,7 +6,11 @@
         <!-- <img class ="featured-product-img" src="/images/MaisonMargielaFutureBlack.png"></img> -->
         <p class = hero-info>Experience the future of footwear. Reintroducing the Future Sneaker, originally launched in the SS11 collection, the Future Sneaker is making its way back onto the shelves this season.</p>
         <p class = hero-info>Featured Collection by Maison Margiela</p>
+<<<<<<< HEAD
         <button class="cta-button">Shop Now</button>
+=======
+        <a href="/search?category=sneakers"> <button class="cta-button">Shop Now</button></a>
+>>>>>>> b586519 (Recovery: Saving all current work)
       </div>
     </header>
 
