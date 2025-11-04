@@ -175,7 +175,7 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (8, 'Air Jordan 11 Retro ''Concord'' (2018)', '378037-100', 'White/Black-Dark Concord', 'Sneakers', 220.00, '2018-12-08', '/products/378037-100.avif'),
 (8, 'Air Jordan 5 Retro ''Fire Red'' (2020)', 'DA1911-102', 'White/Black-Metallic Silver-Fire Red', 'Sneakers', 200.00, '2020-05-02', '/products/DA1911-102.avif'),
 (8, 'Air Jordan 5 Retro ''Fire Red Silver Tongue'' (2020)', 'DA1911-102', 'White/Black-Metallic Silver-Fire Red', 'Sneakers', 200.00, '2020-05-02', '/products/DA1911-102.avif'),
-(8, 'Air Jordan 4 Retro ''Black Cat'' (2025)', 'FV5029-010', 'Black/Black-Light Graphite', 'Sneakers', 225.00, '2025-11-28', '/products/FV5029-010.avif'),
+(8, 'Air Jordan 4 Retro ''Black Cat'' (2020)', 'CU1110-010', 'Black/Black-Light Graphite', 'Sneakers', 190.00, '2020-01-22', '/products/CU1110-010.jpg'),
 (8, 'Air Jordan 1 Mid ''White/Black''', 'DQ8426-132', 'White/Black-White-Black', 'Sneakers', 125.00, '2023-12-12', '/products/DQ8426-132.avif'),
 (8, 'Air Jordan 3 Retro ''El Vuelo''', 'IO1752-100', 'Summit White/Metallic Gold/Pine Green/Dragon Red/Sail', 'Sneakers', 230.00, '2025-09-16', '/products/IO1752-100.avif'),
 (8, 'Air Jordan 1 Retro High OG ''Pro Green'' (Women''s)', 'FD2596-101', 'Pale Ivory/Pro Green-Fir-Coconut Milk', 'Sneakers', 185.00, '2025-10-18', '/products/FD2596-101.avif'),
@@ -840,6 +840,6 @@ DELIMITER ;
 -- CALL PROCEDURES
 -- =================================================================
 
-CALL CreatePastSales(5000);
+CALL CreatePastSales(10000);
 CALL CreateActiveListings(2000);
 CALL CreateActiveBids(1500);

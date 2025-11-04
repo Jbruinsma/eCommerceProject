@@ -50,11 +50,6 @@ END//
 
 DROP PROCEDURE IF EXISTS retrieveProductsByCategory;
 
--- =================================================================
--- FIXED THIS PROCEDURE
--- 1. Changed ENUM parameter to VARCHAR(100) to match the table.
--- 2. Changed WHERE clause from '=' to 'LIKE' for flexible searching.
--- =================================================================
 CREATE PROCEDURE retrieveProductsByCategory(
     IN input_category VARCHAR(100),
     IN result_limit INT UNSIGNED

@@ -35,6 +35,37 @@ BEGIN
 
 END //
 
+DROP PROCEDURE IF EXISTS deleteUser;
+
+CREATE PROCEDURE deleteUser(
+    IN input_uuid CHAR(36),
+    IN input_email VARCHAR(225)
+)
+
+BEGIN
+
+    DECLARE target_user_uuid CHAR(36);
+
+    IF input_uuid IS NOT NULL THEN
+        SET target_user_uuid = input_uuid;
+    END IF;
+
+    IF input_email IS NOT NULL THEN
+        SELECT uuid INTO target_user_uuid
+        FROM users
+        WHERE email = input_email;
+    END IF;
+
+    DELETE FROM account_balance
+    WHERE user_id = target_user_uuid;
+
+    DELETE FROM users
+    WHERE uuid = target_user_uuid;
+
+    SET FOREIGN_KEY_CHECKS = 1;
+
+END //
+
 DROP PROCEDURE IF EXISTS updateUser;
 
 CREATE PROCEDURE updateUser(

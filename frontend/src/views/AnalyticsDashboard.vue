@@ -7,7 +7,7 @@
 
       <section class="kpi-grid">
         <div class="card kpi-card">
-          <label>Latest Monthly Revenue ({{ monthlyRevenue.revenue_month }})</label>
+          <label>Monthly Revenue ({{ monthlyRevenue.revenue_month }})</label>
           <span class="value">{{ formatCurrency(monthlyRevenue.total_revenue) }}</span>
         </div>
         <div class="card kpi-card">
@@ -106,11 +106,10 @@ const revenueOverTime = ref([]);
 const chartInstance = ref(null);
 const chartCanvas = ref(null);
 
-// MODIFIED: Renamed refs to match new API keys
-const averageCompletedOrderValue = ref(0); // Was averageOrderValue
+const averageCompletedOrderValue = ref(0);
 const totalOrders = ref(0);
 const customerBreakdown = ref([]);
-const salesByCategory = ref([]); // Was topCategories
+const salesByCategory = ref([]);
 
 const customerChartInstance = ref(null);
 const customerChartCanvas = ref(null);
@@ -182,13 +181,11 @@ function renderRevenueChart(data) {
   });
 }
 
-// MODIFIED: Updated to read new customerBreakdown structure
 function renderCustomerChart(data) {
   const ctx = customerChartCanvas.value;
   if (!ctx) return;
 
-  // Use new keys 'buyer_type' and 'total_orders'
-  const labels = data.map(d => d.buyer_type.replace('_', ' ')); // "New_Buyer" -> "New Buyer"
+  const labels = data.map(d => d.buyer_type.replace('_', ' '));
   const chartData = data.map(d => d.total_orders);
 
   if (customerChartInstance.value) {
@@ -200,7 +197,7 @@ function renderCustomerChart(data) {
     data: {
       labels: labels,
       datasets: [{
-        label: 'Orders', // Changed label
+        label: 'Orders',
         data: chartData,
         backgroundColor: [
           'rgba(255, 255, 255, 0.7)',
@@ -234,7 +231,6 @@ function renderCustomerChart(data) {
 
 async function fetchDashboardData() {
   try {
-    // MODIFIED: Re-enabled API call
     const analyticsData = await fetchFromAPI('/admin/analytics')
 
     console.log("Analytics Data:", analyticsData)
@@ -253,27 +249,22 @@ async function fetchDashboardData() {
         topSellingProducts.value = analyticsData.topSellingProducts;
       }
 
-      // MODIFIED: Switched back to plural key
       if (analyticsData.monthlyTopSellingProducts) {
         monthlyTopProducts.value = analyticsData.monthlyTopSellingProducts;
       }
 
-      // MODIFIED: Use new key 'averageCompletedOrderValue'
       if (analyticsData.averageCompletedOrderValue) {
         averageCompletedOrderValue.value = analyticsData.averageCompletedOrderValue;
       }
 
-      // MODIFIED: Calculate totalOrders from customerBreakdown
       if (analyticsData.totalOrders) {
         totalOrders.value = analyticsData.totalOrders;
       }
 
-      // MODIFIED: Use new key 'salesByCategory'
       if (analyticsData.salesByCategory) {
         salesByCategory.value = analyticsData.salesByCategory;
       }
 
-      // This will be skipped if not present, and the calculation above will be used.
       if (analyticsData.allTimeRevenue) {
         allTimeRevenue.value = analyticsData.allTimeRevenue;
       }
@@ -306,25 +297,19 @@ h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
 h2 { border-bottom: 1px solid #333; font-size: 1.5rem; margin-bottom: 1.5rem; padding-bottom: 1rem; }
 p { color: #cccccc; line-height: 1.6; margin: 0.25rem 0; }
 label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; }
-
 .dashboard-container { color: #ffffff; }
 .dashboard-content { margin: 0 auto; max-width: 1200px; padding: 4rem 5%; }
 .page-header { margin-bottom: 3rem; text-align: left; }
-
 .card { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; margin-bottom: 2rem; padding: 2rem; }
-
 .kpi-grid { display: grid; gap: 2rem; grid-template-columns: repeat(4, 1fr); margin-bottom: 2rem; }
 .kpi-card { margin-bottom: 0; padding: 1.5rem 2rem; }
 .kpi-card label { color: #aaa; font-size: 1rem; margin-bottom: 0.5rem; text-transform: capitalize; }
 .kpi-card .value { color: #ffffff; display: block; font-size: 2.2rem; font-weight: 600; }
-
 .chart-card { min-height: 400px; }
 .chart-subtitle { color: #888; margin-bottom: 2rem; margin-top: -1.25rem; }
 .chart-container { height: 300px; position: relative; }
-
 .insights-grid { display: grid; gap: 2rem; grid-template-columns: 1fr 1fr; }
 .activity-grid { display: grid; gap: 2rem; grid-template-columns: 1fr; }
-
 .product-list { display: flex; flex-direction: column; gap: 1.5rem; list-style: none; margin: 0; max-height: 500px; overflow-y: auto; padding: 0; }
 .product-list li { align-items: center; display: flex; gap: 1rem; }
 .list-img { background-color: #333; border: 1px solid #444; border-radius: 8px; flex-shrink: 0; height: 50px; object-fit: cover; width: 50px; }
@@ -332,17 +317,13 @@ label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5r
 .list-main { color: #f0f0f0; display: block; font-size: 1rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .list-sub { color: #888; font-size: 0.85rem; text-transform: capitalize; }
 .list-count { color: #f0f0f0; font-size: 1rem; font-weight: 600; padding-left: 1rem; text-align: right; white-space: nowrap; }
-
 .simple-list { display: flex; flex-direction: column; gap: 1.5rem; list-style: none; margin: 0; max-height: 500px; overflow-y: auto; padding: 0; }
 .simple-list li { align-items: center; display: flex; gap: 1rem; }
-.simple-list .list-main { text-transform: capitalize; } /* Added for categories */
-
-
+.simple-list .list-main { text-transform: capitalize; }
 @media (max-width: 1024px) {
   .kpi-grid { grid-template-columns: 1fr 1fr; }
   .insights-grid { grid-template-columns: 1fr; }
 }
-
 @media (max-width: 768px) {
   .kpi-grid { grid-template-columns: 1fr; }
 }

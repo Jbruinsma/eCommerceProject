@@ -167,4 +167,56 @@ BEGIN
 
 end //
 
+DROP PROCEDURE IF EXISTS retrieveSaleHistory;
+
+CREATE PROCEDURE retrieveSaleHistory(
+    IN input_product_id INT UNSIGNED,
+    IN input_product_size_id INT UNSIGNED,
+    IN input_product_condition VARCHAR(50),
+    IN input_result_limit INT UNSIGNED
+)
+
+BEGIN
+
+    DECLARE max_rows BIGINT UNSIGNED;
+    SET max_rows = IFNULL(input_result_limit, 18446744073709551615);
+
+    SELECT
+        sale_price,
+        DATE_FORMAT(created_at, '%Y-%m-%d') AS order_date
+    FROM
+        orders
+    WHERE
+        product_id = input_product_id
+      AND
+        size_id = input_product_size_id
+      AND
+        product_condition = input_product_condition
+      AND
+        order_status = 'completed'
+    ORDER BY
+        created_at DESC
+    LIMIT max_rows;
+
+END //
+
+DROP PROCEDURE IF EXISTS calculateProductValue;
+
+CREATE PROCEDURE calculateProductValue(
+    IN input_product_id INT UNSIGNED,
+    IN input_product_size_id INT UNSIGNED,
+    IN input_product_condition VARCHAR(50)
+)
+
+BEGIN
+
+    CALL retrieveSaleHistory(
+        input_product_id,
+        input_product_size_id,
+        input_product_condition,
+        1
+    );
+
+END //
+
 DELIMITER ;

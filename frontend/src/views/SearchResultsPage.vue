@@ -13,17 +13,17 @@
         <h2>Filters</h2>
 
         <div
-          v-if="filterOptions.categories && filterOptions.categories.length"
-          class="filter-group"
+            v-if="filterOptions.categories && filterOptions.categories.length"
+            class="filter-group"
         >
           <h3>Category</h3>
           <ul class="filter-options">
             <li v-for="category in filterOptions.categories" :key="category">
               <label>
                 <input
-                  type="checkbox"
-                  :value="category"
-                  @change="applyFilter('category', category)"
+                    type="checkbox"
+                    :value="category"
+                    @change="applyFilter('category', category)"
                 />
                 {{ category }}
               </label>
@@ -47,17 +47,17 @@
           <h3>Price Range</h3>
           <div class="price-inputs">
             <input
-              type="number"
-              placeholder="Min"
-              v-model="minPrice"
-              @change="applyPriceFilter"
+                type="number"
+                placeholder="Min"
+                v-model="minPrice"
+                @change="applyPriceFilter"
             />
             <span>–</span>
             <input
-              type="number"
-              placeholder="Max"
-              v-model="maxPrice"
-              @change="applyPriceFilter"
+                type="number"
+                placeholder="Max"
+                v-model="maxPrice"
+                @change="applyPriceFilter"
             />
           </div>
         </div>
@@ -75,14 +75,18 @@
 
         <div v-if="searchResults.length > 0" class="product-grid">
           <router-link
-            v-for="product in searchResults"
-            :key="product.productId"
-            :to="{ name: 'ProductDetail', params: { id: product.productId } }"
-            class="product-card"
+              v-for="product in searchResults"
+              :key="product.productId"
+              :to="{ name: 'ProductDetail', params: { id: product.productId } }"
+              class="product-card"
           >
             <img :src="product.imageUrl" :alt="product.name" class="product-image" />
-            <h3 class="product-name">{{ product.name }}</h3>
-            <p class="product-brand">{{ product.brandName }}</p>
+
+            <div class="product-details">
+              <h3 class="product-name">{{ product.name }}</h3>
+              <p class="product-brand">{{ product.brandName }}</p>
+            </div>
+
             <p class="product-price">{{ formatCurrency(product.lowestAskingPrice) }}</p>
           </router-link>
         </div>
@@ -144,25 +148,25 @@ watch(activeFilters, () => {
 
   if (categoryFilters.length > 0) {
     filteredResults = filteredResults.filter(product =>
-      categoryFilters.includes(product.productType)
+        categoryFilters.includes(product.productType)
     );
   }
 
   if (brandFilters.length > 0) {
     filteredResults = filteredResults.filter(product =>
-      brandFilters.includes(product.brandName)
+        brandFilters.includes(product.brandName)
     );
   }
 
   if (minPrice !== null) {
     filteredResults = filteredResults.filter(product =>
-      product.lowestAskingPrice !== null && product.lowestAskingPrice >= minPrice
+        product.lowestAskingPrice !== null && product.lowestAskingPrice >= minPrice
     );
   }
 
   if (maxPrice !== null) {
     filteredResults = filteredResults.filter(product =>
-      product.lowestAskingPrice !== null && product.lowestAskingPrice <= maxPrice
+        product.lowestAskingPrice !== null && product.lowestAskingPrice <= maxPrice
     );
   }
 
@@ -208,7 +212,7 @@ function applyFilter(filterType, filterValue) {
   if (['category', 'brand'].includes(filterType)) {
     if (activeFilters.value[filterType].includes(filterValue)) {
       activeFilters.value[filterType] = activeFilters.value[filterType].filter(
-        (v) => v !== filterValue,
+          (v) => v !== filterValue,
       )
     } else {
       activeFilters.value[filterType].push(filterValue)
@@ -298,12 +302,13 @@ ul { list-style: none; margin: 0; padding: 0; }
 .price-inputs input::placeholder { color: #777; opacity: 1; }
 .price-inputs span { color: #888; }
 .product-brand { color: black; display: none; font-family: Bodoni Moda, BlinkMacSystemFont; font-size: 1.2rem; font-weight: bold; margin: 0.25rem 0; }
-.product-card { background-color: #ffffff; border: 1px solid #7e7e7e; color: black; cursor: pointer; display: block; padding: 2rem; text-align: center; transition: box-shadow 0.3s ease, transform 0.3s ease; }
+.product-card { background-color: #ffffff; border: 1px solid #7e7e7e; color: black; cursor: pointer; display: flex; flex-direction: column; padding: 2rem; text-align: center; transition: box-shadow 0.3s ease, transform 0.3s ease; }
 .product-card:hover { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); transform: translateY(-5px); }
 .product-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, 250px); justify-content: start; }
 .product-image { aspect-ratio: 4 / 3; object-fit: cover; width: 100%; }
 .product-name { font-family: 'Bodoni Moda', BlinkMacSystemFont, serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 0; margin-top: 1rem; }
 .product-price { color: #3c862a; font-family: Bodoni Moda, BlinkMacSystemFont; font-size: 1.2rem; margin-top: 0.5rem; }
+.product-details { flex-grow: 1; }
 .results-container { flex: 1; }
 .results-header { align-items: center; display: flex; justify-content: space-between; margin-bottom: 2rem; }
 .results-header p { color: #888; margin: 0; }

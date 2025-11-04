@@ -23,96 +23,44 @@ async def brands(session: AsyncSession = Depends(get_session)):
 
     return list(rows)
 
-@router.get("/search")
-async def search_for_product(
-        brand_id: Optional[int] = None,
-        brand_name: Optional[str] = None,
-        product_name: Optional[str] = None,
-        results_per_page: Optional[int] = 50,
-        session: AsyncSession = Depends(get_session),
-):
-    statement = text("CALL productSearch(:input_brand_id, :input_brand_name, :input_product_name, :result_limit);")
-    result = await session.execute(statement, {
-        "input_brand_id": brand_id,
-        "input_brand_name": brand_name,
-        "input_product_name": product_name,
-        "result_limit": results_per_page,
-    })
-    rows = result.mappings().all()
-    return list(rows)
-
-@router.get("/search/general")
-async def general_search(
-        brand_id: Optional[int] = None,
-        brand_name: Optional[str] = None,
-        product_name: Optional[str] = None,
-        results_per_page: Optional[int] = 50,
-        session: AsyncSession = Depends(get_session),
-):
-    statement = text("CALL generalProductSearch(:input_brand_id, :input_brand_name, :input_product_name, :result_limit);")
-    result = await session.execute(statement, {
-        "input_brand_id": brand_id,
-        "input_brand_name": brand_name,
-        "input_product_name": product_name,
-        "result_limit": results_per_page,
-    })
-    rows = result.mappings().all()
-
-    print("\n---\n", rows)
-
-    return list(rows)
-
-@router.get("/search/category")
-async def search_for_products_by_category(
-        category: Optional[str] = None,
-        session: AsyncSession = Depends(get_session),
-):
-    statement = text("CALL retrieveProductsByCategory(:input_category, :result_limit);")
-    result = await session.execute(statement, {
-        "input_category": category,
-        "result_limit": 50,
-    })
-    product_rows = result.mappings().all()
-
-    return [
-        ProductBase(
-            productId=product_dict.product_id,
-            brandId= product_dict.brand_id,
-            name= product_dict.name,
-            retailPrice= float(product_dict.retail_price) if product_dict.retail_price is not None else None,
-            releaseDate= product_dict.release_date,
-            productType= product_dict.product_type,
-            imageUrl= product_dict.image_url,
-            brandName= product_dict.brand_name,
-            lowestAskingPrice=None,
-        ) for product_dict in product_rows
-    ]
-
-@router.get("/{product_id}")
+@router.get("/history/{product_id}")
 async def product(product_id: str, session: AsyncSession = Depends(get_session)):
-    statement = text("CALL retrieveProductById(:input_product_id);")
-    product_result = await session.execute(statement, {"input_product_id": product_id})
-    product_row = product_result.mappings().first()
-    if not product_row:
-        return ErrorMessage(message="Product not found", error="ProductNotFound")
-
     statement = text("CALL retrieveAllProductSizes(:input_product_id);")
     size_result = await session.execute(statement, {"input_product_id": product_id})
     size_rows = size_result.mappings().all()
     all_product_sizes = list(size_rows)
 
-    statement = text("CALL retrieveLowestAsksByProductId(:input_product_id);")
-    lowest_ask_result = await session.execute(statement, {"input_product_id": product_id})
-    lowest_ask_rows = lowest_ask_result.mappings().all()
+    # print(all_product_sizes)
 
-    statement = text("CALL getBidsByProductId(:input_product_id);")
-    bids_results = await session.execute(statement, {"input_product_id": product_id})
-    bids_rows = bids_results.mappings().all()
-    processed_bids = process_bids(bids_rows)
+    product_history = {}
 
-    return {
-        "marketData": format_market_data(all_product_sizes, list(lowest_ask_rows), processed_bids),
-        "sizes": all_product_sizes,
-        "productInfo": dict(product_row),
-        "bids": processed_bids
-    }
+    for size_dict in all_product_sizes:
+        size_id = size_dict.get("size_id", None)
+        size_value = size_dict.get("size_value", None)
+
+        # print(size_id, size_value)
+
+        if size_id is None or size_value is None: continue
+
+        product_history[size_id] = {
+            "sizeValue": size_value,
+            "new": [],
+            "used": [],
+            "worn": []
+        }
+
+    for size_id in product_history:
+        for condition in product_history[size_id]:
+            if condition == "sizeValue": continue
+
+            statement = text("CALL retrieveSaleHistory(:input_product_id, :input_size, :input_condition, :input_result_limit);")
+            result = await session.execute(statement, {
+                "input_product_id": int(product_id),
+                "input_size": int(size_id),
+                "input_condition": condition,
+                "input_result_limit": None
+            })
+            rows = result.mappings().all()
+            product_history[size_id][condition] = list(rows)
+
+    return product_history

@@ -87,14 +87,29 @@
       </div>
     </main>
 
+    <section class="chart-container">
+      <h3>
+        Sales History
+        <span v-if="selectedSize">
+          ({{ selectedCondition.charAt(0).toUpperCase() + selectedCondition.slice(1) }} - Size
+          {{ selectedSize }})
+        </span>
+      </h3>
+      <div class="chart-wrapper">
+        <canvas ref="salesChartCanvas"></canvas>
+      </div>
+    </section>
+
     <footer class="site-footer"></footer>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { fetchFromAPI } from '@/utils/index.js'
+import { Chart, registerables } from 'chart.js'
+Chart.register(...registerables)
 
 const route = useRoute()
 const productId = route.params.id
@@ -115,6 +130,10 @@ const availableConditions = ref(['new', 'used', 'worn'])
 const selectedCondition = ref('new')
 
 const marketData = ref({})
+const salesHistory = ref({})
+
+const salesChartCanvas = ref(null)
+let salesChartInstance = null
 
 const currentMarketData = computed(() => {
   if (!selectedSize.value || !selectedCondition.value) {
@@ -125,6 +144,23 @@ const currentMarketData = computed(() => {
     return { lowestAsk: null, highestBid: null }
   }
   return sizeData[selectedCondition.value] || { lowestAsk: null, highestBid: null }
+})
+
+const currentSalesHistory = computed(() => {
+  if (!selectedSize.value || !selectedCondition.value || !salesHistory.value) {
+    return []
+  }
+  const historyEntryKey = Object.keys(salesHistory.value).find(
+    (key) => salesHistory.value[key].sizeValue === selectedSize.value
+  )
+  if (!historyEntryKey) {
+    return []
+  }
+  const salesList = salesHistory.value[historyEntryKey][selectedCondition.value]
+  if (!salesList || salesList.length === 0) {
+    return []
+  }
+  return salesList.slice().sort((a, b) => new Date(a.order_date) - new Date(b.order_date))
 })
 
 const formatCurrency = (amount) => {
@@ -138,24 +174,84 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-US', options)
 }
 
+const renderChart = () => {
+  if (!salesChartCanvas.value) return
+  const salesData = currentSalesHistory.value
+  const labels = salesData.map((sale) => formatDate(sale.order_date))
+  const data = salesData.map((sale) => sale.sale_price)
+  const chartConfig = {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Sale Price',
+          data: data,
+          borderColor: 'rgba(255, 255, 255, 0.8)',
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          tension: 0.1,
+          fill: true,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          backgroundColor: '#111',
+          titleFont: { weight: 'bold' },
+          callbacks: {
+            label: function (context) {
+              return `Price: ${formatCurrency(context.parsed.y)}`
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: { color: '#aaa' },
+          grid: { color: 'rgba(255, 255, 255, 0.1)' }, // <-- UPDATED
+        },
+        y: {
+          ticks: {
+            color: '#aaa',
+            callback: function (value) {
+              return formatCurrency(value)
+            },
+          },
+          grid: { color: 'rgba(255, 255, 255, 0.1)' },
+        },
+      },
+    },
+  }
+  if (salesChartInstance) {
+    salesChartInstance.data.labels = labels
+    salesChartInstance.data.datasets[0].data = data
+    salesChartInstance.update()
+  } else {
+    salesChartInstance = new Chart(salesChartCanvas.value, chartConfig)
+  }
+}
+
 onMounted(async () => {
   try {
-    const response = await fetchFromAPI(`/search/${productId}`)
-
-    console.log('API Response:', response)
-
+    const [response, salesHistoryResponse] = await Promise.all([
+      fetchFromAPI(`/search/${productId}`),
+      fetchFromAPI(`/product/history/${productId}`),
+    ])
     product.value = { ...response, productId: productId }
-
     if (response.sizes && response.sizes.length > 0) {
       const processedMarketData = {}
       const uniqueSizes = new Set()
-
       response.sizes.forEach((item) => {
         uniqueSizes.add(item.size)
         if (!processedMarketData[item.size]) {
           processedMarketData[item.size] = {}
         }
-
         availableConditions.value.forEach((condition) => {
           processedMarketData[item.size][condition] = {
             highestBid: item.highestBid[condition],
@@ -163,9 +259,7 @@ onMounted(async () => {
           }
         })
       })
-
       marketData.value = processedMarketData
-
       const sortedSizes = Array.from(uniqueSizes).sort((a, b) => {
         const numA = parseFloat(a)
         const numB = parseFloat(b)
@@ -174,10 +268,7 @@ onMounted(async () => {
         }
         return a.localeCompare(b)
       })
-
       availableSizes.value = sortedSizes
-
-      // Set a default selected size
       if (sortedSizes.includes('10')) {
         selectedSize.value = '10'
       } else if (sortedSizes.includes('M')) {
@@ -186,9 +277,21 @@ onMounted(async () => {
         selectedSize.value = sortedSizes[0]
       }
     }
+    salesHistory.value = salesHistoryResponse
+    renderChart()
   } catch (error) {
     console.error('Error fetching product details:', error)
     product.value.name = 'Product Not Found'
+  }
+})
+
+watch(currentSalesHistory, () => {
+  renderChart()
+})
+
+onUnmounted(() => {
+  if (salesChartInstance) {
+    salesChartInstance.destroy()
   }
 })
 </script>
@@ -222,6 +325,10 @@ ul { list-style: none; padding: 0; }
 .market-link { color: #ccc; display: block; font-size: 0.9rem; margin-top: 1.5rem; text-align: center; text-decoration: underline; }
 .product-details li { align-items: center; display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
 .product-details span { color: #aaa; }
-select { appearance: none; background-color: #2c2c2c; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; border: 1px solid #444; border-radius: 8px; color: #ffffff; font-size: 1rem; padding: 0.75rem 2.5rem 0.75rem 1rem; width: 100%; }
+select { appearance: none; background-color: #2c2c2c; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%Vsvg%3E"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; border: 1px solid #444; border-radius: 8px; color: #ffffff; font-size: 1rem; padding: 0.75rem 2.5rem 0.75rem 1rem; width: 100%; }
+.chart-container { margin: 0 auto; max-width: 1200px; padding: 1rem 5% 4rem; }
+.chart-container h3 { font-size: 1.5rem; }
+.chart-container h3 span { color: #aaa; font-size: 1.1rem; font-weight: 400; }
+.chart-wrapper { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; height: 400px; padding: 1.5rem; position: relative; }
 @media (max-width: 900px) { .product-grid { grid-template-columns: 1fr; } }
 </style>
