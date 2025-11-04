@@ -63,7 +63,3 @@ async def add_portfolio_item(user_uuid: str, new_portfolio_item_info: NewPortfol
         return ErrorMessage(message="Your item could not be added to your portfolio", error="PortfolioItemAdditionFailed")
 
     return dict(row)
-
-@router.get("/{user_uuid}/{portfolio_item_id}")
-async def portfolio_item(user_uuid: str, portfolio_item_id: str, session: AsyncSession = Depends(get_session)):
-    pass
