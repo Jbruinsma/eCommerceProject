@@ -466,6 +466,7 @@ CROSS JOIN sizes s
 WHERE
     p.name = 'Supreme Hanes Boxer Briefs (4 Pack) ''White'''
     AND s.size_id BETWEEN 21 AND 26;
+
 -- Truncate transactional tables before inserting new data
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE addresses;
@@ -474,7 +475,6 @@ TRUNCATE TABLE transactions;
 TRUNCATE TABLE orders;
 TRUNCATE TABLE listings;
 TRUNCATE TABLE bids;
--- We also reset account_balance so we don't just add to it on every run
 TRUNCATE TABLE account_balance;
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -483,9 +483,9 @@ INSERT INTO account_balance (user_id, balance)
 SELECT uuid, 0.00 FROM users;
 
 -- =================================================================
--- PROCEDURE 1: CreatePastSales (*** NOW UPDATES ACCOUNT BALANCE ***)
--- Creates N completed sales, along with their associated 'sold' listings,
--- transactions, portfolio items, addresses, and updates account balances.
+-- PROCEDURE 1: CreatePastSales (*** NOW CHECKS BALANCE ***)
+-- Creates N completed sales. Checks if buyer has enough balance.
+-- If not, uses 'credit_card' as origin and does not debit account.
 -- =================================================================
 
 DROP PROCEDURE IF EXISTS CreatePastSales;
@@ -509,13 +509,17 @@ BEGIN
     DECLARE v_sale_price DECIMAL(10, 2);
 
     -- Fee variables
-    DECLARE v_fee_id INT UNSIGNED DEFAULT 1; -- From your initial insert
+    DECLARE v_fee_id INT UNSIGNED DEFAULT 1;
     DECLARE v_seller_fee_pct DECIMAL(10, 4);
     DECLARE v_buyer_fee_pct DECIMAL(10, 4);
     DECLARE v_buyer_tx_fee DECIMAL(10, 2);
     DECLARE v_buyer_final_price DECIMAL(10, 2);
     DECLARE v_seller_tx_fee DECIMAL(10, 2);
     DECLARE v_seller_final_payout DECIMAL(10, 2);
+
+    -- NEW: Balance check variables
+    DECLARE v_buyer_current_balance DECIMAL(15, 2);
+    DECLARE v_payment_origin ENUM('account_balance', 'credit_card', 'other');
 
     -- Other
     DECLARE v_order_status ENUM('pending', 'paid', 'shipped', 'completed', 'cancelled', 'refunded');
@@ -529,40 +533,41 @@ BEGIN
     WHILE i < num_sales DO
         SET v_order_id = UUID();
 
-        -- 1. Get random users (ensure buyer != seller)
-        SELECT uuid, first_name, last_name
-        INTO v_buyer_id, v_buyer_first_name, v_buyer_last_name
-        FROM users ORDER BY RAND() LIMIT 1;
+        -- 1. Get random users
+        SELECT uuid, first_name, last_name, b.balance
+        INTO v_buyer_id, v_buyer_first_name, v_buyer_last_name, v_buyer_current_balance
+        FROM users u
+        JOIN account_balance b ON u.uuid = b.user_id
+        ORDER BY RAND() LIMIT 1;
 
         SELECT uuid INTO v_seller_id
         FROM users WHERE uuid != v_buyer_id ORDER BY RAND() LIMIT 1;
 
-        -- 2. Get random product/size combo and its retail price
+        -- 2. Get random product/size combo
         SELECT ps.product_id, ps.size_id, p.retail_price
         INTO v_product_id, v_size_id, v_retail_price
         FROM products_sizes ps
         JOIN products p ON ps.product_id = p.product_id
         ORDER BY RAND() LIMIT 1;
 
-        -- Fallback for products with NULL retail price
         IF v_retail_price IS NULL OR v_retail_price = 0 THEN
             SET v_retail_price = 150.00;
         END IF;
 
-        -- 3. Calculate realistic sale price (70% to 250% of retail)
+        -- 3. Calculate sale price
         SET v_sale_price = ROUND(v_retail_price * (0.7 + RAND() * 1.8), 2);
 
         -- 4. Set condition and status
-        SET v_product_condition = 'new'; -- Assume 'new' for simplicity
-        SET v_order_status = 'completed'; -- These are all past sales
+        SET v_product_condition = 'new';
+        SET v_order_status = 'completed';
 
-        -- 5. Calculate fees based on your 10% seller / 2.5% buyer rule
+        -- 5. Calculate fees
         SET v_seller_tx_fee = ROUND(v_sale_price * v_seller_fee_pct, 2);
         SET v_seller_final_payout = v_sale_price - v_seller_tx_fee;
         SET v_buyer_tx_fee = ROUND(v_sale_price * v_buyer_fee_pct, 2);
         SET v_buyer_final_price = v_sale_price + v_buyer_tx_fee;
 
-        -- 6. Set random date (in the last 730 days)
+        -- 6. Set random date
         SET v_created_at = NOW() - INTERVAL FLOOR(RAND() * 730) DAY - INTERVAL FLOOR(RAND() * 86400) SECOND;
 
         -- 7. === INSERT into orders ===
@@ -580,7 +585,7 @@ BEGIN
             v_order_status, v_created_at, v_created_at
         );
 
-        -- 8. === INSERT into addresses (shipping address for the order) ===
+        -- 8. === INSERT into addresses ===
         INSERT INTO addresses (
             user_id, order_id, purpose, name,
             address_line_1, city, state, zip_code, country
@@ -589,7 +594,7 @@ BEGIN
             '123 Market St', 'Fakeville', 'CA', '90210', 'USA'
         );
 
-        -- 9. === INSERT into listings (back-fill the 'sold' listing) ===
+        -- 9. === INSERT into listings ===
         INSERT INTO listings (
             user_id, product_id, size_id, listing_type, price,
             fee_structure_id, item_condition, status, created_at, updated_at
@@ -598,16 +603,29 @@ BEGIN
             v_fee_id, v_product_condition, 'sold', v_created_at, v_created_at
         );
 
-        -- 10. === INSERT into transactions (buyer and seller) ===
-        -- Buyer's payment (negative amount)
+        -- 10. === INSERT into transactions (buyer) ===
+        -- *** NEW LOGIC: Check balance to determine payment origin ***
+        IF v_buyer_current_balance >= v_buyer_final_price THEN
+            SET v_payment_origin = 'account_balance';
+
+            -- Debit the buyer's account
+            UPDATE account_balance
+               SET balance = balance - v_buyer_final_price
+             WHERE user_id = v_buyer_id;
+        ELSE
+            SET v_payment_origin = 'credit_card';
+            -- No update to account_balance, as it's a "credit card" purchase
+        END IF;
+
         INSERT INTO transactions (
             user_id, order_id, amount, transaction_status,
             payment_origin, payment_purpose, created_at
         ) VALUES (
             v_buyer_id, v_order_id, -v_buyer_final_price, 'completed',
-            'credit_card', 'purchase_funds', v_created_at
+            v_payment_origin, 'purchase_funds', v_created_at
         );
-        -- Seller's payout (positive amount)
+
+        -- 11. === INSERT into transactions (seller) & UPDATE seller balance ===
         INSERT INTO transactions (
             user_id, order_id, amount, transaction_status,
             payment_destination, payment_purpose, created_at
@@ -616,7 +634,12 @@ BEGIN
             'account_balance', 'sale_proceeds', v_created_at + INTERVAL 1 DAY
         );
 
-        -- 11. === INSERT into portfolio_items (buyer's new item) ===
+        -- Credit the seller's account (this was already correct)
+        UPDATE account_balance
+           SET balance = balance + v_seller_final_payout
+         WHERE user_id = v_seller_id;
+
+        -- 12. === INSERT into portfolio_items ===
         INSERT INTO portfolio_items (
             portfolio_item_id, user_id, product_id, size_id,
             acquisition_date, acquisition_price, item_condition
@@ -624,18 +647,6 @@ BEGIN
             UUID(), v_buyer_id, v_product_id, v_size_id,
             DATE(v_created_at), v_sale_price, v_product_condition
         );
-
-        -- 12. === UPDATE account_balance (The new step) ===
-        -- Subtract the purchase amount from the buyer's balance
-        UPDATE account_balance
-           SET balance = balance - v_buyer_final_price
-         WHERE user_id = v_buyer_id;
-
-        -- Add the payout amount to the seller's balance
-        UPDATE account_balance
-           SET balance = balance + v_seller_final_payout
-         WHERE user_id = v_seller_id;
-
 
         SET i = i + 1;
     END WHILE;
@@ -646,7 +657,7 @@ DELIMITER ;
 
 -- =================================================================
 -- PROCEDURE 2: CreateActiveListings
--- Creates N active 'asks' (sale listings) from random sellers.
+-- (No changes needed here)
 -- =================================================================
 
 DROP PROCEDURE IF EXISTS CreateActiveListings;
@@ -675,15 +686,14 @@ BEGIN
         JOIN products p ON ps.product_id = p.product_id
         ORDER BY RAND() LIMIT 1;
 
-        -- Fallback for products with NULL retail price
         IF v_retail_price IS NULL OR v_retail_price = 0 THEN
             SET v_retail_price = 150.00;
         END IF;
 
-        -- 2. Calculate realistic ask price (90% to 290% of retail)
+        -- 2. Calculate realistic ask price
         SET v_ask_price = ROUND(v_retail_price * (0.9 + RAND() * 2.0), 2);
 
-        -- 3. Set random creation date (in the last 60 days)
+        -- 3. Set random creation date
         SET v_created_at = NOW() - INTERVAL FLOOR(RAND() * 60) DAY;
 
         -- 4. === INSERT into listings (active 'ask') ===
@@ -703,8 +713,9 @@ DELIMITER ;
 
 
 -- =================================================================
--- PROCEDURE 3: CreateActiveBids
--- Creates N active 'bids' from random buyers.
+-- PROCEDURE 3: CreateActiveBids (*** NOW CHECKS BALANCE ***)
+-- Creates N active 'bids'. Checks if buyer has enough balance.
+-- If not, uses 'credit_card' as origin.
 -- =================================================================
 
 DROP PROCEDURE IF EXISTS CreateActiveBids;
@@ -728,6 +739,10 @@ BEGIN
     DECLARE v_total_bid_amount DECIMAL(10, 2);
     DECLARE v_created_at DATETIME;
 
+    -- NEW: Balance check variables
+    DECLARE v_buyer_current_balance DECIMAL(15, 2);
+    DECLARE v_payment_origin ENUM('account_balance', 'credit_card', 'other');
+
     -- Get fee percentage
     SELECT buyer_fee_percentage
     INTO v_buyer_fee_pct
@@ -735,7 +750,11 @@ BEGIN
 
     WHILE i < num_bids DO
         -- 1. Get random user and product
-        SELECT uuid INTO v_buyer_id FROM users ORDER BY RAND() LIMIT 1;
+        SELECT uuid, b.balance
+        INTO v_buyer_id, v_buyer_current_balance
+        FROM users u
+        JOIN account_balance b ON u.uuid = b.user_id
+        ORDER BY RAND() LIMIT 1;
 
         SELECT ps.product_id, ps.size_id, p.retail_price
         INTO v_product_id, v_size_id, v_retail_price
@@ -743,19 +762,25 @@ BEGIN
         JOIN products p ON ps.product_id = p.product_id
         ORDER BY RAND() LIMIT 1;
 
-        -- Fallback for products with NULL retail price
         IF v_retail_price IS NULL OR v_retail_price = 0 THEN
             SET v_retail_price = 150.00;
         END IF;
 
-        -- 2. Calculate realistic bid price (60% to 150% of retail)
+        -- 2. Calculate realistic bid price
         SET v_bid_amount = ROUND(v_retail_price * (0.6 + RAND() * 0.9), 2);
 
         -- 3. Calculate total bid amount with fees
         SET v_buyer_tx_fee = ROUND(v_bid_amount * v_buyer_fee_pct, 2);
         SET v_total_bid_amount = v_bid_amount + v_buyer_tx_fee;
 
-        -- 4. Set random creation date (in the last 30 days)
+        -- *** NEW LOGIC: Check balance to determine payment origin ***
+        IF v_buyer_current_balance >= v_total_bid_amount THEN
+            SET v_payment_origin = 'account_balance';
+        ELSE
+            SET v_payment_origin = 'credit_card';
+        END IF;
+
+        -- 4. Set random creation date
         SET v_created_at = NOW() - INTERVAL FLOOR(RAND() * 30) DAY;
 
         -- 5. === INSERT into bids (active 'bid') ===
@@ -766,7 +791,7 @@ BEGIN
         ) VALUES (
             UUID(), v_buyer_id, v_product_id, v_size_id, 'new',
             v_bid_amount, v_buyer_tx_fee, v_fee_id, v_total_bid_amount,
-            'active', 'account_balance', v_created_at, v_created_at
+            'active', v_payment_origin, v_created_at, v_created_at -- Use v_payment_origin
         );
 
         SET i = i + 1;
@@ -778,15 +803,8 @@ DELIMITER ;
 
 -- =================================================================
 -- CALL PROCEDURES
--- This is where we actually generate the data.
--- Feel free to change these numbers.
 -- =================================================================
 
--- Generate 5,000 completed sales (this also creates 5,000 'sold' listings, 10,000 transactions, etc.)
 CALL CreatePastSales(5000);
-
--- Generate 2,000 active listings ('asks') to make the market look busy
 CALL CreateActiveListings(2000);
-
--- Generate 1,500 active bids
 CALL CreateActiveBids(1500);

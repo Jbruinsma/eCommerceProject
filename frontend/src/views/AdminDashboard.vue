@@ -64,7 +64,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* --- Styles remain alphabetized and on a single line --- */
 h1,h2,h3 { color: #ffffff; font-family: Spectral, sans-serif; font-weight: 600; }
 h1 { font-size: 2.8rem; margin-bottom: 0.5rem; }
 h2 { border-bottom: 1px solid #333; font-size: 1.8rem; margin-bottom: 2rem; padding-bottom: 1rem; }

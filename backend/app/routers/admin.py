@@ -189,6 +189,29 @@ async def modify_order(user_identifier: str, order_id: str, updated_order: Updat
         return ErrorMessage(message="Order status could not be updated", error="OrderUpdateFailed")
     return dict(updated_order_row)
 
+@router.get("/analytics")
+async def get_analytics(session: AsyncSession = Depends(get_session)):
+    statement = text("CALL calculateTotalRevenue();")
+    result = await session.execute(statement)
+    revenue_row = result.mappings().all()
+
+    print(revenue_row)
+
+    statement = text("CALL retrieveTopSellingProducts();")
+    result = await session.execute(statement)
+    product_rows = result.mappings().all()
+
+    statement = text("CALL retrieveMonthlyTopSellingProducts();")
+    result = await session.execute(statement)
+    monthly_product_rows = result.mappings().all()
+
+    return {
+        "revenue": list(revenue_row),
+        "topSellingProducts": list(product_rows),
+        "monthlyTopSellingProducts": list(monthly_product_rows)
+    }
+
+
 async def retrieve_uuid_and_email(user_identifier: str, session: AsyncSession = Depends(get_session)):
     if not user_identifier:
         return ErrorMessage(message="User identifier is required", error="MissingUserIdentifier")
