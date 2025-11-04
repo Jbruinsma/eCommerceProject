@@ -24,11 +24,20 @@ async def profile(user_uuid: str, session: AsyncSession = Depends(get_session)):
     row = result.mappings().first()
     if not row:
         return ErrorMessage(message="User not found", error="UserNotFound")
+
+    statement = text("CALL calculatePortfolioValue(:input_user_id);")
+    result = await session.execute(statement, {"input_user_id": user_uuid})
+    portfolio_value_row = result.mappings().first()
+
+    portfolio_value = 0
+
+    if portfolio_value_row: portfolio_value = portfolio_value_row.total_portfolio_value
+
     return {
         "firstName": row.firstName,
         "memberSince": row.memberSince,
         "location": row.location,
-        "portfolioValue": 0,
+        "portfolioValue": portfolio_value,
         "activeListings": row.activeListings,
         "openOrders": row.openOrders
     }

@@ -34,7 +34,7 @@ BEGIN
         p.image_url AS product_image_url,
         s.size_value,
 
-        -- This subquery was already correct
+
         (
             SELECT
                 sale_price
@@ -53,7 +53,6 @@ BEGIN
             LIMIT 1
         ) AS estimated_current_value,
 
-        -- This subquery was also correct
         (
             SELECT
                 DATE_FORMAT(created_at, '%Y-%m-%d')
@@ -72,12 +71,9 @@ BEGIN
             LIMIT 1
         ) AS last_sale_date,
 
-        --
-        --  THE FIX IS HERE
-        --
         (
             (
-                -- This subquery now matches 'estimated_current_value'
+                # Calculate the "current value" of an item
                 SELECT
                     o.sale_price
                 FROM
@@ -87,15 +83,15 @@ BEGIN
                   AND
                     o.size_id = pi.size_id
                   AND
-                    o.product_condition = pi.item_condition  -- ADDED
+                    o.product_condition = pi.item_condition
                   AND
-                    o.order_status = 'completed'         -- ADDED
+                    o.order_status = 'completed'
                 ORDER BY o.created_at DESC
                 LIMIT 1
             )
                 -
             (
-                -- This "acquisition" subquery was already correct
+                # Determine the acquisition price based on acquisition date
                 IF(pi.acquisition_date IS NOT NULL, (
                 SELECT o.sale_price
                 FROM orders o
@@ -159,5 +155,39 @@ BEGIN
     WHERE portfolio_item_id = new_portfolio_item_uuid;
 
 end //
+
+DROP PROCEDURE IF EXISTS calculatePortfolioValue;
+
+CREATE PROCEDURE calculatePortfolioValue(
+    IN input_user_id CHAR(36)
+)
+
+BEGIN
+    SELECT
+        SUM(
+            (
+                SELECT
+                    sale_price
+                FROM
+                    orders
+                WHERE
+                    product_id = pi.product_id
+                  AND
+                    size_id = pi.size_id
+                  AND
+                    product_condition = pi.item_condition
+                  AND
+                    order_status = 'completed'
+                ORDER BY
+                    created_at DESC
+                LIMIT 1
+            )
+        ) AS total_portfolio_value
+    FROM
+        portfolio_items pi
+    WHERE
+        pi.user_id = input_user_id;
+
+END //
 
 DELIMITER ;
