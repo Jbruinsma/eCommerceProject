@@ -12,7 +12,7 @@
             <h2>Item Added!</h2>
             <p>Your item has been successfully added to your collection.</p>
             <div class="result-summary">
-              <p><strong>Item:</strong> {{ selectedProduct.name }}</p>
+              <p><strong>Item:</strong> {{ selectedProductInfo.name }}</p>
               <p><strong>Size:</strong> {{ selectedSizeValue }}</p>
               <p><strong>Paid:</strong> {{ formatCurrency(submissionResult.data.acquisition_price) }}</p>
             </div>
@@ -49,8 +49,8 @@
             <input type="text" v-model="productSearchQuery" placeholder="Search for product by name..." class="search-input">
             <div class="product-results">
               <div v-if="filteredProducts.length === 0" class="no-results">No products found.</div>
-              <div v-else v-for="product in filteredProducts" :key="product.product_id" class="product-item" :class="{ selected: portfolioItemData.product_id === product.product_id }" @click="selectProduct(product)">
-                <img :src="product.image_url" :alt="product.name">
+              <div v-else v-for="product in filteredProducts" :key="product.productId" class="product-item" :class="{ selected: portfolioItemData.product_id === product.productId }" @click="selectProduct(product)">
+                <img :src="product.imageUrl" :alt="product.name">
                 <span>{{ product.name }}</span>
               </div>
             </div>
@@ -61,7 +61,7 @@
               <div class="form-group span-2">
                 <label>Size</label>
                 <div class="radio-group size-group">
-                  <button v-for="size in selectedProduct?.sizes" :key="size.size_id" class="radio-btn" :class="{ selected: portfolioItemData.size_id === size.size_id }" @click="portfolioItemData.size_id = size.size_id">{{ size.size_value }}</button>
+                  <button v-for="size in detailedProductData?.sizes" :key="size.sizeId" class="radio-btn" :class="{ selected: portfolioItemData.size_id === size.sizeId }" @click="portfolioItemData.size_id = size.sizeId">{{ size.size }}</button>
                 </div>
               </div>
               <div class="form-group span-2">
@@ -84,7 +84,7 @@
           <div v-if="currentStep === 4" class="step-content review-step">
             <div class="listing-review">
               <h4>Review Your Item</h4>
-              <p><strong>Item:</strong> {{ selectedProduct.name }}</p>
+              <p><strong>Item:</strong> {{ selectedProductInfo.name }}</p>
               <p><strong>Size:</strong> {{ selectedSizeValue }} | <strong>Condition:</strong> {{ portfolioItemData.item_condition }}</p>
               <p><strong>Acquired On:</strong> {{ formatDate(portfolioItemData.acquisition_date) }}</p>
               <p><strong>Price Paid:</strong> {{ formatCurrency(portfolioItemData.acquisition_price) }}</p>
@@ -128,12 +128,20 @@ const conditions = ['new', 'used', 'worn'];
 const productSearchQuery = ref('');
 const productsResults = ref([]);
 const brandSearchQuery = ref('');
+const detailedProductData = ref(null);
 
 const stepTitle = computed(() => ["Select Brand", "Find Your Item", "Add Details", "Review Item"][currentStep.value - 1] || '');
 const filteredBrands = computed(() => { if (!brandSearchQuery.value) return brands.value; return brands.value.filter(b => b.brand_name.toLowerCase().includes(brandSearchQuery.value.toLowerCase())); });
 const filteredProducts = computed(() => productsResults.value.filter(p => p.name.toLowerCase().includes(productSearchQuery.value.toLowerCase())));
-const selectedProduct = computed(() => productsResults.value.find(p => p.product_id === portfolioItemData.product_id));
-const selectedSizeValue = computed(() => selectedProduct.value?.sizes.find(s => s.size_id === portfolioItemData.size_id)?.size_value);
+
+const selectedProductInfo = computed(() => {
+  return detailedProductData.value || productsResults.value.find(p => p.productId === portfolioItemData.product_id)
+});
+const selectedSizeValue = computed(() => {
+  if (!detailedProductData.value) return ''
+  const sizeInfo = detailedProductData.value.sizes.find(s => s.sizeId === portfolioItemData.size_id)
+  return sizeInfo ? sizeInfo.size : ''
+});
 
 const isStepValid = computed(() => {
   switch (currentStep.value) {
@@ -148,24 +156,35 @@ const isStepValid = computed(() => {
 async function searchForProducts() {
   if (!portfolioItemData.brand_id) { productsResults.value = []; return; }
   try {
-    const rawProducts = await fetchFromAPI(`/product/search?brand_id=${portfolioItemData.brand_id}&product_name=${productSearchQuery.value || ''}`);
-    productsResults.value = (rawProducts || []).map(product => ({
-      ...product,
-      sizes: typeof product.sizes === 'string' ? JSON.parse(product.sizes) : []
-    }));
+    const response = await fetchFromAPI(`/search/?brand_id=${portfolioItemData.brand_id}`)
+    productsResults.value = response.products || []
   } catch (err) { console.error('Product search failed', err); productsResults.value = []; }
 }
 
-watch(() => portfolioItemData.brand_id, () => {
+watch(() => portfolioItemData.brand_id, (newBrandId) => {
   productSearchQuery.value = '';
   portfolioItemData.product_id = null;
+  portfolioItemData.size_id = null;
   productsResults.value = [];
-  searchForProducts();
+  detailedProductData.value = null;
+  if (newBrandId) {
+    searchForProducts();
+  }
 });
-watch(productSearchQuery, (newQuery) => { if (newQuery.length >= 2 || newQuery.length === 0) searchForProducts(); });
 
 function selectBrand(brandId) { portfolioItemData.brand_id = brandId; }
-function selectProduct(product) { portfolioItemData.product_id = product.product_id; }
+async function selectProduct(product) {
+  portfolioItemData.product_id = product.productId;
+  detailedProductData.value = null;
+
+  try {
+    const response = await fetchFromAPI(`/search/${product.productId}`);
+    detailedProductData.value = response;
+  } catch (error) {
+    console.error(`Failed to fetch detailed data for product ${product.productId}:`, error);
+    detailedProductData.value = null;
+  }
+}
 function nextStep() { if (isStepValid.value) currentStep.value++; }
 function prevStep() { if (currentStep.value > 1) currentStep.value--; }
 
@@ -182,7 +201,7 @@ async function submitPortfolioItem() {
       throw new Error('Invalid response from server.');
     }
   } catch (error) {
-    submissionResult.value = { success: false, message: error.message || 'An unknown error occurred.' };
+    submissionResult.value = { success: false, message: error.data?.message || error.message || 'An unknown error occurred.' };
   } finally {
     isLoading.value = false;
   }
@@ -192,7 +211,6 @@ const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'curr
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  // Add a day to the date to correct for timezone issues with date inputs
   const date = new Date(dateString);
   date.setDate(date.getDate() + 1);
   return date.toLocaleDateString('en-US', options);
