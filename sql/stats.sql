@@ -41,7 +41,7 @@ GROUP BY
     p.name, s.size_value, o.product_condition, p.image_url
 ORDER BY
     total_sales DESC
-    LIMIT 25;
+    LIMIT 10;
 
 end //
 
@@ -99,7 +99,71 @@ BEGIN
     WHERE
         sales_rank = 1
     ORDER BY
-        sales_month;
+        sales_month
+    LIMIT 1;
+
+end //
+
+DROP PROCEDURE IF EXISTS retrieveSalesByCategory;
+
+CREATE PROCEDURE retrieveSalesByCategory()
+
+BEGIN
+
+    SELECT
+        COUNT(o.order_id) AS total_orders,
+        p.product_type
+    FROM
+        orders o
+            JOIN
+            products p ON o.product_id = p.product_id
+    GROUP BY
+        p.product_type;
+
+end //
+
+DROP PROCEDURE IF EXISTS calculateCustomerBreakdown;
+
+CREATE PROCEDURE calculateCustomerBreakdown()
+
+BEGIN
+
+    WITH BuyerOrderCounts AS (
+    SELECT
+        COUNT(o.order_id) AS total_orders,
+        o.buyer_id
+    FROM orders o
+    GROUP BY buyer_id
+    )
+    SELECT
+        COUNT(o.order_id) AS total_orders,
+        IF(boc.total_orders = 1, 'New_Buyer', 'Returning_Buyer') AS buyer_type
+    FROM orders o
+        JOIN BuyerOrderCounts boc ON o.buyer_id = boc.buyer_id
+    GROUP BY buyer_type;
+
+end //
+
+DROP PROCEDURE IF EXISTS retrieveAverageOrderValue;
+
+CREATE PROCEDURE retrieveAverageOrderValue()
+
+BEGIN
+
+    SELECT ROUND(AVG(buyer_final_price), 2) AS average_completed_order_value
+    FROM orders
+    WHERE order_status = 'completed';
+
+end //
+
+DROP PROCEDURE IF EXISTS retrieveTotalOrders;
+
+CREATE PROCEDURE retrieveTotalOrders()
+
+BEGIN
+
+    SELECT COUNT(*) AS total_orders
+    FROM orders;
 
 end //
 

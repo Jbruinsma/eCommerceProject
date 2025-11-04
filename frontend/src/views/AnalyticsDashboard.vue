@@ -14,6 +14,14 @@
           <label>All-Time Revenue</label>
           <span class="value">{{ formatCurrency(allTimeRevenue) }}</span>
         </div>
+        <div class="card kpi-card">
+          <label>Average Order Value</label>
+          <span class="value">{{ formatCurrency(averageCompletedOrderValue) }}</span>
+        </div>
+        <div class="card kpi-card">
+          <label>Total Orders</label>
+          <span class="value">{{ totalOrders.toLocaleString('en-US') }}</span>
+        </div>
       </section>
 
       <section class="card chart-card">
@@ -21,6 +29,25 @@
         <p class="chart-subtitle">Total fees generated per month.</p>
         <div class="chart-container">
           <canvas id="revenueChart" ref="chartCanvas"></canvas>
+        </div>
+      </section>
+
+      <section class="insights-grid">
+        <div class="card chart-card">
+          <h2>Customer Breakdown</h2>
+          <p class="chart-subtitle">New vs. returning customers (all-time).</p>
+          <div class="chart-container" style="height: 250px;">
+            <canvas id="customerChart" ref="customerChartCanvas"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Sales by Category</h2>
+          <ul class="simple-list">
+            <li v-for="category in salesByCategory" :key="category.product_type">
+              <span class="list-main">{{ category.product_type }}</span>
+              <span class="list-count">{{ category.total_orders }} orders</span>
+            </li>
+          </ul>
         </div>
       </section>
 
@@ -78,6 +105,16 @@ const allTimeRevenue = ref(0);
 const revenueOverTime = ref([]);
 const chartInstance = ref(null);
 const chartCanvas = ref(null);
+
+// MODIFIED: Renamed refs to match new API keys
+const averageCompletedOrderValue = ref(0); // Was averageOrderValue
+const totalOrders = ref(0);
+const customerBreakdown = ref([]);
+const salesByCategory = ref([]); // Was topCategories
+
+const customerChartInstance = ref(null);
+const customerChartCanvas = ref(null);
+
 
 function formatCurrency(value) {
   const n = Number(value)
@@ -145,9 +182,61 @@ function renderRevenueChart(data) {
   });
 }
 
+// MODIFIED: Updated to read new customerBreakdown structure
+function renderCustomerChart(data) {
+  const ctx = customerChartCanvas.value;
+  if (!ctx) return;
+
+  // Use new keys 'buyer_type' and 'total_orders'
+  const labels = data.map(d => d.buyer_type.replace('_', ' ')); // "New_Buyer" -> "New Buyer"
+  const chartData = data.map(d => d.total_orders);
+
+  if (customerChartInstance.value) {
+    customerChartInstance.value.destroy();
+  }
+
+  customerChartInstance.value = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Orders', // Changed label
+        data: chartData,
+        backgroundColor: [
+          'rgba(255, 255, 255, 0.7)',
+          'rgba(255, 255, 255, 0.2)'
+        ],
+        borderColor: '#1a1a1a',
+        borderWidth: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#aaa',
+            padding: 15
+          }
+        },
+        tooltip: {
+          backgroundColor: '#111',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+        }
+      }
+    }
+  });
+}
+
+
 async function fetchDashboardData() {
   try {
+    // MODIFIED: Re-enabled API call
     const analyticsData = await fetchFromAPI('/admin/analytics')
+
     console.log("Analytics Data:", analyticsData)
 
     if (analyticsData) {
@@ -158,20 +247,36 @@ async function fetchDashboardData() {
           const revenue = Number(month.total_revenue) || 0;
           return sum + revenue;
         }, 0);
-
       }
 
       if (analyticsData.topSellingProducts) {
         topSellingProducts.value = analyticsData.topSellingProducts;
       }
+
+      // MODIFIED: Switched back to plural key
       if (analyticsData.monthlyTopSellingProducts) {
         monthlyTopProducts.value = analyticsData.monthlyTopSellingProducts;
       }
 
+      // MODIFIED: Use new key 'averageCompletedOrderValue'
+      if (analyticsData.averageCompletedOrderValue) {
+        averageCompletedOrderValue.value = analyticsData.averageCompletedOrderValue;
+      }
+
+      // MODIFIED: Calculate totalOrders from customerBreakdown
+      if (analyticsData.totalOrders) {
+        totalOrders.value = analyticsData.totalOrders;
+      }
+
+      // MODIFIED: Use new key 'salesByCategory'
+      if (analyticsData.salesByCategory) {
+        salesByCategory.value = analyticsData.salesByCategory;
+      }
+
+      // This will be skipped if not present, and the calculation above will be used.
       if (analyticsData.allTimeRevenue) {
         allTimeRevenue.value = analyticsData.allTimeRevenue;
       }
-
     }
   } catch (err) {
     console.error("Failed to fetch dashboard data:", err)
@@ -181,6 +286,12 @@ async function fetchDashboardData() {
 watch(revenueOverTime, (newData) => {
   if (newData && newData.length > 0) {
     renderRevenueChart(newData);
+  }
+});
+
+watch(customerBreakdown, (newData) => {
+  if (newData && newData.length > 0) {
+    renderCustomerChart(newData);
   }
 });
 
@@ -202,21 +313,18 @@ label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5r
 
 .card { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; margin-bottom: 2rem; padding: 2rem; }
 
-/* KPI Grid Styles */
-.kpi-grid { display: grid; gap: 2rem; grid-template-columns: 1fr 1fr; margin-bottom: 2rem; }
+.kpi-grid { display: grid; gap: 2rem; grid-template-columns: repeat(4, 1fr); margin-bottom: 2rem; }
 .kpi-card { margin-bottom: 0; padding: 1.5rem 2rem; }
 .kpi-card label { color: #aaa; font-size: 1rem; margin-bottom: 0.5rem; text-transform: capitalize; }
 .kpi-card .value { color: #ffffff; display: block; font-size: 2.2rem; font-weight: 600; }
 
-/* Chart Styles */
 .chart-card { min-height: 400px; }
 .chart-subtitle { color: #888; margin-bottom: 2rem; margin-top: -1.25rem; }
 .chart-container { height: 300px; position: relative; }
 
-/* Grid layout for lists */
-.activity-grid { display: grid; gap: 2rem; grid-template-columns: 1fr 1fr; }
+.insights-grid { display: grid; gap: 2rem; grid-template-columns: 1fr 1fr; }
+.activity-grid { display: grid; gap: 2rem; grid-template-columns: 1fr; }
 
-/* Product List Styles */
 .product-list { display: flex; flex-direction: column; gap: 1.5rem; list-style: none; margin: 0; max-height: 500px; overflow-y: auto; padding: 0; }
 .product-list li { align-items: center; display: flex; gap: 1rem; }
 .list-img { background-color: #333; border: 1px solid #444; border-radius: 8px; flex-shrink: 0; height: 50px; object-fit: cover; width: 50px; }
@@ -225,9 +333,16 @@ label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5r
 .list-sub { color: #888; font-size: 0.85rem; text-transform: capitalize; }
 .list-count { color: #f0f0f0; font-size: 1rem; font-weight: 600; padding-left: 1rem; text-align: right; white-space: nowrap; }
 
-@media (max-width: 900px) {
-  .activity-grid { grid-template-columns: 1fr; }
+.simple-list { display: flex; flex-direction: column; gap: 1.5rem; list-style: none; margin: 0; max-height: 500px; overflow-y: auto; padding: 0; }
+.simple-list li { align-items: center; display: flex; gap: 1rem; }
+.simple-list .list-main { text-transform: capitalize; } /* Added for categories */
+
+
+@media (max-width: 1024px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .insights-grid { grid-template-columns: 1fr; }
 }
+
 @media (max-width: 768px) {
   .kpi-grid { grid-template-columns: 1fr; }
 }
