@@ -68,7 +68,6 @@ import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
 
-// --- Reactive Data Refs ---
 const topSellingProducts = ref([]);
 const monthlyTopProducts = ref([]);
 const monthlyRevenue = ref({
@@ -79,8 +78,6 @@ const allTimeRevenue = ref(0);
 const revenueOverTime = ref([]);
 const chartInstance = ref(null);
 const chartCanvas = ref(null);
-
-// --- Helper Functions ---
 
 function formatCurrency(value) {
   const n = Number(value)
@@ -98,7 +95,6 @@ function resolveImageUrl(url) {
   return '/' + url;
 }
 
-// Function to render the line chart
 function renderRevenueChart(data) {
   const ctx = chartCanvas.value;
   if (!ctx) return;
@@ -149,24 +145,15 @@ function renderRevenueChart(data) {
   });
 }
 
-// --- API Fetching ---
-
 async function fetchDashboardData() {
-  console.log("Fetching dashboard data...")
   try {
     const analyticsData = await fetchFromAPI('/admin/analytics')
     console.log("Analytics Data:", analyticsData)
 
     if (analyticsData) {
       if (analyticsData.revenue && Array.isArray(analyticsData.revenue) && analyticsData.revenue.length > 0) {
-
-        // 1. Use the full array for the chart
         revenueOverTime.value = analyticsData.revenue;
-
-        // 2. Use the *last* item for the "Latest Monthly Revenue" KPI
         monthlyRevenue.value = analyticsData.revenue[analyticsData.revenue.length - 1];
-
-        // 3. Calculate "All-Time Revenue" by summing the array
         allTimeRevenue.value = analyticsData.revenue.reduce((sum, month) => {
           const revenue = Number(month.total_revenue) || 0;
           return sum + revenue;
@@ -191,14 +178,12 @@ async function fetchDashboardData() {
   }
 }
 
-// Watch for changes in revenueOverTime data to render/update the chart
 watch(revenueOverTime, (newData) => {
   if (newData && newData.length > 0) {
     renderRevenueChart(newData);
   }
 });
 
-// Fetch data when the component is mounted
 onMounted(() => {
   fetchDashboardData()
 });

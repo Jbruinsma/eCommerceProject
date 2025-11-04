@@ -12,6 +12,9 @@ TRUNCATE TABLE products_sizes;
 TRUNCATE TABLE listings;
 TRUNCATE TABLE orders;
 TRUNCATE TABLE transactions;
+TRUNCATE TABLE addresses;
+TRUNCATE TABLE portfolio_items;
+TRUNCATE TABLE bids;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -63,6 +66,7 @@ BEGIN
         ELSE
             SET v_role = 'admin';
         END IF;
+        -- This line is already correct and spreads users over 2 years
         SET v_created_at = NOW() - INTERVAL FLOOR(RAND() * 730) DAY - INTERVAL FLOOR(RAND() * 86400) SECOND;
         INSERT INTO users (
             uuid, email, password, first_name, last_name,
@@ -89,8 +93,24 @@ DELIMITER ;
 
 CALL InsertDummyUsers();
 
-INSERT INTO account_balance (user_id)
-SELECT uuid FROM users;
+-- Re-populate account_balance for all users, with a starting balance "curve"
+INSERT INTO account_balance (user_id, balance)
+SELECT
+    u.uuid,
+    CASE
+        -- "Month 0: $0" (Users created in the current month)
+        WHEN TIMESTAMPDIFF(MONTH, u.created_at, NOW()) = 0 THEN 0.00
+
+        -- "Month 1: $500" (Users created 1 month ago)
+        WHEN TIMESTAMPDIFF(MONTH, u.created_at, NOW()) = 1 THEN 500.00
+
+        -- "At a certain point it becomes random" (Users > 1 month old)
+        -- We'll give them a random balance based on their "age"
+        ELSE
+            -- Start with a base of 500, plus a random amount ($0-$200) for each month they've been active.
+            ROUND(500.00 + (TIMESTAMPDIFF(MONTH, u.created_at, NOW()) * RAND() * 200), 2)
+    END AS starting_balance
+FROM users u;
 
 INSERT INTO brands (brand_id, brand_name, brand_logo_url) VALUES
 (1, 'Adidas', '/brand_logos/adidasLogo.png'),
@@ -478,9 +498,24 @@ TRUNCATE TABLE bids;
 TRUNCATE TABLE account_balance;
 SET FOREIGN_KEY_CHECKS = 1;
 
--- Re-populate account_balance for all users, starting at 0
+-- Re-populate account_balance for all users, with a starting balance "curve"
 INSERT INTO account_balance (user_id, balance)
-SELECT uuid, 0.00 FROM users;
+SELECT
+    u.uuid,
+    CASE
+        -- "Month 0: $0" (Users created in the current month)
+        WHEN TIMESTAMPDIFF(MONTH, u.created_at, NOW()) = 0 THEN 0.00
+
+        -- "Month 1: $500" (Users created 1 month ago)
+        WHEN TIMESTAMPDIFF(MONTH, u.created_at, NOW()) = 1 THEN 500.00
+
+        -- "At a certain point it becomes random" (Users > 1 month old)
+        -- We'll give them a random balance based on their "age"
+        ELSE
+            -- Start with a base of 500, plus a random amount ($0-$200) for each month they've been active.
+            ROUND(500.00 + (TIMESTAMPDIFF(MONTH, u.created_at, NOW()) * RAND() * 200), 2)
+    END AS starting_balance
+FROM users u;
 
 -- =================================================================
 -- PROCEDURE 1: CreatePastSales (*** NOW CHECKS BALANCE ***)
