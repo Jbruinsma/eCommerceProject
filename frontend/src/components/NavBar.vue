@@ -1,6 +1,6 @@
 <template>
   <nav class="navbar">
-    <a class="logo" href="/">NAME</a>
+    <a class="logo" href="/">The Vault</a>
     <ul class="nav-links">
       <li class="nav-customization"><a href="/search?category=sneakers">Sneakers</a></li>
       <li class="nav-customization"><a href="/search?category=apparel">Apparel</a></li>

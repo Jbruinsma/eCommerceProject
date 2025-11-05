@@ -42,10 +42,6 @@ async def profile(user_uuid: str, session: AsyncSession = Depends(get_session)):
         "openOrders": row.openOrders
     }
 
-@router.get("/{user_uuid}/orders")
-async def orders(user_uuid: str, session: AsyncSession = Depends(get_session)):
-    pass
-
 @router.get("/{user_uuid}/transactions")
 async def transactions(user_uuid: str, session: AsyncSession = Depends(get_session)):
 

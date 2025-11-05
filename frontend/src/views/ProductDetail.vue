@@ -69,7 +69,6 @@
                   }}</span>
               </router-link>
             </div>
-            <a href="#" class="market-link">View Market Data</a>
           </div>
 
           <div class="product-details">
@@ -243,6 +242,9 @@ onMounted(async () => {
       fetchFromAPI(`/search/${productId}`),
       fetchFromAPI(`/product/history/${productId}`),
     ])
+
+    console.log(response)
+
     product.value = { ...response, productId: productId }
     if (response.sizes && response.sizes.length > 0) {
       const processedMarketData = {}
