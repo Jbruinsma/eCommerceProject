@@ -1,8 +1,13 @@
+from _typeshed import _VT_co
+from typing import Dict, Any
+
 from fastapi import APIRouter
 from fastapi.params import Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.elements import SQLCoreOperations
 
+from backend.app.pydantic_models.error_message import ErrorMessage
 from ..db import get_session
 
 from ..pydantic_models.error_message import ErrorMessage
@@ -13,7 +18,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.get("/{user_uuid}")
-async def profile(user_uuid: str, session: AsyncSession = Depends(get_session)):
+async def profile(user_uuid: str, session: AsyncSession = Depends(get_session)) -> Dict[str, str | int] | ErrorMessage:
 
     if not user_uuid:
         return ErrorMessage(message="Invalid user UUID", error="InvalidUserUUID")
@@ -29,9 +34,7 @@ async def profile(user_uuid: str, session: AsyncSession = Depends(get_session)):
     result = await session.execute(statement, {"input_user_id": user_uuid})
     portfolio_value_row = result.mappings().first()
 
-    portfolio_value = 0
-
-    if portfolio_value_row: portfolio_value = portfolio_value_row.total_portfolio_value
+    portfolio_value = portfolio_value_row.total_portfolio_value if portfolio_value_row else 0
 
     return {
         "firstName": row.firstName,
@@ -43,7 +46,8 @@ async def profile(user_uuid: str, session: AsyncSession = Depends(get_session)):
     }
 
 @router.get("/{user_uuid}/transactions")
-async def transactions(user_uuid: str, session: AsyncSession = Depends(get_session)):
+async def transactions(user_uuid: str, session: AsyncSession = Depends(get_session)) -> ErrorMessage | dict[
+    str, list[dict[str | SQLCoreOperations[Any], _VT_co]] | int | float]:
 
     if not user_uuid:
         return ErrorMessage(message="Invalid user UUID", error="InvalidUserUUID")
@@ -105,4 +109,5 @@ async def balance(user_uuid: str, session: AsyncSession = Depends(get_session)):
 
     if not row:
         return ErrorMessage(message="User not found", error="UserNotFound")
+
     return dict(row)
