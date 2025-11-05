@@ -1,17 +1,8 @@
-from typing import Optional
-from datetime import date
-
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
-
-from ..pydantic_models.error_message import ErrorMessage
-from ..pydantic_models.product import ProductBase
-
-from ..utils.bids import process_bids
-from ..utils.formatting import format_market_data
 from ..utils.products import retrieve_product_id, retrieve_product_info
 
 router = APIRouter(prefix="/product", tags=["products"])
