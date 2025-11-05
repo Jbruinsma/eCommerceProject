@@ -3,7 +3,6 @@
     <div class="login-form-container">
       <h2>Login to Your Account</h2>
 
-      <!-- Success and error banners -->
       <div v-if="successMessage" class="message-banner success">{{ successMessage }}</div>
       <div v-if="errorMessage" class="message-banner error">{{ errorMessage }}</div>
 
@@ -35,8 +34,8 @@
         </button>
       </form>
       <div class="extra-links">
-        <a href="/account-recovery">Forgot Password?</a>
-        <a href="/register">Create Account</a>
+        <router-link to="/account-recovery">Forgot Password?</router-link>
+        <router-link to="/register">Create Account</router-link>
       </div>
     </div>
   </div>
@@ -48,6 +47,7 @@ import { postToAPI } from '@/utils/index.js'
 import router from '@/router/index.js'
 import { useAuthStore } from '@/stores/authStore.js'
 import { authenticateUser } from '@/utils/authenticateUser.js'
+import { useRoute } from 'vue-router'
 
 const email = ref('')
 const password = ref('')
@@ -57,6 +57,7 @@ const errorMessage = ref('')
 const successMessage = ref('')
 
 const authStore = useAuthStore()
+const route = useRoute()
 
 onMounted(async () => {
   if (authStore.isLoggedIn) {
@@ -98,7 +99,8 @@ const handleLogin = async () => {
       clearMessages()
       return
     }
-    await router.push('/')
+
+    await router.push(route.query.redirect || '/')
 
   } catch (err) {
     errorMessage.value =
