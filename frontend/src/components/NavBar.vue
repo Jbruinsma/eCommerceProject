@@ -16,7 +16,9 @@
           viewBox="0 0 24 24"
           fill="currentColor"
         >
-          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+          <path
+            d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+          />
         </svg>
         <input
           type="text"
@@ -75,8 +77,6 @@
           d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
         />
       </svg>
-
-
     </div>
   </nav>
 </template>
@@ -84,8 +84,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import router from '@/router/index.js'
 import { useAuthStore } from '@/stores/authStore.js'
+import { redirectToAdminDashboard, redirectToOrders, redirectToProfile } from '@/utils/routing.js'
+import router from '@/router/index.js'
 
 const searchQuery = ref('')
 const authStore = useAuthStore()
@@ -98,43 +99,24 @@ const isSearchPage = computed(() => {
   return lname.includes('search') || path.startsWith('/search')
 })
 
-function handleSearch() {
+async function handleSearch() {
   const q = (searchQuery.value || '').toString().trim()
   try {
     if (q) {
-      router.push({ name: 'SearchResults', query: { q } })
+      await router.push({ name: 'SearchResults', query: { q } })
     } else {
       if (router && router.resolve) {
         router.push({ name: 'SearchResults' }).catch(() => router.push('/search'))
       } else {
-        router.push('/search')
+        await router.push('/search')
       }
     }
   } catch (err) {
     console.error('Error handling search:', err)
-    router.push(q ? `/search?q=${encodeURIComponent(q)}` : '/search')
+    await router.push(q ? `/search?q=${encodeURIComponent(q)}` : '/search')
   }
   searchQuery.value = ''
 }
-
-function redirectToProfile() {
-  if (authStore.isLoggedIn) router.push('/profile')
-  else router.push('/login')
-}
-
-function redirectToOrders() {
-  if (authStore.isLoggedIn) router.push('/orders')
-  else router.push('/login')
-}
-
-function redirectToAdminDashboard() {
-  if (authStore.isLoggedIn && authStore.role === 'admin') {
-    router.push('/admin')
-  } else {
-    router.push('/login')
-  }
-}
-
 </script>
 
 <style scoped>

@@ -123,10 +123,9 @@ import { onMounted, ref } from 'vue'
 import { fetchFromAPI } from '@/utils/index.js'
 import router from '@/router/index.js'
 
-// 1. Initialize with empty arrays/null
+
 const featuredProducts = ref([])
 const bannerProduct = ref(null)
-// NEW state refs
 const loading = ref(true)
 const apiError = ref(null)
 
@@ -134,23 +133,19 @@ onMounted(async () => {
   try {
     const response = await fetchFromAPI('/product/featured')
 
-    console.log(response) // Good for debugging
-
-    // 2. Map the API response to the format your template expects
     featuredProducts.value = response.homepageProducts.map((product) => ({
       id: product.product_id,
       name: product.name,
-      price: product.lowest_asking_price, // Using lowest_asking_price for price
-      imageUrl: product.image_url // Using image_url for imageUrl
+      price: product.lowest_asking_price,
+      imageUrl: product.image_url
     }))
 
-    // 3. Assign the banner product data from the response
     bannerProduct.value = response.bannerProduct
   } catch (error) {
     console.error('Error fetching featured products:', error)
-    apiError.value = error // Set the error
+    apiError.value = error
   } finally {
-    loading.value = false // Stop loading regardless of outcome
+    loading.value = false
   }
 })
 </script>
@@ -176,7 +171,6 @@ a { color: #ffffff; text-decoration: none; }
 
 .collage-hero { align-items: center; display: grid; gap: 2rem; grid-template-columns: 1fr 1fr; padding: 4rem 5%; }
 .collage-hero-loading { align-items: center; display: flex; justify-content: center; min-height: 60vh; }
-/* NEW: Fallback styles */
 .hero-fallback { align-items: center; display: flex; flex-direction: column; justify-content: center; min-height: 50vh; padding: 4rem 5%; text-align: center; }
 .hero-fallback .hero-info { margin-bottom: 2.5rem; } /* Add space above button */
 
