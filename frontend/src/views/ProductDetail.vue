@@ -243,8 +243,6 @@ onMounted(async () => {
       fetchFromAPI(`/product/history/${productId}`),
     ])
 
-    console.log(response)
-
     product.value = { ...response, productId: productId }
     if (response.sizes && response.sizes.length > 0) {
       const processedMarketData = {}

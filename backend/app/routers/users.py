@@ -1,5 +1,4 @@
-from _typeshed import _VT_co
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from fastapi import APIRouter
 from fastapi.params import Depends
@@ -18,7 +17,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.get("/{user_uuid}")
-async def profile(user_uuid: str, session: AsyncSession = Depends(get_session)) -> Dict[str, str | int] | ErrorMessage:
+async def profile(user_uuid: str, session: AsyncSession = Depends(get_session)):
 
     if not user_uuid:
         return ErrorMessage(message="Invalid user UUID", error="InvalidUserUUID")
@@ -46,8 +45,7 @@ async def profile(user_uuid: str, session: AsyncSession = Depends(get_session)) 
     }
 
 @router.get("/{user_uuid}/transactions")
-async def transactions(user_uuid: str, session: AsyncSession = Depends(get_session)) -> ErrorMessage | dict[
-    str, list[dict[str | SQLCoreOperations[Any], _VT_co]] | int | float]:
+async def transactions(user_uuid: str, session: AsyncSession = Depends(get_session)):
 
     if not user_uuid:
         return ErrorMessage(message="Invalid user UUID", error="InvalidUserUUID")

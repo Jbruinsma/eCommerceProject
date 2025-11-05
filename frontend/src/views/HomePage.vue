@@ -25,10 +25,6 @@
         </router-link>
       </div>
     </main>
-
-    <footer class="site-footer">
-      <p>&copy; 2025 NAME Marketplace. All Rights Reserved.</p>
-    </footer>
   </div>
 </template>
 
@@ -104,5 +100,4 @@ a { color: #ffffff; text-decoration: none; }
 .product-card:hover { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); transform: translateY(-5px); }
 .product-image { aspect-ratio: 4 / 3; object-fit: cover; width: 100%; }
 .product-price { color: #3c862a; font-size: 1.2rem; margin-top: 0.5rem; }
-.site-footer { background-color: #1a1a1a; border-top: 1px solid #333; color: #888; padding: 2rem 5%; text-align: center; }
 </style>

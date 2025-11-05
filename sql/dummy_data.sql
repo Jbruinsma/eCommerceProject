@@ -153,6 +153,11 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (12, 'Nike Air Max 90 ''Infrared'' (2020)', 'CT1685-100', 'White/Black-Cool Grey-Radiant Red', 'Sneakers', 135.00, '2020-11-09', '/products/CT1685-100.avif'),
 (12, 'Nike Sportswear Club Fleece Crew ''Grey''', 'BV2662-063', 'Dark Grey Heather/White', '''Apparel - Crewneck', 70.00, '2022-01-26', '/products/BV2662-063.avif'),
 (12, 'Nike V2K Run ''Metallic Silver''', 'FD0736-100', 'Summit White/Pure Platinum/Light Iron Ore/Metallic Silver', 'Sneakers', 110.00, '2023-09-28', '/products/FD0736-100.jpg'),
+(12, 'Nike SB Dunk High ''MF Doom''', '313171-004', 'Black/Black-Midnight Fog', 'Sneakers', 150.00, '2007-07-24', '/products/313171-004.jpg'),
+(12, 'Nike SB Dunk High ''Humidity''', 'AV4168-776', 'Metallic Gold/Metallic Gold-Black', 'Sneakers', 110.00, '2018-10-22', '/products/AV4168-776.jpg'),
+(12, 'Nike SB Dunk High ''Strawberry Cough''', 'CW7093-600', 'University Red/Spinach Green-Magic Ember', 'Sneakers', 110.00, '2021-10-22', '/products/CW7093-600.jpg'),
+(12, 'Nike SB Dunk High ''Skunk 420''', '313171-300', 'Black/Forest/Vintage Purple-Pilgrim', 'Sneakers', 140.00, '2010-04-20', '/products/313171-300.jpg'),
+
 -- Adidas
 (1, 'Adidas Samba OG ''White/Black''', 'BZ0057', 'Cloud White/Core Black/Clear Granite', 'Sneakers', 110.00, '2018-01-01', '/products/BZ0057.avif'),
 (1, 'Adidas Gazelle Bold Shoes ''Core Black''', 'JI2060', 'Core Black/Cloud White/Gum', 'Sneakers', 120.00, '2018-05-01', '/products/JI2060.avif'),
@@ -214,6 +219,7 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (3, 'Balenciaga Political Campaign Hoodie ''White''', '600583TKVI99084', 'White', 'Apparel - Hoodie', 1150.00, '2017-01-01', '/products/600583TKVI99084.avif'),
 (3, 'Balenciaga Political Campaign Hoodie ''Black''', '620973TKVI91070', 'Black', 'Apparel - Hoodie', 1150.00, '2017-01-01', '/products/620973TKVI91070.avif'),
 (3, 'Balenciaga 10XL Sneaker ''Worn-Out Grey White Red''', '792779W2MV21960', 'Grey/White/Red', 'Sneakers', 1290.00, '2023-12-02', '/products/792779W2MV21960.avif'),
+(3, 'Balenciaga Furry Slide ''Black''', '654747W2DO11096-654747W2HS41096', 'Black/White/Red', 'Slides', 550.00, '2022-05-13', '/products/654747W2DO11096-654747W2HS41096.jpg'),
 
 -- Off-White
 (13, 'Off-White x Nike Air Jordan 1 ''Chicago'' (The Ten)', 'AA3834-101', 'White/Black-Varsity Red', 'Sneakers', 190.00, '2017-11-09', '/products/AA3834-101.avif'),
@@ -593,7 +599,7 @@ BEGIN
         SET v_sale_price = ROUND(v_retail_price * (0.7 + RAND() * 1.8), 2);
 
         -- 4. Set condition and status
-        SET v_product_condition = 'new';
+        SET v_product_condition = ELT(FLOOR(1 + RAND() * 3), 'new', 'used', 'worn');
         SET v_order_status = 'completed';
 
         -- 5. Calculate fees
@@ -737,7 +743,7 @@ BEGIN
             fee_structure_id, item_condition, status, created_at, updated_at
         ) VALUES (
             v_seller_id, v_product_id, v_size_id, 'sale', v_ask_price,
-            v_fee_id, 'new', 'active', v_created_at, v_created_at
+            v_fee_id, ELT(FLOOR(1 + RAND() * 3), 'new', 'used', 'worn'), 'active', v_created_at, v_created_at
         );
 
         SET i = i + 1;
@@ -824,7 +830,7 @@ BEGIN
             bid_amount, transaction_fee, fee_structure_id, total_bid_amount,
             bid_status, payment_origin, created_at, updated_at
         ) VALUES (
-            UUID(), v_buyer_id, v_product_id, v_size_id, 'new',
+            UUID(), v_buyer_id, v_product_id, v_size_id, ELT(FLOOR(1 + RAND() * 3), 'new', 'used', 'worn'),
             v_bid_amount, v_buyer_tx_fee, v_fee_id, v_total_bid_amount,
             'active', v_payment_origin, v_created_at, v_created_at -- Use v_payment_origin
         );
