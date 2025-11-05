@@ -1,6 +1,32 @@
 <template>
   <div class="home-container">
-    <section class="collage-hero" v-if="bannerProduct">
+    <section v-if="loading" class="collage-hero-loading">
+      <h1>Loading...</h1>
+    </section>
+
+    <section v-else-if="apiError" class="hero-fallback">
+      <h1>Welcome to The Vault</h1>
+      <p class="hero-info">Start browsing our collection.</p>
+      <a @click="router.push({ name: 'SearchResults' })" class="shop-now-link">
+        <span>Shop Now</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="arrow-icon"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"
+          />
+        </svg>
+      </a>
+    </section>
+
+    <section v-else-if="bannerProduct" class="collage-hero">
       <div class="collage-left">
         <h1>{{ bannerProduct.text.header }}</h1>
         <p class="hero-info">{{ bannerProduct.text.subtext }}</p>
@@ -27,6 +53,7 @@
               v-if="bannerProduct.productInfo[0].lowest_asking_price"
               class="collage-product-price"
             >
+              ${{ bannerProduct.productInfo[0].lowest_asking_price }}
             </p>
           </router-link>
 
@@ -45,11 +72,15 @@
               v-if="bannerProduct.productInfo[1].lowest_asking_price"
               class="collage-product-price"
             >
+              ${{ bannerProduct.productInfo[1].lowest_asking_price }}
             </p>
           </router-link>
         </div>
 
-        <a @click="router.push({ name: 'SearchResults', query: { q: 'Replica' } })" class="shop-now-link">
+        <a
+          @click="router.push({ name: 'SearchResults', query: { q: 'Replica' } })"
+          class="shop-now-link"
+        >
           <span>Shop Now</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -68,11 +99,8 @@
         </a>
       </div>
     </section>
-    <section v-else class="collage-hero-loading">
-      <h1>Loading...</h1>
-    </section>
 
-    <main class="featured-products">
+    <main class="featured-products" v-if="featuredProducts.length > 0">
       <h2>Featured Items</h2>
       <div class="product-grid">
         <router-link
@@ -98,6 +126,9 @@ import router from '@/router/index.js'
 // 1. Initialize with empty arrays/null
 const featuredProducts = ref([])
 const bannerProduct = ref(null)
+// NEW state refs
+const loading = ref(true)
+const apiError = ref(null)
 
 onMounted(async () => {
   try {
@@ -117,6 +148,9 @@ onMounted(async () => {
     bannerProduct.value = response.bannerProduct
   } catch (error) {
     console.error('Error fetching featured products:', error)
+    apiError.value = error // Set the error
+  } finally {
+    loading.value = false // Stop loading regardless of outcome
   }
 })
 </script>
@@ -142,12 +176,14 @@ a { color: #ffffff; text-decoration: none; }
 
 .collage-hero { align-items: center; display: grid; gap: 2rem; grid-template-columns: 1fr 1fr; padding: 4rem 5%; }
 .collage-hero-loading { align-items: center; display: flex; justify-content: center; min-height: 60vh; }
+/* NEW: Fallback styles */
+.hero-fallback { align-items: center; display: flex; flex-direction: column; justify-content: center; min-height: 50vh; padding: 4rem 5%; text-align: center; }
+.hero-fallback .hero-info { margin-bottom: 2.5rem; } /* Add space above button */
+
 .collage-left { display: flex; flex-direction: column; justify-content: center; text-shadow: 1px 1px 2px #000; }
 .hero-info { color: white; font-size: 1.2rem; margin-bottom: 1rem; }
 .collage-image-1 { border-radius: 10px; margin-top: 1rem; object-fit: cover; width: 100%; }
-/* UPDATED: Changed to vertical flex-box */
 .collage-right-stack { align-items: center; display: flex; flex-direction: column; gap: 2.5rem; justify-content: center; }
-/* NEW: Wrapper for the cards to contain their overlap logic */
 .card-overlap-container { align-items: center; display: flex; justify-content: center; position: relative; }
 
 .collage-product-card { background-color: #ffffff; border: 1px solid #7e7e7e; border-radius: 10px; color: black; cursor: pointer; max-width: 360px; padding: 2rem; text-align: center; text-decoration: none; transition: transform 0.3s ease, box-shadow 0.3s ease; width: 100%; }
