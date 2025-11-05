@@ -91,7 +91,6 @@ const searchQuery = ref('')
 const authStore = useAuthStore()
 const route = useRoute()
 
-// If route name is 'search-results' or path starts with '/search', treat it as the search page.
 const isSearchPage = computed(() => {
   const name = route.name ? String(route.name) : ''
   const path = route.path ? String(route.path) : ''
@@ -112,7 +111,6 @@ function handleSearch() {
       }
     }
   } catch (err) {
-    // defensive fallback
     console.error('Error handling search:', err)
     router.push(q ? `/search?q=${encodeURIComponent(q)}` : '/search')
   }
@@ -158,6 +156,5 @@ a { color: #ffffff; text-decoration: none; }
 .search-icon { fill: #888; height: 30px; margin-right: 0.5rem; width: 15px; cursor: pointer; }
 .search-input { background-color: transparent; border: none; color: #ffffff; font-size: 0.9rem; outline: none; width: 200px; }
 .search-input::placeholder { color: #888; }
-
 .bars-icon { cursor: pointer; height: 28px; width: 28px; color: #ffffff; stroke: #ffffff; }
 </style>

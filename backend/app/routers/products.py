@@ -12,8 +12,34 @@ from ..pydantic_models.product import ProductBase
 
 from ..utils.bids import process_bids
 from ..utils.formatting import format_market_data
+from ..utils.products import retrieve_product_id, retrieve_product_info
 
 router = APIRouter(prefix="/product", tags=["products"])
+
+
+
+@router.get("/featured")
+async def retrieve_featured_products(session: AsyncSession = Depends(get_session)):
+    banner_skus = ["S57WS0240P1892-961", "S57WS0236P1895H6851"]
+    homepage_skus = ["313171-004", "AV4168-776", "CW7093-600", "313171-300"]
+
+    banner_product_ids = [ await retrieve_product_id(banner_sku, session) for banner_sku in banner_skus]
+    homepage_product_ids = [await retrieve_product_id(homepage_sku, session) for homepage_sku in homepage_skus]
+
+    banner_product_info = [ await retrieve_product_info(product_id, session) for product_id in banner_product_ids]
+    homepage_product_info = [ await retrieve_product_info(product_id, session) for product_id in homepage_product_ids]
+
+    return {
+        "bannerProduct": {
+            "productInfo": banner_product_info,
+            "text": {
+                "image": "/images/MaisonMargielaBanner.png",
+                "header": "History, Refined.",
+                "subtext": "Shop Maison Margiela on The Vault today."
+            }
+        },
+        "homepageProducts": homepage_product_info
+    }
 
 @router.get("/brands")
 async def brands(session: AsyncSession = Depends(get_session)):

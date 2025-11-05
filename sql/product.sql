@@ -1,8 +1,22 @@
 USE ecommerce;
 
-DROP PROCEDURE IF EXISTS retrieveProductById;
-
 DELIMITER //
+
+DROP PROCEDURE IF EXISTS retrieveProductIdBySku;
+
+CREATE PROCEDURE retrieveProductIdBySku(
+    IN input_sku VARCHAR(100)
+)
+
+BEGIN
+
+    SELECT product_id
+    FROM products
+    WHERE sku = input_sku;
+
+end //
+
+DROP PROCEDURE IF EXISTS retrieveProductById;
 
 CREATE PROCEDURE retrieveProductById(
     IN input_product_id INT UNSIGNED

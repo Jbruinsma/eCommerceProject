@@ -1,14 +1,76 @@
 <template>
   <div class="home-container">
-    <header class="hero-section">
-      <div class="hero-content">
-        <h1>Latest Drop: "Future Sneaker"</h1>
-        <!-- <img class ="featured-product-img" src="/images/MaisonMargielaFutureBlack.png"></img> -->
-        <p class = hero-info>Experience the future of footwear. Reintroducing the Future Sneaker, originally launched in the SS11 collection, the Future Sneaker is making its way back onto the shelves this season.</p>
-        <p class = hero-info>Featured Collection by Maison Margiela</p>
-        <a href="/search?category=sneakers"> <button class="cta-button">Shop Now</button></a>
+    <section class="collage-hero" v-if="bannerProduct">
+      <div class="collage-left">
+        <h1>{{ bannerProduct.text.header }}</h1>
+        <p class="hero-info">{{ bannerProduct.text.subtext }}</p>
+        <img
+          :src="bannerProduct.text.image"
+          alt="Banner inspiration"
+          class="collage-image-1"
+        />
       </div>
-    </header>
+
+      <div class="collage-right-stack">
+        <div class="card-overlap-container">
+          <router-link
+            :to="{ name: 'ProductDetail', params: { id: bannerProduct.productInfo[0].product_id } }"
+            class="collage-product-card hero-card-1"
+          >
+            <img
+              :src="bannerProduct.productInfo[0].image_url"
+              :alt="bannerProduct.productInfo[0].name"
+              class="collage-product-image"
+            />
+            <h3 class="collage-product-name">{{ bannerProduct.productInfo[0].name }}</h3>
+            <p
+              v-if="bannerProduct.productInfo[0].lowest_asking_price"
+              class="collage-product-price"
+            >
+            </p>
+          </router-link>
+
+          <router-link
+            v-if="bannerProduct.productInfo[1]"
+            :to="{ name: 'ProductDetail', params: { id: bannerProduct.productInfo[1].product_id } }"
+            class="collage-product-card hero-card-2"
+          >
+            <img
+              :src="bannerProduct.productInfo[1].image_url"
+              :alt="bannerProduct.productInfo[1].name"
+              class="collage-product-image"
+            />
+            <h3 class="collage-product-name">{{ bannerProduct.productInfo[1].name }}</h3>
+            <p
+              v-if="bannerProduct.productInfo[1].lowest_asking_price"
+              class="collage-product-price"
+            >
+            </p>
+          </router-link>
+        </div>
+
+        <a @click="router.push({ name: 'SearchResults', query: { q: 'Replica' } })" class="shop-now-link">
+          <span>Shop Now</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="arrow-icon"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"
+            />
+          </svg>
+        </a>
+      </div>
+    </section>
+    <section v-else class="collage-hero-loading">
+      <h1>Loading...</h1>
+    </section>
 
     <main class="featured-products">
       <h2>Featured Items</h2>
@@ -29,58 +91,46 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { fetchFromAPI } from '@/utils/index.js'
+import router from '@/router/index.js'
 
-const featuredProducts = ref([
- {
-   id: 1,
-   name: 'MF Doom Dunk High Pro SB',
-   price: '2,204',
-   imageUrl: '/images/MFDoomNike.png',
- },
- {
-   id: 2,
-   name: "Humidity x Nike Dunk High SB 'Trumpet'",
-   price: 750,
-   imageUrl: '/images/NikeSBMetallicGold.png',
- },
- {
-   id: 3,
-   name: 'Maison Margiela Future High Top Black',
-   price: '1,190',
-   imageUrl: '/images/MaisonMargielaFutureBlack.png',
- },
- {
-   id: 4,
-   name: 'Balenciaga Men\'s Furry Slides',
-   price: 135,
-   imageUrl: '/images/BalenciagaMenSlides.webp' ,
- },
-])
+// 1. Initialize with empty arrays/null
+const featuredProducts = ref([])
+const bannerProduct = ref(null)
+
+onMounted(async () => {
+  try {
+    const response = await fetchFromAPI('/product/featured')
+
+    console.log(response) // Good for debugging
+
+    // 2. Map the API response to the format your template expects
+    featuredProducts.value = response.homepageProducts.map((product) => ({
+      id: product.product_id,
+      name: product.name,
+      price: product.lowest_asking_price, // Using lowest_asking_price for price
+      imageUrl: product.image_url // Using image_url for imageUrl
+    }))
+
+    // 3. Assign the banner product data from the response
+    bannerProduct.value = response.bannerProduct
+  } catch (error) {
+    console.error('Error fetching featured products:', error)
+  }
+})
 </script>
 
-
 <style>
-/*Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Abel&family=Bodoni+Moda+SC:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inclusive+Sans&family=Inconsolata:wght@200;300;400;500;600&family=Manrope:wght@600;700;800&family=Mulish:ital,wght@0,300;0,400;0,700;1,200;1,400;1,600&family=Nanum+Myeongjo&family=Quicksand:wght@300..700&family=Scope+One&family=Sono:wght@200;300;400&family=Spectral:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&family=Zeyada&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Abel&family=Bodoni+Moda+SC:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inclusive+Sans&family=Inconsolata:wght@200;300;400;500;600&family=Manrope:wght@600;700;8E&family=Mulish:ital,wght@0,300;0,400;0,700;1,200;1,400;1,600&family=Nanum+Myeongjo&family=Quicksand:wght@300..700&family=Scope+One&family=Sono:wght@200;300;400&family=Spectral:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&family=Zeyada&display=swap');
 </style>
 
-
 <style>
-/* Global styles for body and html to ensure full dark background */
-body,
-html {
- /* Default color - #1a1a1a */
- background-color: #1a1a1a;
- margin: 0;
- padding: 0;
- width: 100%;
-}
+body, html { background-color: #1a1a1a; margin: 0; padding: 0; width: 100%; }
 </style>
-
 
 <style scoped>
-.home-container { color: #ffffff; font-family: Bodoni Moda, BlinkMacSystemFont,serif; min-height: 100vh; width: 100%; }
+.home-container { color: #ffffff; font-family: Bodoni Moda, BlinkMacSystemFont, serif; margin: 0 auto; max-width: 1400px; min-height: 100vh; width: 100%; }
 h1, h2, h3 { font-weight: 600; }
 h1 { font-size: 3rem; margin-bottom: 1rem; }
 h2 { border-bottom: 1px solid #333; font-size: 1.8rem; margin-bottom: 2rem; padding-bottom: 1rem; text-align: center; }
@@ -89,15 +139,43 @@ p { color: #cccccc; line-height: 1.6; }
 a { color: #ffffff; text-decoration: none; }
 .nav-links a { transition: color 0.3s ease; }
 .nav-links a:hover { color: #bbbbbb; }
-.hero-section { background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.2)), url('/images/MaisonMargielaBanner.png') no-repeat center center/cover; min-height: 60vh; padding: 5rem 5%; text-align: center; }
-.hero-content { margin: 0 auto; max-width: 800px; text-shadow: 2px 2px 2px black;}
-.hero-info { font-size: 1.2rem; margin-bottom: 1rem; color: white; text-shadow: 1px 1px 1px black;}
-.cta-button { background-color:#ffffff;  border:1px solid #000000; border-radius: 10px; color:#121212; cursor:pointer; font-size:1rem; font-weight:bold; margin-top:2rem; padding:1rem 2rem; transition:background-color 0.7s ease,color 0.7s ease,border-color 0.7s ease; }
-.cta-button:hover { background-color:#000000; color:#ffffff; border-color:#ffffff; }
-.featured-products { padding: 4rem 5%; text-shadow: 1px 1px 1px gray;}
+
+.collage-hero { align-items: center; display: grid; gap: 2rem; grid-template-columns: 1fr 1fr; padding: 4rem 5%; }
+.collage-hero-loading { align-items: center; display: flex; justify-content: center; min-height: 60vh; }
+.collage-left { display: flex; flex-direction: column; justify-content: center; text-shadow: 1px 1px 2px #000; }
+.hero-info { color: white; font-size: 1.2rem; margin-bottom: 1rem; }
+.collage-image-1 { border-radius: 10px; margin-top: 1rem; object-fit: cover; width: 100%; }
+/* UPDATED: Changed to vertical flex-box */
+.collage-right-stack { align-items: center; display: flex; flex-direction: column; gap: 2.5rem; justify-content: center; }
+/* NEW: Wrapper for the cards to contain their overlap logic */
+.card-overlap-container { align-items: center; display: flex; justify-content: center; position: relative; }
+
+.collage-product-card { background-color: #ffffff; border: 1px solid #7e7e7e; border-radius: 10px; color: black; cursor: pointer; max-width: 360px; padding: 2rem; text-align: center; text-decoration: none; transition: transform 0.3s ease, box-shadow 0.3s ease; width: 100%; }
+.collage-product-card:hover { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); transform: translateY(-5px) rotate(var(--hover-rotate, 0)); }
+.collage-product-name { font-size: 1.2rem; margin-top: 1rem; }
+.collage-product-image { aspect-ratio: 4 / 3; border-radius: 5px; object-fit: cover; width: 100%; }
+.collage-product-price { color: #3c862a; font-size: 1.2rem; margin-top: 0.5rem; }
+
+.hero-card-1 { transform: rotate(5deg); z-index: 1; --hover-rotate: 5deg; }
+.hero-card-2 { box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5); margin-left: -120px; transform: rotate(-3deg); z-index: 2; --hover-rotate: -3deg; }
+.hero-card-2:hover { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); }
+
+.shop-now-link { align-items: center; color: #ffffff; display: flex; font-size: 1.1rem; font-weight: bold; gap: 0.5rem; text-decoration: none; transition: gap 0.3s ease; }
+.shop-now-link:hover { gap: 0.8rem; cursor: pointer; }
+.arrow-icon { height: 1.5rem; transition: transform 0.3s ease; width: 1.5rem; }
+.shop-now-link:hover .arrow-icon { transform: translateX(4px); }
+
+.featured-products { padding: 4rem 5%; text-shadow: 1px 1px 1px gray; }
 .product-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-.product-card { background-color: #ffffff; border: px solid #7e7e7e; cursor: pointer; padding: 2rem; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease; color: black; }
+.product-card { background-color: #ffffff; border: 1px solid #7e7e7a; border-radius: 10px; color: black; cursor: pointer; padding: 2rem; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease; }
 .product-card:hover { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); transform: translateY(-5px); }
-.product-image { aspect-ratio: 4 / 3; object-fit: cover; width: 100%; }
+.product-image { aspect-ratio: 4 / 3; border-radius: 5px; object-fit: cover; width: 100%; }
 .product-price { color: #3c862a; font-size: 1.2rem; margin-top: 0.5rem; }
+
+@media (max-width: 768px) {
+  .collage-hero { grid-template-columns: 1fr; }
+  .collage-right-stack { flex-direction: column; gap: 2rem; margin-top: 2rem; }
+  .card-overlap-container { flex-direction: column; } /* Stack cards on mobile */
+  .hero-card-1, .hero-card-2 { margin-left: 0; transform: none; }
+}
 </style>
