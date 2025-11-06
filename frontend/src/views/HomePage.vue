@@ -205,7 +205,7 @@ a { color: #ffffff; text-decoration: none; }
 @media (max-width: 768px) {
   .collage-hero { grid-template-columns: 1fr; }
   .collage-right-stack { flex-direction: column; gap: 2rem; margin-top: 2rem; }
-  .card-overlap-container { flex-direction: column; } /* Stack cards on mobile */
+  .card-overlap-container { flex-direction: column; }
   .hero-card-1, .hero-card-2 { margin-left: 0; transform: none; }
 }
 </style>

@@ -10,7 +10,7 @@
       </div>
 
       <div class="footer-column">
-        <h4>Code Base</h4>
+        <h4>Codebase</h4>
         <ul>
           <li><a href="https://github.com/Jbruinsma/eCommerceProject" target="_blank">GitHub</a></li>
         </ul>
