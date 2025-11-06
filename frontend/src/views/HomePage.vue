@@ -78,7 +78,7 @@
         </div>
 
         <a
-          @click="router.push({ name: 'SearchResults', query: { q: 'Replica' } })"
+          @click="router.push({ name: 'SearchResults', query: { q: 'Maison Margiela' } })"
           class="shop-now-link"
         >
           <span>Shop Now</span>

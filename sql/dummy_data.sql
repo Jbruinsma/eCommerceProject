@@ -348,8 +348,8 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (17, 'Salomon XA Pro 3D v8 ''Black''', 'L41689800', 'Black/Black/Magnet', 'Sneakers', 130.00, '2020-01-01', '/products/L41689800'),
 
 -- Vans
-(20, 'Vans Premium Old Skool Black & White', 'VN000CQDBA2', 'Black & White', 'Sneaker', 90, '2025-01-24', '/products/VN000CQDBA2'),
-(20, 'Vans Skate Old Skool 36+ Black White', 'VN000D5RBA2', 'Black/White', 'Sneaker', 80, '2025-01-30', '/products/VN000D5RBA2'),
+(20, 'Vans Premium Old Skool Black & White', 'VN000CQDBA2', 'Black & White', 'Sneakers', 90, '2025-01-24', '/products/VN000CQDBA2'),
+(20, 'Vans Skate Old Skool 36+ Black White', 'VN000D5RBA2', 'Black/White', 'Sneakers', 80, '2025-01-30', '/products/VN000D5RBA2'),
 (20, 'Vans Classic Slip-On ''Checkerboard'' (Black/White)', 'VN000EYEBWW', 'Black/White', 'Sneaker', NULL, '2022-06-01', '/products/VN000EYEBWW'),
 (20, 'Vans Classic Slip-On ''Checkerboard'' (True White/True White)', 'VN000EYEX1L', 'True White/True White', 'Sneaker', NULL, NULL, '/products/VN000EYEX1L'),
 (20, 'Vans Classic Slip-On ''Checkerboard'' (Black/Black)', 'VN000EYE276', 'Black/Black', 'Sneaker', NULL, NULL, '/products/VN000EYE276'),
@@ -450,39 +450,40 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (10, 'Maison Margiela Tabi Ballerina Flat Elastic Band ''Black Nude (Women''s)''', 'S39WZ0104-P6853-HA334', 'Black/Nude', 'Shoes - Flats', 1090.00, NULL, '/products/S39WZ0104-P6853-HA334.jpg'),
 (10, 'Maison Margiela 4-Stitch Logo Hoodie ''Black'' (Reverse Logo)', 'S50GU0216S25570860', 'Black', 'Hooded Sweatshirt', NULL, NULL, '/products/S50GU0216S25570860'),
 (10, 'Maison Margiela Replica GAT ''Dirty Wash''', 'S37WS0562P3724H8339', 'Dirty Wash', 'Sneaker', 590.00, NULL, '/products/S37WS0562P3724H8339.jpg'),
-(10, 'Maison Margiela 50-50 Sneakers ''Black''', 'S57WS0444P4760 H9195', 'Black', 'Sneaker', NULL, '2024-10-07', '/products/S57WS0444P4760 H9195'),
+(10, 'Maison Margiela 50-50 Sneakers ''Black''', 'S37WS0575', 'Black', 'Sneaker', 1000.00, NULL, '/products/S37WS0575.jpg'),
 (10, 'Maison Margiela 4-Stitch T-Shirt ''Grey''', 'S50GC0646 S23883 855', 'Grey', 'T-Shirt', NULL, NULL, '/products/S50GC0646 S23883 855'),
 (10, 'Maison Margiela 4-Stitch T-Shirt ''Black'' (Reverse Embroidery)', 'S50GC0703S23883960', 'Black', 'T-Shirt', NULL, NULL, '/products/S50GC0703S23883960'),
 (10, 'Maison Margiela 4-Stitch T-Shirt ''Black'' (Reverse Embroidery, Women''s)', 'S51GC0526S20079970', 'Black', 'T-Shirt', NULL, NULL, '/products/S51GC0526S20079970'),
-(10, 'Maison Margiela Low-Profile Leather Sneakers ''White''', 'S57WS0236 P1897 101', 'White/Grey', 'Sneaker', NULL, '2020-11-02', '/products/S57WS0236 P1897 101'),
-(10, 'Maison Margiela Frayed-Edges Distressed Sneakers ''Black''', 'S39WS0129P7454HB129', 'Blue and Black', 'Sneaker', 1050, '2025-10-20', '/products/S39WS0129P7454HB129'),
-(10, 'Maison Margiela Embroidered Logo T-shirt ''White''', 'S50GC0644', 'White', 'T-Shirt', 430, '2024-02-14', '/products/S50GC0644');
+(10, 'Maison Margiela Low-Profile Leather Sneakers ''White''', 'S57WS0236 P1897 101', 'White/Grey', 'Sneaker', NULL, '2020-11-02', '/products/S57WS0236 P1897 101');
 
 INSERT INTO products_sizes (product_id, size_id)
 SELECT p.product_id, s.size_id
 FROM products p
 CROSS JOIN sizes s
 WHERE
-    p.product_type = 'Sneakers'
+    p.product_type IN (
+        'Sneakers',
+        'Sneaker',
+        'Sandals',
+        'Slides',
+        'Shoes - Flats'
+    )
     AND s.size_id BETWEEN 11 AND 20;
 
-
 INSERT INTO products_sizes (product_id, size_id)
 SELECT p.product_id, s.size_id
 FROM products p
 CROSS JOIN sizes s
 WHERE
-    p.product_type LIKE 'Apparel%'
+    (
+        p.product_type LIKE 'Apparel%'
+        OR p.product_type IN (
+            'T-Shirt',
+            'Hooded Sweatshirt',
+            'Sweater'
+        )
+    )
     AND s.size_id BETWEEN 21 AND 26;
-
-INSERT INTO products_sizes (product_id, size_id)
-SELECT p.product_id, s.size_id
-FROM products p
-CROSS JOIN sizes s
-WHERE
-    p.product_type = 'Sandals'
-    AND s.size_id BETWEEN 11 AND 20;
-
 
 INSERT INTO products_sizes (product_id, size_id)
 SELECT p.product_id, s.size_id
