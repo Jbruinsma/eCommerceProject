@@ -87,7 +87,7 @@
               <p class="product-brand">{{ product.brandName }}</p>
             </div>
 
-            <p class="product-price">{{ formatCurrency(product.lowestAskingPrice) }}</p>
+            <p class="product-price">{{ formatProductCardPrice(product.lowestAskingPrice) }}</p>
           </router-link>
         </div>
 
@@ -104,6 +104,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { fetchFromAPI } from '@/utils/index.js'
+import { formatProductCardPrice } from '@/utils/formatting.js'
 
 const searchQuery = ref('')
 const searchResults = ref([])
@@ -266,10 +267,6 @@ async function searchProducts(searchQuery = null, category = null) {
   }
 }
 
-const formatCurrency = (amount) => {
-  if (typeof amount !== 'number') return '---'
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
-}
 </script>
 
 <style scoped>

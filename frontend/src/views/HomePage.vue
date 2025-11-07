@@ -53,7 +53,7 @@
               v-if="bannerProduct.productInfo[0].lowest_asking_price"
               class="collage-product-price"
             >
-              ${{ bannerProduct.productInfo[0].lowest_asking_price }}
+              {{ formatProductCardPrice(bannerProduct.productInfo[0].lowest_asking_price) }}
             </p>
           </router-link>
 
@@ -72,7 +72,7 @@
               v-if="bannerProduct.productInfo[1].lowest_asking_price"
               class="collage-product-price"
             >
-              ${{ bannerProduct.productInfo[1].lowest_asking_price }}
+              {{ formatProductCardPrice(bannerProduct.productInfo[1].lowest_asking_price) }}
             </p>
           </router-link>
         </div>
@@ -111,7 +111,7 @@
         >
           <img :src="product.imageUrl" :alt="product.name" class="product-image" />
           <h3>{{ product.name }}</h3>
-          <p class="product-price">${{ product.price }}</p>
+          <p class="product-price">{{ formatProductCardPrice(product.price) }}</p>
         </router-link>
       </div>
     </main>
@@ -122,6 +122,7 @@
 import { onMounted, ref } from 'vue'
 import { fetchFromAPI } from '@/utils/index.js'
 import router from '@/router/index.js'
+import { formatProductCardPrice } from '@/utils/formatting.js'
 
 
 const featuredProducts = ref([])
