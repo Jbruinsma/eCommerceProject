@@ -103,16 +103,14 @@
     <main class="featured-products" v-if="featuredProducts.length > 0">
       <h2>Featured Items</h2>
       <div class="product-grid">
-        <router-link
+        <ProductCard
           v-for="product in featuredProducts"
           :key="product.id"
-          :to="{ name: 'ProductDetail', params: { id: product.id } }"
-          class="product-card"
-        >
-          <img :src="product.imageUrl" :alt="product.name" class="product-image" />
-          <h3>{{ product.name }}</h3>
-          <p class="product-price">{{ formatProductCardPrice(product.price) }}</p>
-        </router-link>
+          :productId="product.id"
+          :imageUrl="product.imageUrl"
+          :name="product.name"
+          :price="product.price"
+        />
       </div>
     </main>
   </div>
@@ -123,6 +121,7 @@ import { onMounted, ref } from 'vue'
 import { fetchFromAPI } from '@/utils/index.js'
 import router from '@/router/index.js'
 import { formatProductCardPrice } from '@/utils/formatting.js'
+import ProductCard from '@/components/ProductCard.vue'
 
 
 const featuredProducts = ref([])
@@ -173,7 +172,7 @@ a { color: #ffffff; text-decoration: none; }
 .collage-hero { align-items: center; display: grid; gap: 2rem; grid-template-columns: 1fr 1fr; padding: 4rem 5%; }
 .collage-hero-loading { align-items: center; display: flex; justify-content: center; min-height: 60vh; }
 .hero-fallback { align-items: center; display: flex; flex-direction: column; justify-content: center; min-height: 50vh; padding: 4rem 5%; text-align: center; }
-.hero-fallback .hero-info { margin-bottom: 2.5rem; } /* Add space above button */
+.hero-fallback .hero-info { margin-bottom: 2.5rem; }
 
 .collage-left { display: flex; flex-direction: column; justify-content: center; text-shadow: 1px 1px 2px #000; }
 .hero-info { color: white; font-size: 1.2rem; margin-bottom: 1rem; }
@@ -198,10 +197,6 @@ a { color: #ffffff; text-decoration: none; }
 
 .featured-products { padding: 4rem 5%; text-shadow: 1px 1px 1px gray; }
 .product-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-.product-card { background-color: #ffffff; border: 1px solid #7e7e7a; border-radius: 10px; color: black; cursor: pointer; padding: 2rem; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease; }
-.product-card:hover { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); transform: translateY(-5px); }
-.product-image { aspect-ratio: 4 / 3; border-radius: 5px; object-fit: cover; width: 100%; }
-.product-price { color: #3c862a; font-size: 1.2rem; margin-top: 0.5rem; }
 
 @media (max-width: 768px) {
   .collage-hero { grid-template-columns: 1fr; }

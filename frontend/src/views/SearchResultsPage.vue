@@ -74,21 +74,15 @@
         </div>
 
         <div v-if="searchResults.length > 0" class="product-grid">
-          <router-link
-              v-for="product in searchResults"
-              :key="product.productId"
-              :to="{ name: 'ProductDetail', params: { id: product.productId } }"
-              class="product-card"
-          >
-            <img :src="product.imageUrl" :alt="product.name" class="product-image" />
-
-            <div class="product-details">
-              <h3 class="product-name">{{ product.name }}</h3>
-              <p class="product-brand">{{ product.brandName }}</p>
-            </div>
-
-            <p class="product-price">{{ formatProductCardPrice(product.lowestAskingPrice) }}</p>
-          </router-link>
+          <ProductCard
+            v-for="product in searchResults"
+            :key="product.productId"
+            :productId="product.productId"
+            :imageUrl="product.imageUrl"
+            :name="product.name"
+            :price="product.lowestAskingPrice"
+            :brandName="product.brandName"
+          />
         </div>
 
         <div v-else class="no-results">
@@ -104,7 +98,7 @@
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { fetchFromAPI } from '@/utils/index.js'
-import { formatProductCardPrice } from '@/utils/formatting.js'
+import ProductCard from '@/components/ProductCard.vue'
 
 const searchQuery = ref('')
 const searchResults = ref([])
@@ -273,7 +267,7 @@ async function searchProducts(searchQuery = null, category = null) {
 @import url('https://fonts.googleapis.com/css2?family=Abel&family=Bodoni+Moda+SC:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inclusive+Sans&family=Inconsolata:wght@200;300;400;500;600&family=Manrope:wght@600;700;800&family=Mulish:ital,wght@0,300;0,400;0,700;1,200;1,400;1,600&family=Nanum+Myeongjo&family=Quicksand:wght@300..700&family=Scope+One&family=Sono:wght@200;300;400&family=Spectral:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&family=Zeyada&display=swap');
 
 a { color: #ffffff; text-decoration: none; }
-h1 { font-family: Bodoni Moda, BlinkMacSystemFont; font-size: 2.8rem; font-weight: 600; margin-bottom: 2rem; text-align: center; }
+h1 { font-family: Bodoni Moda, BlinkMacSystemFont, serif; font-size: 2.8rem; font-weight: 600; margin-bottom: 2rem; text-align: center; }
 h2 { border-bottom: 1px solid #333; font-family: Spectral, sans-serif; font-size: 1.8rem; font-weight: 600; margin-bottom: 1.5rem; padding-bottom: 1rem; }
 h3 { font-family: Spectral, sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
 p { color: #cccccc; line-height: 1.6; }
@@ -290,22 +284,11 @@ ul { list-style: none; margin: 0; padding: 0; }
 .no-results h2 { border-bottom: none; font-size: 1.8rem; margin-bottom: 1rem; }
 .no-results p { font-size: 1.1rem; margin: 0 auto; max-width: 400px; }
 .page-header { margin: 0 auto; max-width: 1200px; padding: 0 5% 4rem; }
-.page-link { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; color: #ffffff; padding: 0.5rem 1rem; transition: background-color 0.3s, border-color 0.3s; }
-.page-link-ellipsis { color: #888; padding: 0.5rem 0; }
-.page-link.active, .page-link:hover { background-color: #ffffff; border-color: #ffffff; color: #121212; }
-.pagination { align-items: center; display: flex; gap: 0.5rem; justify-content: center; margin-top: 3rem; }
 .price-inputs { align-items: center; display: flex; gap: 0.5rem; }
 .price-inputs input { background-color: #1a1a1a; border: 1px solid #555; border-radius: 4px; color: #ffffff; padding: 0.5rem; width: 100%; }
 .price-inputs input::placeholder { color: #777; opacity: 1; }
 .price-inputs span { color: #888; }
-.product-brand { color: black; display: none; font-family: Bodoni Moda, BlinkMacSystemFont; font-size: 1.2rem; font-weight: bold; margin: 0.25rem 0; }
-.product-card { background-color: #ffffff; border: 1px solid #7e7e7e; color: black; cursor: pointer; display: flex; flex-direction: column; padding: 2rem; text-align: center; transition: box-shadow 0.3s ease, transform 0.3s ease; }
-.product-card:hover { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4); transform: translateY(-5px); }
 .product-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, 250px); justify-content: start; }
-.product-image { aspect-ratio: 4 / 3; object-fit: cover; width: 100%; }
-.product-name { font-family: 'Bodoni Moda', BlinkMacSystemFont, serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 0; margin-top: 1rem; }
-.product-price { color: #3c862a; font-family: Bodoni Moda, BlinkMacSystemFont; font-size: 1.2rem; margin-top: 0.5rem; }
-.product-details { flex-grow: 1; }
 .results-container { flex: 1; }
 .results-header { align-items: center; display: flex; justify-content: space-between; margin-bottom: 2rem; }
 .results-header p { color: #888; margin: 0; }

@@ -1,16 +1,23 @@
+function baseFormatCurrency(amount, nullValue, formatterOptions = {}) {
+  if (amount === null || amount === undefined) return nullValue;
+  const baseOptions = {
+    style: 'currency',
+    currency: 'USD',
+  };
+
+  const finalOptions = { ...baseOptions, ...formatterOptions };
+  return new Intl.NumberFormat('en-US', finalOptions).format(amount);
+}
+
 export function formatCurrency(amount) {
-  if (amount === null || amount === undefined) return 'N/A';
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  return baseFormatCurrency(amount, 'N/A');
 }
 
 export function formatProductCardPrice(amount) {
-  if (amount === null || amount === undefined) return '---';
-
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  const options = {
     maximumFractionDigits: 0
-  }).format(amount);
+  };
+  return baseFormatCurrency(amount, '---', options);
 }
 
 export function formatDate(dateString) {
