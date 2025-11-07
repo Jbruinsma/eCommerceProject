@@ -1,7 +1,7 @@
 <template>
   <div class="marketplace-container">
     <header class="page-header">
-      <h1>Marketplace</h1>
+<!--      <h1>Search</h1>-->
       <div class="search-bar">
         <input v-model="searchQuery" type="text" placeholder="Search for items, brands, etc." />
         <button>Search</button>

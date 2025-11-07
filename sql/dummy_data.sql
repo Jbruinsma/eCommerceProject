@@ -350,111 +350,111 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 -- Vans
 (20, 'Vans Premium Old Skool Black & White', 'VN000CQDBA2', 'Black & White', 'Sneakers', 90, '2025-01-24', '/products/VN000CQDBA2'),
 (20, 'Vans Skate Old Skool 36+ Black White', 'VN000D5RBA2', 'Black/White', 'Sneakers', 80, '2025-01-30', '/products/VN000D5RBA2'),
-(20, 'Vans Classic Slip-On ''Checkerboard'' (Black/White)', 'VN000EYEBWW', 'Black/White', 'Sneaker', NULL, '2022-06-01', '/products/VN000EYEBWW'),
-(20, 'Vans Classic Slip-On ''Checkerboard'' (True White/True White)', 'VN000EYEX1L', 'True White/True White', 'Sneaker', NULL, NULL, '/products/VN000EYEX1L'),
-(20, 'Vans Classic Slip-On ''Checkerboard'' (Black/Black)', 'VN000EYE276', 'Black/Black', 'Sneaker', NULL, NULL, '/products/VN000EYE276'),
-(20, 'Vans Classic Slip-On ''Checkerboard'' (Black/Pewter)', 'VN000EYEBPJ', 'Black/Pewter', 'Sneaker', NULL, NULL, '/products/VN000EYEBPJ'),
-(20, 'Vans Knu Skool ''Black / Port''', 'VN0009QC2Q1', 'Black / Port', 'Sneaker', NULL, '2024-06-01', '/products/VN0009QC2Q1'),
-(20, 'Vans Knu Skool ''Black''', 'VN0009QCBKA', 'Black', 'Sneaker', NULL, '2024-06-01', '/products/VN0009QCBKA'),
-(20, 'Vans Knu Skool ''Black/True White''', 'VN0009QC6BT', 'Black/True White', 'Sneaker', NULL, '2023-02-18', '/products/VN0009QC6BT'),
-(20, 'Vans Sk8-Hi ''Black/White''', 'VN000D5IB8C', 'Black/ White', 'Sneaker', NULL, '2019-09-28', '/products/VN000D5IB8C'),
-(20, 'Vans Authentic ''True White''', 'VN000EE3W00', 'True White', 'Sneaker', 55, '2024-06-01', '/products/VN000EE3W00'),
-(20, 'Vans Authentic ''Black''', 'VN000EE3BLK', 'Black', 'Sneaker', NULL, '2022-06-01', '/products/VN000EE3BLK'),
-(20, 'Vans Authentic ''Black Waffle Outsole''', 'VN000D8BBLK', 'Black', 'Sneaker', 80, '2025-01-10', '/products/VN000D8BBLK'),
-(20, 'Vans Old Skool Platform ''Black/White''', 'VN0A3B3UY28', 'Black/White', 'Sneaker', NULL, '2018-02-28', '/products/VN0A3B3UY28'),
-(20, 'Vans Old Skool ''Black/White'' (Classic)', 'VN000D3HY28', 'Black/White', 'Sneaker', NULL, '2022-05-31', '/products/VN000D3HY28'),
-(20, 'Vans UltraRange 2.0 ''Black''', 'VN000D60BKA', 'Black', 'Sneaker', NULL, '2025-05-08', '/products/VN000D60BKA'),
-(20, 'Vans Filmore High-Top Sneakers ''Black''', NULL, 'Black', 'Sneaker', NULL, NULL, NULL),
+(20, 'Vans Classic Slip-On ''Checkerboard'' (Black/White)', 'VN000EYEBWW', 'Black/White', 'Sneakers', NULL, '2022-06-01', '/products/VN000EYEBWW'),
+(20, 'Vans Classic Slip-On ''Checkerboard'' (True White/True White)', 'VN000EYEX1L', 'True White/True White', 'Sneakers', NULL, NULL, '/products/VN000EYEX1L'),
+(20, 'Vans Classic Slip-On ''Checkerboard'' (Black/Black)', 'VN000EYE276', 'Black/Black', 'Sneakers', NULL, NULL, '/products/VN000EYE276'),
+(20, 'Vans Classic Slip-On ''Checkerboard'' (Black/Pewter)', 'VN000EYEBPJ', 'Black/Pewter', 'Sneakers', NULL, NULL, '/products/VN000EYEBPJ'),
+(20, 'Vans Knu Skool ''Black / Port''', 'VN0009QC2Q1', 'Black / Port', 'Sneakers', NULL, '2024-06-01', '/products/VN0009QC2Q1'),
+(20, 'Vans Knu Skool ''Black''', 'VN0009QCBKA', 'Black', 'Sneakers', NULL, '2024-06-01', '/products/VN0009QCBKA'),
+(20, 'Vans Knu Skool ''Black/True White''', 'VN0009QC6BT', 'Black/True White', 'Sneakers', NULL, '2023-02-18', '/products/VN0009QC6BT'),
+(20, 'Vans Sk8-Hi ''Black/White''', 'VN000D5IB8C', 'Black/ White', 'Sneakers', NULL, '2019-09-28', '/products/VN000D5IB8C'),
+(20, 'Vans Authentic ''True White''', 'VN000EE3W00', 'True White', 'Sneakers', 55, '2024-06-01', '/products/VN000EE3W00'),
+(20, 'Vans Authentic ''Black''', 'VN000EE3BLK', 'Black', 'Sneakers', NULL, '2022-06-01', '/products/VN000EE3BLK'),
+(20, 'Vans Authentic ''Black Waffle Outsole''', 'VN000D8BBLK', 'Black', 'Sneakers', 80, '2025-01-10', '/products/VN000D8BBLK'),
+(20, 'Vans Old Skool Platform ''Black/White''', 'VN0A3B3UY28', 'Black/White', 'Sneakers', NULL, '2018-02-28', '/products/VN0A3B3UY28'),
+(20, 'Vans Old Skool ''Black/White'' (Classic)', 'VN000D3HY28', 'Black/White', 'Sneakers', NULL, '2022-05-31', '/products/VN000D3HY28'),
+(20, 'Vans UltraRange 2.0 ''Black''', 'VN000D60BKA', 'Black', 'Sneakers', NULL, '2025-05-08', '/products/VN000D60BKA'),
+(20, 'Vans Filmore High-Top Sneakers ''Black''', NULL, 'Black', 'Sneakers', NULL, NULL, NULL),
 
 -- Converse
-(5, 'Converse Chuck Taylor All Star Classic ''White'' (High Top)', 'M7650', 'Optic White', 'Sneaker', NULL, '2019-01-01', '/products/M7650'),
-(5, 'Converse Run Star Hike Platform ''Black''', '166800C', 'Black/White/Gum', 'Sneaker', NULL, '2020-01-09', '/products/166800C'),
-(5, 'Converse x CDG PLAY Chuck 70 ''Black'' (2015)', '150204C', 'Black/White', 'Sneaker', 150, '2015-05-14', '/products/150204C'),
-(5, 'Converse x CDG PLAY Chuck 70 ''Black'' (2023)', 'A01793C', 'Black/Red/Egret', 'Sneaker', 150, '2023-02-14', '/products/A01793C'),
-(5, 'Converse Chuck 70 Low Top ''Black''', '162058C-001', 'Black', 'Sneaker', 85, '2024-05-29', '/products/162058C-001'),
-(5, 'Converse Chuck 70 High Top ''Parchment''', '162053C', 'Parchment/Garnet/Egret', 'Sneaker', 85, '2020-06-15', '/products/162053C'),
-(5, 'Converse Chuck Taylor All Star Classic ''Black'' (Low Top)', 'M9166', 'Black', 'Sneaker', NULL, '2011-03-16', '/products/M9166'),
-(5, 'Converse Chuck Taylor All Star Lift Platform ''White''', '560845F', 'White', 'Sneaker', 75, '2023-06-01', '/products/560845F'),
-(5, 'Converse Chuck 70 High Top ''Black'' (Classic)', '162050C', 'Black', 'Sneaker', 90, '2018-02-28', '/products/162050C'),
-(5, 'Converse Chuck Taylor All Star Lugged ''White''', '565902C', 'White/Black/White', 'Sneaker', NULL, '2020-01-14', '/products/565902C'),
-(5, 'Converse One Star Academy Pro ''Black/White''', 'A08501C', 'Black/White', 'Sneaker', 95, '2024-08-02', '/products/A08501C'),
-(5, 'Converse Jack Purcell ''White''', '164057C', 'White/White', 'Sneaker', NULL, '2019-05-01', '/products/164057C'),
-(5, 'Converse x CDG PLAY Chuck 70 ''Parchment'' (2015)', '150205C', 'Milk', 'Sneaker', 150, '2015-05-14', '/products/150205C'),
+(5, 'Converse Chuck Taylor All Star Classic ''White'' (High Top)', 'M7650', 'Optic White', 'Sneakers', NULL, '2019-01-01', '/products/M7650'),
+(5, 'Converse Run Star Hike Platform ''Black''', '166800C', 'Black/White/Gum', 'Sneakers', NULL, '2020-01-09', '/products/166800C'),
+(5, 'Converse x CDG PLAY Chuck 70 ''Black'' (2015)', '150204C', 'Black/White', 'Sneakers', 150, '2015-05-14', '/products/150204C'),
+(5, 'Converse x CDG PLAY Chuck 70 ''Black'' (2023)', 'A01793C', 'Black/Red/Egret', 'Sneakers', 150, '2023-02-14', '/products/A01793C'),
+(5, 'Converse Chuck 70 Low Top ''Black''', '162058C-001', 'Black', 'Sneakers', 85, '2024-05-29', '/products/162058C-001'),
+(5, 'Converse Chuck 70 High Top ''Parchment''', '162053C', 'Parchment/Garnet/Egret', 'Sneakers', 85, '2020-06-15', '/products/162053C'),
+(5, 'Converse Chuck Taylor All Star Classic ''Black'' (Low Top)', 'M9166', 'Black', 'Sneakers', NULL, '2011-03-16', '/products/M9166'),
+(5, 'Converse Chuck Taylor All Star Lift Platform ''White''', '560845F', 'White', 'Sneakers', 75, '2023-06-01', '/products/560845F'),
+(5, 'Converse Chuck 70 High Top ''Black'' (Classic)', '162050C', 'Black', 'Sneakers', 90, '2018-02-28', '/products/162050C'),
+(5, 'Converse Chuck Taylor All Star Lugged ''White''', '565902C', 'White/Black/White', 'Sneakers', NULL, '2020-01-14', '/products/565902C'),
+(5, 'Converse One Star Academy Pro ''Black/White''', 'A08501C', 'Black/White', 'Sneakers', 95, '2024-08-02', '/products/A08501C'),
+(5, 'Converse Jack Purcell ''White''', '164057C', 'White/White', 'Sneakers', NULL, '2019-05-01', '/products/164057C'),
+(5, 'Converse x CDG PLAY Chuck 70 ''Parchment'' (2015)', '150205C', 'Milk', 'Sneakers', 150, '2015-05-14', '/products/150205C'),
 
 -- Puma
-(15, 'Puma Palermo ''Black-Feather Gray-Gum''', '397647-03', 'Black-Feather Gray-Gum', 'Sneaker', 90, '2023-09-01', '/products/397647-03'),
-(15, 'Puma Palermo ''Black Feather Grey Gum''', '396464 03', 'Black/Feather Grey/Gum', 'Sneaker', 85, '2023-09-01', '/products/396464 03'),
-(15, 'Puma x LaMelo Ball MB.01 ''Red'' (Not From Here)', '377237 02', 'Red Blast/Fiery Red', 'Sneaker', NULL, '2021-12-16', '/products/377237 02'),
-(15, 'Puma x LaMelo Ball MB.01 ''Team Colors Red''', '376941-10', 'Team Colors Red', 'Sneaker', 120, '2022-07-13', '/products/376941-10'),
-(15, 'Fenty x Puma Creeper Phatty ''Lavender Alert'' (Unisex)', '396403-03', 'Lavender Alert/Burnt Red-Gum', 'Sneaker', 140, '2023-11-30', '/products/396403-03'),
-(15, 'Fenty x Puma Creeper Phatty ''Lavender Alert'' (Women)', '399332-03', 'Lavender Alert/Burnt Red-Gum', 'Sneaker', 140, '2023-11-30', '/products/399332-03'),
-(15, 'Fenty x Puma Creeper Phatty ''Lavender Alert'' (GS)', '397587-03', 'Lavender Alert/Burnt Red-Gum', 'Sneaker', 100, '2023-11-30', '/products/397587-03'),
-(15, 'Fenty x Puma Creeper Phatty ''Lavender Alert'' (PS)', '396830-03', 'Lavender Alert/Burnt Red/Gum', 'Sneaker', 75, '2023-11-30', '/products/396830-03'),
-(15, 'Fenty x Puma Creeper Phatty ''Lavender Alert'' (TD)', '396829-03', 'Lavender Alert/Burnt Red-Gum', 'Sneaker', 65, '2023-11-30', '/products/396829-03'),
-(15, 'Puma Suede Classic ''Team Regal Red''', '399781 05', 'Team Regal Red/White', 'Sneaker', NULL, '2025-03-31', '/products/399781 05'),
-(15, 'Puma Suede XL ''Black Frosted Ivory''', '396057 01', 'Black/Frosted Ivory', 'Sneaker', NULL, '2024-01-06', '/products/396057 01'),
-(15, 'Puma Suede XL ''Black/White''', '395205 02', 'Black/White', 'Sneaker', 100, '2018-04-08', '/products/395205 02'),
-(15, 'Puma Speedcat ''Black/White''', '398846 01', 'Black/White', 'Sneaker', NULL, '2024-06-29', '/products/398846 01'),
-(15, 'Puma x LaMelo Ball MB.01 ''Foot Locker 50th Anniversary''', '310506-01', 'Black/White-Gold', 'Sneaker', 120, '2024-09-09', '/products/310506-01'),
-(15, 'Puma Suede Classic XXI ''Black/White''', '374915 01', 'Black/White', 'Sneaker', 70, '2021-02-19', '/products/374915 01'),
-(15, 'Puma x LaMelo Ball MB.01 Lo ''Team Colors - Triple White''', '376941 04', 'Puma White/Silver', 'Sneaker', NULL, '2022-07-13', '/products/376941 04'),
-(15, 'Fenty x Puma Creeper Phatty ''Speed Blue'' (Unisex)', '396403-02', 'Speed Blue/Lime Pow/Gum', 'Sneaker', 140, '2023-11-30', '/products/396403-02'),
-(15, 'Fenty x Puma Creeper Phatty ''Speed Blue'' (Women)', '399332-02', 'Speed Blue/Lime Pow-Gum', 'Sneaker', 140, '2023-11-30', '/products/399332-02'),
-(15, 'Fenty x Puma Creeper Phatty ''Speed Blue'' (GS)', '397587-02', 'Speed Blue/Lime Pow-Gum', 'Sneaker', 100, '2023-11-30', '/products/397587-02'),
-(15, 'Fenty x Puma Creeper Phatty ''Totally Taupe''', '396813 01', 'Totally Taupe/Gold/Warm White', 'Sneaker', NULL, '2024-04-18', '/products/396813 01'),
-(15, 'Fenty x Puma Creeper Phatty ''Warm White'' (Women)', '399865 03', 'Warm White/Gold/Gum', 'Sneaker', NULL, '2024-04-25', '/products/399865 03'),
+(15, 'Puma Palermo ''Black-Feather Gray-Gum''', '397647-03', 'Black-Feather Gray-Gum', 'Sneakers', 90, '2023-09-01', '/products/397647-03'),
+(15, 'Puma Palermo ''Black Feather Grey Gum''', '396464 03', 'Black/Feather Grey/Gum', 'Sneakers', 85, '2023-09-01', '/products/396464 03'),
+(15, 'Puma x LaMelo Ball MB.01 ''Red'' (Not From Here)', '377237 02', 'Red Blast/Fiery Red', 'Sneakers', NULL, '2021-12-16', '/products/377237 02'),
+(15, 'Puma x LaMelo Ball MB.01 ''Team Colors Red''', '376941-10', 'Team Colors Red', 'Sneakers', 120, '2022-07-13', '/products/376941-10'),
+(15, 'Fenty x Puma Creeper Phatty ''Lavender Alert'' (Unisex)', '396403-03', 'Lavender Alert/Burnt Red-Gum', 'Sneakers', 140, '2023-11-30', '/products/396403-03'),
+(15, 'Fenty x Puma Creeper Phatty ''Lavender Alert'' (Women)', '399332-03', 'Lavender Alert/Burnt Red-Gum', 'Sneakers', 140, '2023-11-30', '/products/399332-03'),
+(15, 'Fenty x Puma Creeper Phatty ''Lavender Alert'' (GS)', '397587-03', 'Lavender Alert/Burnt Red-Gum', 'Sneakers', 100, '2023-11-30', '/products/397587-03'),
+(15, 'Fenty x Puma Creeper Phatty ''Lavender Alert'' (PS)', '396830-03', 'Lavender Alert/Burnt Red/Gum', 'Sneakers', 75, '2023-11-30', '/products/396830-03'),
+(15, 'Fenty x Puma Creeper Phatty ''Lavender Alert'' (TD)', '396829-03', 'Lavender Alert/Burnt Red-Gum', 'Sneakers', 65, '2023-11-30', '/products/396829-03'),
+(15, 'Puma Suede Classic ''Team Regal Red''', '399781 05', 'Team Regal Red/White', 'Sneakers', NULL, '2025-03-31', '/products/399781 05'),
+(15, 'Puma Suede XL ''Black Frosted Ivory''', '396057 01', 'Black/Frosted Ivory', 'Sneakers', NULL, '2024-01-06', '/products/396057 01'),
+(15, 'Puma Suede XL ''Black/White''', '395205 02', 'Black/White', 'Sneakers', 100, '2018-04-08', '/products/395205 02'),
+(15, 'Puma Speedcat ''Black/White''', '398846 01', 'Black/White', 'Sneakers', NULL, '2024-06-29', '/products/398846 01'),
+(15, 'Puma x LaMelo Ball MB.01 ''Foot Locker 50th Anniversary''', '310506-01', 'Black/White-Gold', 'Sneakers', 120, '2024-09-09', '/products/310506-01'),
+(15, 'Puma Suede Classic XXI ''Black/White''', '374915 01', 'Black/White', 'Sneakers', 70, '2021-02-19', '/products/374915 01'),
+(15, 'Puma x LaMelo Ball MB.01 Lo ''Team Colors - Triple White''', '376941 04', 'Puma White/Silver', 'Sneakers', NULL, '2022-07-13', '/products/376941 04'),
+(15, 'Fenty x Puma Creeper Phatty ''Speed Blue'' (Unisex)', '396403-02', 'Speed Blue/Lime Pow/Gum', 'Sneakers', 140, '2023-11-30', '/products/396403-02'),
+(15, 'Fenty x Puma Creeper Phatty ''Speed Blue'' (Women)', '399332-02', 'Speed Blue/Lime Pow-Gum', 'Sneakers', 140, '2023-11-30', '/products/399332-02'),
+(15, 'Fenty x Puma Creeper Phatty ''Speed Blue'' (GS)', '397587-02', 'Speed Blue/Lime Pow-Gum', 'Sneakers', 100, '2023-11-30', '/products/397587-02'),
+(15, 'Fenty x Puma Creeper Phatty ''Totally Taupe''', '396813 01', 'Totally Taupe/Gold/Warm White', 'Sneakers', NULL, '2024-04-18', '/products/396813 01'),
+(15, 'Fenty x Puma Creeper Phatty ''Warm White'' (Women)', '399865 03', 'Warm White/Gold/Gum', 'Sneakers', NULL, '2024-04-25', '/products/399865 03'),
 
 -- Reebok
-(16, 'Reebok Club C 85 Vintage ''Chalk/Glen Green''', '100000317', 'Chalk/Paperwhite/Glen Green', 'Sneaker', NULL, '2021-02-12', '/products/100000317'),
-(16, 'Reebok Club C Revenge Vintage ''Chalk/Glen Green''', '100001283', 'Chalk/Paper White/Glen Green', 'Sneaker', 90, NULL, '/products/100001283'),
-(16, 'White Mountaineering x Reebok Classic Leather ''Grey''', '100233213', 'Grey/White', 'Sneaker', 190, '2025-04-11', '/products/100233213'),
-(16, 'White Mountaineering x Reebok Classic Leather ''Brown''', '100233214', 'Brown/White', 'Sneaker', 190, '2025-04-11', '/products/100233214'),
-(16, 'Reebok Question Mid ''Red Toe'' (2024 Re-release)', '100074721', 'Footwear White/Vector Red/Footwear White', 'Sneaker', 170, '2024-02-16', '/products/100074721'),
-(16, 'Reebok x JJJJOUND Club C ''Olive''', 'GX9657', 'White/Olive', 'Sneaker', 150, '2023-04-06', '/products/GX9657'),
-(16, 'Reebok Classic Leather ''Black/Silver''', '100201810', 'Black/Silver/White', 'Sneaker', 130, '2024-10-23', '/products/100201810'),
-(16, 'Reebok Club C 85 Vintage ''Footwear White/Barely Grey'' (Paperwhite)', '100033001', 'Cloud White/Pure Grey/Paperwhite', 'Sneaker', NULL, '2023-09-21', '/products/100033001'),
-(16, 'Reebok Question Mid ''Banner''', 'M46120', 'Red/Royal/White/Gold Met', 'Sneaker', 160, '2014-03-15', '/products/M46120'),
-(16, 'Reebok Club C Revenge ''White/Glen Green''', 'H04169', 'Footwear White/Glen Green/Footwear White', 'Sneaker', NULL, '2020-12-23', '/products/H04169'),
-(16, 'Reebok Classic Leather ''White'' (Core)', '49797', 'White', 'Sneaker', NULL, '2022-01-01', '/products/49797'),
-(16, 'Reebok Classic Leather ''Black'' (Core)', 'GY0955', 'Core Black/Core Black/Pure Grey 5', 'Sneaker', NULL, '2022-04-05', '/products/GY0955'),
-(16, 'Reebok Premier Road Ultra ''Black''', 'RMIA06BC99MAT001 1019', 'Ultra Black', 'Sneaker', NULL, '2024-08-01', '/products/RMIA06BC99MAT001 1019'),
-(16, 'Reebok Premier Road Ultra ''Black'' (LTD)', '100236667', 'Black', 'Sneaker', 170, '2024-11-22', '/products/100236667'),
-(16, 'Reebok Nano X5 ''Black''', '100209359', 'Black/Grey 5/Reebok Lee 3', 'Sneaker', 140, '2025-01-24', '/products/100209359'),
-(16, 'Reebok ERS World Shoes ''Barely Grey''', NULL, 'Barely Grey', 'Sneaker', NULL, '2025-07-29', NULL),
-(16, 'Reebok Phase Court ''White''', '100201248', 'White/Chalk/Kinetic Blue', 'Sneaker', 85, '2024-06-01', '/products/100201248'),
+(16, 'Reebok Club C 85 Vintage ''Chalk/Glen Green''', '100000317', 'Chalk/Paperwhite/Glen Green', 'Sneakers', NULL, '2021-02-12', '/products/100000317'),
+(16, 'Reebok Club C Revenge Vintage ''Chalk/Glen Green''', '100001283', 'Chalk/Paper White/Glen Green', 'Sneakers', 90, NULL, '/products/100001283'),
+(16, 'White Mountaineering x Reebok Classic Leather ''Grey''', '100233213', 'Grey/White', 'Sneakers', 190, '2025-04-11', '/products/100233213'),
+(16, 'White Mountaineering x Reebok Classic Leather ''Brown''', '100233214', 'Brown/White', 'Sneakers', 190, '2025-04-11', '/products/100233214'),
+(16, 'Reebok Question Mid ''Red Toe'' (2024 Re-release)', '100074721', 'Footwear White/Vector Red/Footwear White', 'Sneakers', 170, '2024-02-16', '/products/100074721'),
+(16, 'Reebok x JJJJOUND Club C ''Olive''', 'GX9657', 'White/Olive', 'Sneakers', 150, '2023-04-06', '/products/GX9657'),
+(16, 'Reebok Classic Leather ''Black/Silver''', '100201810', 'Black/Silver/White', 'Sneakers', 130, '2024-10-23', '/products/100201810'),
+(16, 'Reebok Club C 85 Vintage ''Footwear White/Barely Grey'' (Paperwhite)', '100033001', 'Cloud White/Pure Grey/Paperwhite', 'Sneakers', NULL, '2023-09-21', '/products/100033001'),
+(16, 'Reebok Question Mid ''Banner''', 'M46120', 'Red/Royal/White/Gold Met', 'Sneakers', 160, '2014-03-15', '/products/M46120'),
+(16, 'Reebok Club C Revenge ''White/Glen Green''', 'H04169', 'Footwear White/Glen Green/Footwear White', 'Sneakers', NULL, '2020-12-23', '/products/H04169'),
+(16, 'Reebok Classic Leather ''White'' (Core)', '49797', 'White', 'Sneakers', NULL, '2022-01-01', '/products/49797'),
+(16, 'Reebok Classic Leather ''Black'' (Core)', 'GY0955', 'Core Black/Core Black/Pure Grey 5', 'Sneakers', NULL, '2022-04-05', '/products/GY0955'),
+(16, 'Reebok Premier Road Ultra ''Black''', 'RMIA06BC99MAT001 1019', 'Ultra Black', 'Sneakers', NULL, '2024-08-01', '/products/RMIA06BC99MAT001 1019'),
+(16, 'Reebok Premier Road Ultra ''Black'' (LTD)', '100236667', 'Black', 'Sneakers', 170, '2024-11-22', '/products/100236667'),
+(16, 'Reebok Nano X5 ''Black''', '100209359', 'Black/Grey 5/Reebok Lee 3', 'Sneakers', 140, '2025-01-24', '/products/100209359'),
+(16, 'Reebok ERS World Shoes ''Barely Grey''', NULL, 'Barely Grey', 'Sneakers', NULL, '2025-07-29', NULL),
+(16, 'Reebok Phase Court ''White''', '100201248', 'White/Chalk/Kinetic Blue', 'Sneakers', 85, '2024-06-01', '/products/100201248'),
 
 -- Dior
-(6, 'Dior B27 Low-Top Sneaker ''White Dior Oblique''', '3SN272ZAY_H000', 'White Grained Calfskin', 'Sneaker', NULL, '2020-10-30', '/products/3SN272ZAY_H000'),
-(6, 'Dior B27 Low-Top Sneaker ''Brown''', '3SN272AAH_H758', 'Deep Brown Suede', 'Sneaker', NULL, '2020-10-30', '/products/3SN272AAH_H758'),
-(6, 'Dior B57 Dribble Low-Top Sneaker ''Black/White Oblique''', '3SN318ZXU_H960', 'Black/White', 'Sneaker', 1250, '2024-04-15', '/products/3SN318ZXU_H960'),
+(6, 'Dior B27 Low-Top Sneaker ''White Dior Oblique''', '3SN272ZAY_H000', 'White Grained Calfskin', 'Sneakers', NULL, '2020-10-30', '/products/3SN272ZAY_H000'),
+(6, 'Dior B27 Low-Top Sneaker ''Brown''', '3SN272AAH_H758', 'Deep Brown Suede', 'Sneakers', NULL, '2020-10-30', '/products/3SN272AAH_H758'),
+(6, 'Dior B57 Dribble Low-Top Sneaker ''Black/White Oblique''', '3SN318ZXU_H960', 'Black/White', 'Sneakers', 1250, '2024-04-15', '/products/3SN318ZXU_H960'),
 (6, 'Dior Oblique Hooded Sweatshirt ''Navy Blue'' (Quilted)', '513J626A0978_C540', 'Navy Blue', 'Hooded Sweatshirt', 2250, NULL, '/products/513J626A0978_C540'),
 (6, 'Dior Oblique Hooded Sweatshirt ''Navy Blue'' (Jacquard)', '113J631A0684_C540', 'Navy Blue', 'Hooded Sweatshirt', 2100, NULL, '/products/113J631A0684_C540'),
 (6, 'Dior T-Shirt with Bee Embroidery ''Black''', '733J603B0677_C980', 'Black', 'T-Shirt', 660, NULL, '/products/733J603B0677_C980'),
 (6, 'Dior T-Shirt with Bee Embroidery ''White''', '733J603B0677_C089', 'White', 'T-Shirt', 660, NULL, '/products/733J603B0677_C089'),
-(6, 'Dior Chrono Sneaker ''White Mesh''', 'KCK473TXX_S46W', 'White Mesh/Silver-Tone', 'Sneaker', 1250, '2024-05-30', '/products/KCK473TXX_S46W'),
-(6, 'Dior Chrono Sneaker ''Gray Mesh/Suede''', 'KCK414SUH_S20G', 'Gray Mesh/Suede Calfskin', 'Sneaker', NULL, '2024-05-30', '/products/KCK414SUH_S20G'),
-(6, 'Dior Vibe Sneaker ''Gray Dior Oblique''', 'KCK365OBU_S47W', 'Gray Dior Oblique', 'Sneaker', 1190, NULL, '/products/KCK365OBU_S47W'),
-(6, 'Dior B101 Slip-On Sneaker ''White'' (Cream Greige)', '3SN285ZRH H068', 'Cream/Greige/White', 'Sneaker', NULL, '2022-08-25', '/products/3SN285ZRH H068'),
-(6, 'Dior B23 High-Top Sneaker ''Dior Oblique Canvas''', '3SH118YJP_H960', 'Black/White Dior Oblique', 'Sneaker', 1050, '2020-03-02', '/products/3SH118YJP_H960'),
+(6, 'Dior Chrono Sneaker ''White Mesh''', 'KCK473TXX_S46W', 'White Mesh/Silver-Tone', 'Sneakers', 1250, '2024-05-30', '/products/KCK473TXX_S46W'),
+(6, 'Dior Chrono Sneaker ''Gray Mesh/Suede''', 'KCK414SUH_S20G', 'Gray Mesh/Suede Calfskin', 'Sneakers', NULL, '2024-05-30', '/products/KCK414SUH_S20G'),
+(6, 'Dior Vibe Sneaker ''Gray Dior Oblique''', 'KCK365OBU_S47W', 'Gray Dior Oblique', 'Sneakers', 1190, NULL, '/products/KCK365OBU_S47W'),
+(6, 'Dior B101 Slip-On Sneaker ''White'' (Cream Greige)', '3SN285ZRH H068', 'Cream/Greige/White', 'Sneakers', NULL, '2022-08-25', '/products/3SN285ZRH H068'),
+(6, 'Dior B23 High-Top Sneaker ''Dior Oblique Canvas''', '3SH118YJP_H960', 'Black/White Dior Oblique', 'Sneakers', 1050, '2020-03-02', '/products/3SH118YJP_H960'),
 (6, 'Dior Oblique Sweater ''Black Cotton Jacquard''', '513M634A7003_C901', 'Black', 'Sweater', 2250, NULL, '/products/513M634A7003_C901'),
 (6, 'Dior Oblique Hooded Sweatshirt ''Black'' (Quilted)', '513J626A0978_C900', 'Black', 'Hooded Sweatshirt', 2250, NULL, '/products/513J626A0978_C900'),
 
 -- Maison Margiela
-(10, 'Maison Margiela Replica GAT ''White Painter''', 'S57WS0240P1892-961', 'White/Gum/Multi', 'Sneaker', 650.00, '2022-12-20', '/products/S57WS0240P1892-961.jpg'),
-(10, 'Maison Margiela Replica GAT', 'S57WS0236P1895101', 'Grey/White/Gum', 'Sneaker', 540.00, '2020-04-30', '/products/S57WS0236P1895101.jpg'),
-(10, 'Maison Margiela Paint Replica GAT ''Black''', 'S57WS0240P1892963', 'Black', 'Sneaker', 680.00, '2024-03-19', '/products/S57WS0240P1892963.jpg'),
-(10, 'Maison Margiela Replica GAT ''Black Gum''', 'S57WS0236P1895H6851', 'Black/Gum', 'Sneaker', 495.00, '2019-06-29', '/products/S57WS0236P1895H6851.jpg'),
+(10, 'Maison Margiela Replica GAT ''White Painter''', 'S57WS0240P1892-961', 'White/Gum/Multi', 'Sneakers', 650.00, '2022-12-20', '/products/S57WS0240P1892-961.jpg'),
+(10, 'Maison Margiela Replica GAT', 'S57WS0236P1895101', 'Grey/White/Gum', 'Sneakers', 540.00, '2020-04-30', '/products/S57WS0236P1895101.jpg'),
+(10, 'Maison Margiela Paint Replica GAT ''Black''', 'S57WS0240P1892963', 'Black', 'Sneakers', 680.00, '2024-03-19', '/products/S57WS0240P1892963.jpg'),
+(10, 'Maison Margiela Replica GAT ''Black Gum''', 'S57WS0236P1895H6851', 'Black/Gum', 'Sneakers', 495.00, '2019-06-29', '/products/S57WS0236P1895H6851.jpg'),
 (10, 'Maison Margiela MM6 Basic T-shirt ''Black''', 'S62GD0193-S23962-900', 'Black', 'T-Shirt', 455.00, NULL, '/products/S62GD0193-S23962-900.jpg'),
 (10, 'Maison Margiela MM6 V-Neck SIDA Print T-shirt ''White''', 'S62GD0203-M20108-100', 'White', 'T-Shirt', 315, NULL, '/products/S62GD0203-M20108-100.jpg'),
-(10, 'Maison Margiela Paint Replica ''White Pewter''', 'S57WS0481P6230H0A65', 'White/Pewter', 'Sneaker', 680.00, NULL, '/products/S57WS0481P6230H0A65.jpg'),
+(10, 'Maison Margiela Paint Replica ''White Pewter''', 'S57WS0481P6230H0A65', 'White/Pewter', 'Sneakers', 680.00, NULL, '/products/S57WS0481P6230H0A65.jpg'),
 (10, 'Maison Margiela Tabi Ballerina Flat Elastic Band ''Black Nude (Women''s)''', 'S39WZ0104-P6853-HA334', 'Black/Nude', 'Shoes - Flats', 1090.00, NULL, '/products/S39WZ0104-P6853-HA334.jpg'),
 (10, 'Maison Margiela 4-Stitch Logo Hoodie ''Black'' (Reverse Logo)', 'S50GU0216S25570860', 'Black', 'Hooded Sweatshirt', NULL, NULL, '/products/S50GU0216S25570860'),
-(10, 'Maison Margiela Replica GAT ''Dirty Wash''', 'S37WS0562P3724H8339', 'Dirty Wash', 'Sneaker', 590.00, NULL, '/products/S37WS0562P3724H8339.jpg'),
-(10, 'Maison Margiela 50-50 Sneakers ''Black''', 'S37WS0575', 'Black', 'Sneaker', 1000.00, NULL, '/products/S37WS0575.jpg'),
+(10, 'Maison Margiela Replica GAT ''Dirty Wash''', 'S37WS0562P3724H8339', 'Dirty Wash', 'Sneakers', 590.00, NULL, '/products/S37WS0562P3724H8339.jpg'),
+(10, 'Maison Margiela 50-50 Sneakers ''Black''', 'S37WS0575', 'Black', 'Sneakers', 1000.00, NULL, '/products/S37WS0575.jpg'),
 (10, 'Maison Margiela 4-Stitch T-Shirt ''Grey''', 'S50GC0646 S23883 855', 'Grey', 'T-Shirt', NULL, NULL, '/products/S50GC0646 S23883 855'),
 (10, 'Maison Margiela 4-Stitch T-Shirt ''Black'' (Reverse Embroidery)', 'S50GC0703S23883960', 'Black', 'T-Shirt', NULL, NULL, '/products/S50GC0703S23883960'),
 (10, 'Maison Margiela 4-Stitch T-Shirt ''Black'' (Reverse Embroidery, Women''s)', 'S51GC0526S20079970', 'Black', 'T-Shirt', NULL, NULL, '/products/S51GC0526S20079970'),
-(10, 'Maison Margiela Low-Profile Leather Sneakers ''White''', 'S57WS0236 P1897 101', 'White/Grey', 'Sneaker', NULL, '2020-11-02', '/products/S57WS0236 P1897 101');
+(10, 'Maison Margiela Low-Profile Leather Sneakers ''White''', 'S57WS0236 P1897 101', 'White/Grey', 'Sneakers', NULL, '2020-11-02', '/products/S57WS0236 P1897 101');
 
 INSERT INTO products_sizes (product_id, size_id)
 SELECT p.product_id, s.size_id
@@ -463,7 +463,6 @@ CROSS JOIN sizes s
 WHERE
     p.product_type IN (
         'Sneakers',
-        'Sneaker',
         'Sandals',
         'Slides',
         'Shoes - Flats'
@@ -524,18 +523,31 @@ SELECT
 FROM users u;
 
 -- =================================================================
--- PROCEDURE 1: CreatePastSales (*** NOW CHECKS BALANCE ***)
--- Creates N completed sales. Checks if buyer has enough balance.
--- If not, uses 'credit_card' as origin and does not debit account.
+-- PROCEDURE 1: CreatePastSales (*** MODIFIED ***)
+-- Loops through every product/size/condition and creates 15-30 sales for each.
+-- Includes "hype" price logic.
+-- Checks buyer balance.
 -- =================================================================
 
 DROP PROCEDURE IF EXISTS CreatePastSales;
 
 DELIMITER $$
 
-CREATE PROCEDURE CreatePastSales(IN num_sales INT)
+CREATE PROCEDURE CreatePastSales()
 BEGIN
-    DECLARE i INT DEFAULT 0;
+    -- Cursor variables
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_product_id INT UNSIGNED;
+    DECLARE v_size_id INT UNSIGNED;
+    DECLARE v_retail_price DECIMAL(10, 2);
+    DECLARE v_brand_id INT UNSIGNED;
+    DECLARE v_product_name VARCHAR(255);
+
+    -- Loop variables
+    DECLARE v_product_condition ENUM('new', 'used', 'worn');
+    DECLARE cond_iterator INT;
+    DECLARE sales_iterator INT;
+    DECLARE num_sales_for_item INT;
 
     -- Order variables
     DECLARE v_order_id CHAR(36);
@@ -543,11 +555,8 @@ BEGIN
     DECLARE v_seller_id CHAR(36);
     DECLARE v_buyer_first_name VARCHAR(100);
     DECLARE v_buyer_last_name VARCHAR(100);
-    DECLARE v_product_id INT UNSIGNED;
-    DECLARE v_size_id INT UNSIGNED;
-    DECLARE v_product_condition ENUM('new', 'used', 'worn');
-    DECLARE v_retail_price DECIMAL(10, 2);
     DECLARE v_sale_price DECIMAL(10, 2);
+    DECLARE v_base_price_multiplier DECIMAL(5, 2);
 
     -- Fee variables
     DECLARE v_fee_id INT UNSIGNED DEFAULT 1;
@@ -558,7 +567,7 @@ BEGIN
     DECLARE v_seller_tx_fee DECIMAL(10, 2);
     DECLARE v_seller_final_payout DECIMAL(10, 2);
 
-    -- NEW: Balance check variables
+    -- Balance check variables
     DECLARE v_buyer_current_balance DECIMAL(15, 2);
     DECLARE v_payment_origin ENUM('account_balance', 'credit_card', 'other');
 
@@ -566,139 +575,187 @@ BEGIN
     DECLARE v_order_status ENUM('pending', 'paid', 'shipped', 'completed', 'cancelled', 'refunded');
     DECLARE v_created_at DATETIME;
 
-    -- Get fee percentages from the table
+    -- Declare the cursor
+    DECLARE product_cursor CURSOR FOR
+        SELECT ps.product_id, ps.size_id, p.retail_price, p.brand_id, p.name
+        FROM products_sizes ps
+        JOIN products p ON ps.product_id = p.product_id;
+
+    -- Declare continue handler
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    -- Get fee percentages ONCE
     SELECT seller_fee_percentage, buyer_fee_percentage
     INTO v_seller_fee_pct, v_buyer_fee_pct
     FROM fee_structures WHERE id = v_fee_id;
 
-    WHILE i < num_sales DO
-        SET v_order_id = UUID();
+    OPEN product_cursor;
 
-        -- 1. Get random users
-        SELECT uuid, first_name, last_name, b.balance
-        INTO v_buyer_id, v_buyer_first_name, v_buyer_last_name, v_buyer_current_balance
-        FROM users u
-        JOIN account_balance b ON u.uuid = b.user_id
-        ORDER BY RAND() LIMIT 1;
-
-        SELECT uuid INTO v_seller_id
-        FROM users WHERE uuid != v_buyer_id ORDER BY RAND() LIMIT 1;
-
-        -- 2. Get random product/size combo
-        SELECT ps.product_id, ps.size_id, p.retail_price
-        INTO v_product_id, v_size_id, v_retail_price
-        FROM products_sizes ps
-        JOIN products p ON ps.product_id = p.product_id
-        ORDER BY RAND() LIMIT 1;
+    product_loop: LOOP
+        FETCH product_cursor INTO v_product_id, v_size_id, v_retail_price, v_brand_id, v_product_name;
+        IF done THEN
+            LEAVE product_loop;
+        END IF;
 
         IF v_retail_price IS NULL OR v_retail_price = 0 THEN
-            SET v_retail_price = 150.00;
+            SET v_retail_price = 150.00; -- Default retail if missing
         END IF;
 
-        -- 3. Calculate sale price
-        SET v_sale_price = ROUND(v_retail_price * (0.7 + RAND() * 1.8), 2);
+        -- Loop 1: Iterate through all 3 conditions
+        SET cond_iterator = 1;
+        WHILE cond_iterator <= 3 DO
+            IF cond_iterator = 1 THEN
+                SET v_product_condition = 'new';
+            ELSEIF cond_iterator = 2 THEN
+                SET v_product_condition = 'used';
+            ELSE
+                SET v_product_condition = 'worn';
+            END IF;
 
-        -- 4. Set condition and status
-        SET v_product_condition = ELT(FLOOR(1 + RAND() * 3), 'new', 'used', 'worn');
-        SET v_order_status = 'completed';
+            -- Loop 2: Create 15-30 sales for this item/size/condition
+            SET num_sales_for_item = FLOOR(15 + RAND() * 16); -- 15 to 30
+            SET sales_iterator = 0;
+            WHILE sales_iterator < num_sales_for_item DO
 
-        -- 5. Calculate fees
-        SET v_seller_tx_fee = ROUND(v_sale_price * v_seller_fee_pct, 2);
-        SET v_seller_final_payout = v_sale_price - v_seller_tx_fee;
-        SET v_buyer_tx_fee = ROUND(v_sale_price * v_buyer_fee_pct, 2);
-        SET v_buyer_final_price = v_sale_price + v_buyer_tx_fee;
+                SET v_order_id = UUID();
 
-        -- 6. Set random date
-        SET v_created_at = NOW() - INTERVAL FLOOR(RAND() * 730) DAY - INTERVAL FLOOR(RAND() * 86400) SECOND;
+                -- 1. Get random users
+                SELECT uuid, first_name, last_name, b.balance
+                INTO v_buyer_id, v_buyer_first_name, v_buyer_last_name, v_buyer_current_balance
+                FROM users u
+                JOIN account_balance b ON u.uuid = b.user_id
+                ORDER BY RAND() LIMIT 1;
 
-        -- 7. === INSERT into orders ===
-        INSERT INTO orders (
-            order_id, buyer_id, seller_id, product_id, size_id, product_condition,
-            sale_price,
-            buyer_transaction_fee, buyer_fee_structure_id, buyer_final_price,
-            seller_transaction_fee, seller_fee_structure_id, seller_final_payout,
-            order_status, created_at, updated_at
-        ) VALUES (
-            v_order_id, v_buyer_id, v_seller_id, v_product_id, v_size_id, v_product_condition,
-            v_sale_price,
-            v_buyer_tx_fee, v_fee_id, v_buyer_final_price,
-            v_seller_tx_fee, v_fee_id, v_seller_final_payout,
-            v_order_status, v_created_at, v_created_at
-        );
+                SELECT uuid INTO v_seller_id
+                FROM users WHERE uuid != v_buyer_id ORDER BY RAND() LIMIT 1;
 
-        -- 8. === INSERT into addresses ===
-        INSERT INTO addresses (
-            user_id, order_id, purpose, name,
-            address_line_1, city, state, zip_code, country
-        ) VALUES (
-            v_buyer_id, v_order_id, 'shipping', CONCAT(v_buyer_first_name, ' ', v_buyer_last_name),
-            '123 Market St', 'Fakeville', 'CA', '90210', 'USA'
-        );
+                -- 2. Calculate "Hype" Sale Price
+                -- Default multiplier
+                SET v_base_price_multiplier = (0.8 + RAND() * 1.0); -- 80% - 180%
 
-        -- 9. === INSERT into listings ===
-        INSERT INTO listings (
-            user_id, product_id, size_id, listing_type, price,
-            fee_structure_id, item_condition, status, created_at, updated_at
-        ) VALUES (
-            v_seller_id, v_product_id, v_size_id, 'sale', v_sale_price,
-            v_fee_id, v_product_condition, 'sold', v_created_at, v_created_at
-        );
+                -- Hype brands (Off-White, Supreme, Balenciaga, Dior, Fear of God)
+                IF v_brand_id IN (13, 19, 3, 6, 7) THEN
+                    SET v_base_price_multiplier = (1.2 + RAND() * 1.8); -- 120% - 300%
+                END IF;
 
-        -- 10. === INSERT into transactions (buyer) ===
-        -- *** NEW LOGIC: Check balance to determine payment origin ***
-        IF v_buyer_current_balance >= v_buyer_final_price THEN
-            SET v_payment_origin = 'account_balance';
+                -- Specific Hype Items
+                IF v_product_name LIKE '%Travis Scott%' OR v_product_name LIKE '%(The Ten)%' OR v_product_name LIKE '%(Lost & Found)%' OR v_product_name LIKE '%Shattered Backboard%' THEN
+                    SET v_base_price_multiplier = (2.5 + RAND() * 4.5); -- 250% - 700%
+                END IF;
 
-            -- Debit the buyer's account
-            UPDATE account_balance
-               SET balance = balance - v_buyer_final_price
-             WHERE user_id = v_buyer_id;
-        ELSE
-            SET v_payment_origin = 'credit_card';
-            -- No update to account_balance, as it's a "credit card" purchase
-        END IF;
+                -- Adjust multiplier based on condition
+                IF v_product_condition = 'new' THEN
+                    SET v_sale_price = ROUND(v_retail_price * v_base_price_multiplier, 2);
+                ELSEIF v_product_condition = 'used' THEN
+                    SET v_sale_price = ROUND(v_retail_price * v_base_price_multiplier * (0.5 + RAND() * 0.3), 2); -- 50-80% of 'new' price
+                ELSE -- 'worn'
+                    SET v_sale_price = ROUND(v_retail_price * v_base_price_multiplier * (0.2 + RAND() * 0.3), 2); -- 20-50% of 'new' price
+                END IF;
 
-        INSERT INTO transactions (
-            user_id, order_id, amount, transaction_status,
-            payment_origin, payment_purpose, created_at
-        ) VALUES (
-            v_buyer_id, v_order_id, -v_buyer_final_price, 'completed',
-            v_payment_origin, 'purchase_funds', v_created_at
-        );
+                -- 3. Set status
+                SET v_order_status = 'completed';
 
-        -- 11. === INSERT into transactions (seller) & UPDATE seller balance ===
-        INSERT INTO transactions (
-            user_id, order_id, amount, transaction_status,
-            payment_destination, payment_purpose, created_at
-        ) VALUES (
-            v_seller_id, v_order_id, v_seller_final_payout, 'completed',
-            'account_balance', 'sale_proceeds', v_created_at + INTERVAL 1 DAY
-        );
+                -- 4. Calculate fees
+                SET v_seller_tx_fee = ROUND(v_sale_price * v_seller_fee_pct, 2);
+                SET v_seller_final_payout = v_sale_price - v_seller_tx_fee;
+                SET v_buyer_tx_fee = ROUND(v_sale_price * v_buyer_fee_pct, 2);
+                SET v_buyer_final_price = v_sale_price + v_buyer_tx_fee;
 
-        -- Credit the seller's account (this was already correct)
-        UPDATE account_balance
-           SET balance = balance + v_seller_final_payout
-         WHERE user_id = v_seller_id;
+                -- 5. Set random date
+                SET v_created_at = NOW() - INTERVAL FLOOR(RAND() * 730) DAY - INTERVAL FLOOR(RAND() * 86400) SECOND;
 
-        -- 12. === INSERT into portfolio_items ===
-        INSERT INTO portfolio_items (
-            portfolio_item_id, user_id, product_id, size_id,
-            acquisition_date, acquisition_price, item_condition
-        ) VALUES (
-            UUID(), v_buyer_id, v_product_id, v_size_id,
-            DATE(v_created_at), v_sale_price, v_product_condition
-        );
+                -- 6. === INSERT into orders ===
+                INSERT INTO orders (
+                    order_id, buyer_id, seller_id, product_id, size_id, product_condition,
+                    sale_price,
+                    buyer_transaction_fee, buyer_fee_structure_id, buyer_final_price,
+                    seller_transaction_fee, seller_fee_structure_id, seller_final_payout,
+                    order_status, created_at, updated_at
+                ) VALUES (
+                    v_order_id, v_buyer_id, v_seller_id, v_product_id, v_size_id, v_product_condition,
+                    v_sale_price,
+                    v_buyer_tx_fee, v_fee_id, v_buyer_final_price,
+                    v_seller_tx_fee, v_fee_id, v_seller_final_payout,
+                    v_order_status, v_created_at, v_created_at
+                );
 
-        SET i = i + 1;
-    END WHILE;
+                -- 7. === INSERT into addresses ===
+                INSERT INTO addresses (
+                    user_id, order_id, purpose, name,
+                    address_line_1, city, state, zip_code, country
+                ) VALUES (
+                    v_buyer_id, v_order_id, 'shipping', CONCAT(v_buyer_first_name, ' ', v_buyer_last_name),
+                    '123 Market St', 'Fakeville', 'CA', '90210', 'USA'
+                );
+
+                -- 8. === INSERT into listings ===
+                INSERT INTO listings (
+                    user_id, product_id, size_id, listing_type, price,
+                    fee_structure_id, item_condition, status, created_at, updated_at
+                ) VALUES (
+                    v_seller_id, v_product_id, v_size_id, 'sale', v_sale_price,
+                    v_fee_id, v_product_condition, 'sold', v_created_at, v_created_at
+                );
+
+                -- 9. === INSERT into transactions (buyer) ===
+                IF v_buyer_current_balance >= v_buyer_final_price THEN
+                    SET v_payment_origin = 'account_balance';
+                    -- Debit the buyer's account
+                    UPDATE account_balance
+                       SET balance = balance - v_buyer_final_price
+                     WHERE user_id = v_buyer_id;
+                ELSE
+                    SET v_payment_origin = 'credit_card';
+                    -- No update to account_balance
+                END IF;
+
+                INSERT INTO transactions (
+                    user_id, order_id, amount, transaction_status,
+                    payment_origin, payment_purpose, created_at
+                ) VALUES (
+                    v_buyer_id, v_order_id, -v_buyer_final_price, 'completed',
+                    v_payment_origin, 'purchase_funds', v_created_at
+                );
+
+                -- 10. === INSERT into transactions (seller) & UPDATE seller balance ===
+                INSERT INTO transactions (
+                    user_id, order_id, amount, transaction_status,
+                    payment_destination, payment_purpose, created_at
+                ) VALUES (
+                    v_seller_id, v_order_id, v_seller_final_payout, 'completed',
+                    'account_balance', 'sale_proceeds', v_created_at + INTERVAL 1 DAY
+                );
+
+                UPDATE account_balance
+                   SET balance = balance + v_seller_final_payout
+                 WHERE user_id = v_seller_id;
+
+                -- 11. === INSERT into portfolio_items ===
+                INSERT INTO portfolio_items (
+                    portfolio_item_id, user_id, product_id, size_id,
+                    acquisition_date, acquisition_price, item_condition
+                ) VALUES (
+                    UUID(), v_buyer_id, v_product_id, v_size_id,
+                    DATE(v_created_at), v_sale_price, v_product_condition
+                );
+
+                SET sales_iterator = sales_iterator + 1;
+            END WHILE; -- End sales_iterator loop
+
+            SET cond_iterator = cond_iterator + 1;
+        END WHILE; -- End cond_iterator loop
+
+    END LOOP product_loop;
+
+    CLOSE product_cursor;
 END$$
 
 DELIMITER ;
 
 
 -- =================================================================
--- PROCEDURE 2: CreateActiveListings
--- (No changes needed here)
+-- PROCEDURE 2: CreateActiveListings (*** MODIFIED ***)
+-- Includes "hype" price logic for asks.
 -- =================================================================
 
 DROP PROCEDURE IF EXISTS CreateActiveListings;
@@ -713,7 +770,12 @@ BEGIN
     DECLARE v_product_id INT UNSIGNED;
     DECLARE v_size_id INT UNSIGNED;
     DECLARE v_retail_price DECIMAL(10, 2);
+    DECLARE v_brand_id INT UNSIGNED;
+    DECLARE v_product_name VARCHAR(255);
+    DECLARE v_product_condition ENUM('new', 'used', 'worn');
+
     DECLARE v_ask_price DECIMAL(10, 2);
+    DECLARE v_base_price_multiplier DECIMAL(5, 2);
     DECLARE v_fee_id INT UNSIGNED DEFAULT 1;
     DECLARE v_created_at DATETIME;
 
@@ -721,8 +783,8 @@ BEGIN
         -- 1. Get random user and product
         SELECT uuid INTO v_seller_id FROM users ORDER BY RAND() LIMIT 1;
 
-        SELECT ps.product_id, ps.size_id, p.retail_price
-        INTO v_product_id, v_size_id, v_retail_price
+        SELECT ps.product_id, ps.size_id, p.retail_price, p.brand_id, p.name
+        INTO v_product_id, v_size_id, v_retail_price, v_brand_id, v_product_name
         FROM products_sizes ps
         JOIN products p ON ps.product_id = p.product_id
         ORDER BY RAND() LIMIT 1;
@@ -731,8 +793,30 @@ BEGIN
             SET v_retail_price = 150.00;
         END IF;
 
-        -- 2. Calculate realistic ask price
-        SET v_ask_price = ROUND(v_retail_price * (0.9 + RAND() * 2.0), 2);
+        SET v_product_condition = ELT(FLOOR(1 + RAND() * 3), 'new', 'used', 'worn');
+
+        -- 2. Calculate "Hype" Ask Price
+        -- Default multiplier
+        SET v_base_price_multiplier = (0.9 + RAND() * 1.1); -- 90% - 200% (asks are slightly higher)
+
+        -- Hype brands (Off-White, Supreme, Balenciaga, Dior, Fear of God)
+        IF v_brand_id IN (13, 19, 3, 6, 7) THEN
+            SET v_base_price_multiplier = (1.3 + RAND() * 1.9); -- 130% - 320%
+        END IF;
+
+        -- Specific Hype Items
+        IF v_product_name LIKE '%Travis Scott%' OR v_product_name LIKE '%(The Ten)%' OR v_product_name LIKE '%(Lost & Found)%' OR v_product_name LIKE '%Shattered Backboard%' THEN
+            SET v_base_price_multiplier = (2.8 + RAND() * 5.0); -- 280% - 780%
+        END IF;
+
+        -- Adjust multiplier based on condition
+        IF v_product_condition = 'new' THEN
+            SET v_ask_price = ROUND(v_retail_price * v_base_price_multiplier, 2);
+        ELSEIF v_product_condition = 'used' THEN
+            SET v_ask_price = ROUND(v_retail_price * v_base_price_multiplier * (0.5 + RAND() * 0.3), 2); -- 50-80% of 'new' price
+        ELSE -- 'worn'
+            SET v_ask_price = ROUND(v_retail_price * v_base_price_multiplier * (0.2 + RAND() * 0.3), 2); -- 20-50% of 'new' price
+        END IF;
 
         -- 3. Set random creation date
         SET v_created_at = NOW() - INTERVAL FLOOR(RAND() * 60) DAY;
@@ -743,7 +827,7 @@ BEGIN
             fee_structure_id, item_condition, status, created_at, updated_at
         ) VALUES (
             v_seller_id, v_product_id, v_size_id, 'sale', v_ask_price,
-            v_fee_id, ELT(FLOOR(1 + RAND() * 3), 'new', 'used', 'worn'), 'active', v_created_at, v_created_at
+            v_fee_id, v_product_condition, 'active', v_created_at, v_created_at
         );
 
         SET i = i + 1;
@@ -754,9 +838,9 @@ DELIMITER ;
 
 
 -- =================================================================
--- PROCEDURE 3: CreateActiveBids (*** NOW CHECKS BALANCE ***)
--- Creates N active 'bids'. Checks if buyer has enough balance.
--- If not, uses 'credit_card' as origin.
+-- PROCEDURE 3: CreateActiveBids (*** MODIFIED ***)
+-- Includes "hype" price logic for bids.
+-- Checks buyer balance.
 -- =================================================================
 
 DROP PROCEDURE IF EXISTS CreateActiveBids;
@@ -771,7 +855,12 @@ BEGIN
     DECLARE v_product_id INT UNSIGNED;
     DECLARE v_size_id INT UNSIGNED;
     DECLARE v_retail_price DECIMAL(10, 2);
+    DECLARE v_brand_id INT UNSIGNED;
+    DECLARE v_product_name VARCHAR(255);
+    DECLARE v_product_condition ENUM('new', 'used', 'worn');
+
     DECLARE v_bid_amount DECIMAL(10, 2);
+    DECLARE v_base_price_multiplier DECIMAL(5, 2);
 
     -- Fee variables
     DECLARE v_fee_id INT UNSIGNED DEFAULT 1;
@@ -780,7 +869,7 @@ BEGIN
     DECLARE v_total_bid_amount DECIMAL(10, 2);
     DECLARE v_created_at DATETIME;
 
-    -- NEW: Balance check variables
+    -- Balance check variables
     DECLARE v_buyer_current_balance DECIMAL(15, 2);
     DECLARE v_payment_origin ENUM('account_balance', 'credit_card', 'other');
 
@@ -797,8 +886,8 @@ BEGIN
         JOIN account_balance b ON u.uuid = b.user_id
         ORDER BY RAND() LIMIT 1;
 
-        SELECT ps.product_id, ps.size_id, p.retail_price
-        INTO v_product_id, v_size_id, v_retail_price
+        SELECT ps.product_id, ps.size_id, p.retail_price, p.brand_id, p.name
+        INTO v_product_id, v_size_id, v_retail_price, v_brand_id, v_product_name
         FROM products_sizes ps
         JOIN products p ON ps.product_id = p.product_id
         ORDER BY RAND() LIMIT 1;
@@ -807,32 +896,54 @@ BEGIN
             SET v_retail_price = 150.00;
         END IF;
 
-        -- 2. Calculate realistic bid price
-        SET v_bid_amount = ROUND(v_retail_price * (0.6 + RAND() * 0.9), 2);
+        SET v_product_condition = ELT(FLOOR(1 + RAND() * 3), 'new', 'used', 'worn');
+
+        -- 2. Calculate "Hype" Bid Price
+        -- Default multiplier
+        SET v_base_price_multiplier = (0.7 + RAND() * 0.8); -- 70% - 150% (bids are lower)
+
+        -- Hype brands (Off-White, Supreme, Balenciaga, Dior, Fear of God)
+        IF v_brand_id IN (13, 19, 3, 6, 7) THEN
+            SET v_base_price_multiplier = (1.0 + RAND() * 1.5); -- 100% - 250%
+        END IF;
+
+        -- Specific Hype Items
+        IF v_product_name LIKE '%Travis Scott%' OR v_product_name LIKE '%(The Ten)%' OR v_product_name LIKE '%(Lost & Found)%' OR v_product_name LIKE '%Shattered Backboard%' THEN
+            SET v_base_price_multiplier = (2.2 + RAND() * 4.0); -- 220% - 620%
+        END IF;
+
+        -- Adjust multiplier based on condition
+        IF v_product_condition = 'new' THEN
+            SET v_bid_amount = ROUND(v_retail_price * v_base_price_multiplier, 2);
+        ELSEIF v_product_condition = 'used' THEN
+            SET v_bid_amount = ROUND(v_retail_price * v_base_price_multiplier * (0.4 + RAND() * 0.3), 2); -- 40-70% of 'new' price
+        ELSE -- 'worn'
+            SET v_bid_amount = ROUND(v_retail_price * v_base_price_multiplier * (0.1 + RAND() * 0.2), 2); -- 10-30% of 'new' price
+        END IF;
 
         -- 3. Calculate total bid amount with fees
         SET v_buyer_tx_fee = ROUND(v_bid_amount * v_buyer_fee_pct, 2);
         SET v_total_bid_amount = v_bid_amount + v_buyer_tx_fee;
 
-        -- *** NEW LOGIC: Check balance to determine payment origin ***
+        -- 4. Check balance to determine payment origin
         IF v_buyer_current_balance >= v_total_bid_amount THEN
             SET v_payment_origin = 'account_balance';
         ELSE
             SET v_payment_origin = 'credit_card';
         END IF;
 
-        -- 4. Set random creation date
+        -- 5. Set random creation date
         SET v_created_at = NOW() - INTERVAL FLOOR(RAND() * 30) DAY;
 
-        -- 5. === INSERT into bids (active 'bid') ===
+        -- 6. === INSERT into bids (active 'bid') ===
         INSERT INTO bids (
             bid_id, user_id, product_id, size_id, product_condition,
             bid_amount, transaction_fee, fee_structure_id, total_bid_amount,
             bid_status, payment_origin, created_at, updated_at
         ) VALUES (
-            UUID(), v_buyer_id, v_product_id, v_size_id, ELT(FLOOR(1 + RAND() * 3), 'new', 'used', 'worn'),
+            UUID(), v_buyer_id, v_product_id, v_size_id, v_product_condition,
             v_bid_amount, v_buyer_tx_fee, v_fee_id, v_total_bid_amount,
-            'active', v_payment_origin, v_created_at, v_created_at -- Use v_payment_origin
+            'active', v_payment_origin, v_created_at, v_created_at
         );
 
         SET i = i + 1;
@@ -846,6 +957,6 @@ DELIMITER ;
 -- CALL PROCEDURES
 -- =================================================================
 
-CALL CreatePastSales(10000);
+CALL CreatePastSales();
 CALL CreateActiveListings(2000);
 CALL CreateActiveBids(1500);
