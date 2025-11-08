@@ -1,7 +1,6 @@
 <template>
   <div class="marketplace-container">
     <header class="page-header">
-<!--      <h1>Search</h1>-->
       <div class="search-bar">
         <input v-model="searchQuery" type="text" placeholder="Search for items, brands, etc." />
         <button>Search</button>
@@ -13,17 +12,18 @@
         <h2>Filters</h2>
 
         <div
-            v-if="filterOptions.categories && filterOptions.categories.length"
-            class="filter-group"
+          v-if="filterOptions.categories && filterOptions.categories.length"
+          class="filter-group"
         >
           <h3>Category</h3>
           <ul class="filter-options">
             <li v-for="category in filterOptions.categories" :key="category">
               <label>
                 <input
-                    type="checkbox"
-                    :value="category"
-                    @change="applyFilter('category', category)"
+                  type="checkbox"
+                  :value="category"
+                  :checked="activeFilters.category.includes(category)"
+                  @change="applyFilter('category', category)"
                 />
                 {{ category }}
               </label>
@@ -36,7 +36,12 @@
           <ul class="filter-options">
             <li v-for="brand in filterOptions.brands" :key="brand">
               <label>
-                <input type="checkbox" :value="brand" @change="applyFilter('brand', brand)" />
+                <input
+                  type="checkbox"
+                  :value="brand"
+                  :checked="activeFilters.brand.includes(brand)"
+                  @change="applyFilter('brand', brand)"
+                />
                 {{ brand }}
               </label>
             </li>
@@ -47,17 +52,17 @@
           <h3>Price Range</h3>
           <div class="price-inputs">
             <input
-                type="number"
-                placeholder="Min"
-                v-model="minPrice"
-                @change="applyPriceFilter"
+              type="number"
+              placeholder="Min"
+              v-model="minPrice"
+              @change="applyPriceFilter"
             />
             <span>–</span>
             <input
-                type="number"
-                placeholder="Max"
-                v-model="maxPrice"
-                @change="applyPriceFilter"
+              type="number"
+              placeholder="Max"
+              v-model="maxPrice"
+              @change="applyPriceFilter"
             />
           </div>
         </div>
@@ -96,21 +101,20 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { fetchFromAPI } from '@/utils/index.js'
 import ProductCard from '@/components/ProductCard.vue'
 
-const searchQuery = ref('')
 const searchResults = ref([])
 const searchResultStorage = ref([])
 const filterOptions = ref({})
 const route = useRoute()
+const router = useRouter()
 
+const searchQuery = ref('')
 const minPrice = ref(null)
 const maxPrice = ref(null)
-
 const sortOption = ref('newest')
-
 const activeFilters = ref({
   category: [],
   brand: [],
@@ -120,17 +124,69 @@ const activeFilters = ref({
   },
 })
 
+function updateBrowserQuery() {
+  const query = {}
+
+  if (searchQuery.value) {
+    query.q = searchQuery.value
+  }
+  if (activeFilters.value.category.length > 0) {
+    query.category = activeFilters.value.category
+  }
+  if (activeFilters.value.brand.length > 0) {
+    query.brand = activeFilters.value.brand
+  }
+  if (activeFilters.value.price.min !== null) {
+    query.min = activeFilters.value.price.min
+  }
+  if (activeFilters.value.price.max !== null) {
+    query.max = activeFilters.value.price.max
+  }
+  if (sortOption.value && sortOption.value !== 'newest') {
+    query.sort = sortOption.value
+  }
+
+  router.replace({ query })
+
+}
+
+
 onMounted(async () => {
   const categoryQuery = route.query.category || ''
   const currentSearchQuery = route.query.q || ''
+
+  searchQuery.value = currentSearchQuery
+  sortOption.value = route.query.sort || 'newest'
+  minPrice.value = route.query.min ? Number(route.query.min) : null
+  maxPrice.value = route.query.max ? Number(route.query.max) : null
+
+  if (route.query.category) {
+    activeFilters.value.category = Array.isArray(route.query.category)
+      ? route.query.category
+      : [route.query.category]
+  }
+  if (route.query.brand) {
+    activeFilters.value.brand = Array.isArray(route.query.brand)
+      ? route.query.brand
+      : [route.query.brand]
+  }
+  if (minPrice.value || maxPrice.value) {
+    activeFilters.value.price = {
+      min: minPrice.value,
+      max: maxPrice.value,
+    }
+  }
+
   await searchProducts(currentSearchQuery, categoryQuery)
+
 })
 
 watch(searchQuery, async (newQuery) => {
   if (route.query.category) {
-    route.query.category = null
+    activeFilters.value.category = []
   }
   await searchProducts(newQuery)
+  updateBrowserQuery() // Update URL
 })
 
 watch(activeFilters, () => {
@@ -143,36 +199,39 @@ watch(activeFilters, () => {
 
   if (categoryFilters.length > 0) {
     filteredResults = filteredResults.filter(product =>
-        categoryFilters.includes(product.productType)
+      categoryFilters.includes(product.productType)
     );
   }
 
   if (brandFilters.length > 0) {
     filteredResults = filteredResults.filter(product =>
-        brandFilters.includes(product.brandName)
+      brandFilters.includes(product.brandName)
     );
   }
 
   if (minPrice !== null) {
     filteredResults = filteredResults.filter(product =>
-        product.lowestAskingPrice !== null && product.lowestAskingPrice >= minPrice
+      product.lowestAskingPrice !== null && product.lowestAskingPrice >= minPrice
     );
   }
 
   if (maxPrice !== null) {
     filteredResults = filteredResults.filter(product =>
-        product.lowestAskingPrice !== null && product.lowestAskingPrice <= maxPrice
+      product.lowestAskingPrice !== null && product.lowestAskingPrice <= maxPrice
     );
   }
 
   searchResults.value = filteredResults
   sortResultsByPrice(sortOption.value)
 
+  updateBrowserQuery()
+
 }, { deep: true });
 
 watch(sortOption, (newValue) => {
   if (['newest', 'price-asc', 'price-desc'].includes(newValue)) {
     sortResultsByPrice(newValue)
+    updateBrowserQuery()
   } else {
     console.error('Invalid sort option:', newValue)
   }
@@ -195,19 +254,26 @@ function sortResultsByNewest() {
 }
 
 function sortResultsLowToHigh() {
-  console.log("sorting low to high")
-  searchResults.value.sort()
+  searchResults.value.sort((a, b) => {
+    if (a.lowestAskingPrice === null) return 1
+    if (b.lowestAskingPrice === null) return -1
+    return a.lowestAskingPrice - b.lowestAskingPrice
+  })
 }
 
 function sortResultsHighToLow() {
-  console.log("sorting high to low")
+  searchResults.value.sort((a, b) => {
+    if (a.lowestAskingPrice === null) return 1
+    if (b.lowestAskingPrice === null) return -1
+    return b.lowestAskingPrice - a.lowestAskingPrice
+  })
 }
 
 function applyFilter(filterType, filterValue) {
   if (['category', 'brand'].includes(filterType)) {
     if (activeFilters.value[filterType].includes(filterValue)) {
       activeFilters.value[filterType] = activeFilters.value[filterType].filter(
-          (v) => v !== filterValue,
+        (v) => v !== filterValue,
       )
     } else {
       activeFilters.value[filterType].push(filterValue)
@@ -251,7 +317,8 @@ async function searchProducts(searchQuery = null, category = null) {
     searchResultStorage.value = response.products || []
     filterOptions.value = response.filters || {}
 
-    route.query.q = queryString
+    // 6. (Bug Fix) Removed the line 'route.query.q = queryString'
+    // It's read-only and our new function handles this now.
 
   } catch (error) {
     console.error('Error fetching search results:', error)
