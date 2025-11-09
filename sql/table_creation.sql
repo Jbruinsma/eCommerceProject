@@ -50,7 +50,6 @@ CREATE TABLE fee_structures (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Dependent tables
 CREATE TABLE account_balance(
     user_id CHAR(36) PRIMARY KEY,
     balance DECIMAL(15, 2) DEFAULT 0.00,
@@ -83,6 +82,7 @@ CREATE TABLE products_sizes(
 
 CREATE TABLE orders(
     order_id CHAR(36) PRIMARY KEY NOT NULL,
+    address_id INT UNSIGNED,
     buyer_id CHAR(36) NOT NULL,
     seller_id CHAR(36) NOT NULL,
     product_id INT UNSIGNED NOT NULL,
@@ -103,6 +103,7 @@ CREATE TABLE orders(
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (address_id) REFERENCES addresses(address_id),
     FOREIGN KEY (buyer_id) REFERENCES users(uuid),
     FOREIGN KEY (seller_id) REFERENCES users(uuid),
     FOREIGN KEY (product_id) REFERENCES products(product_id),
@@ -123,6 +124,7 @@ CREATE TABLE addresses(
     state VARCHAR(100),
     zip_code VARCHAR(20),
     country VARCHAR(100),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (user_id) REFERENCES users(uuid),
     FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE SET NULL
@@ -164,6 +166,7 @@ CREATE TABLE portfolio_items(
 CREATE TABLE bids(
     bid_id CHAR(36) PRIMARY KEY NOT NULL,
     user_id CHAR(36),
+    address_id INT UNSIGNED,
     product_id INT UNSIGNED,
     size_id INT UNSIGNED,
     product_condition ENUM('new', 'used', 'worn'),
@@ -176,6 +179,7 @@ CREATE TABLE bids(
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+    FOREIGN KEY (address_id) REFERENCES addresses(address_id),
     FOREIGN KEY (user_id) REFERENCES users(uuid),
     FOREIGN KEY (product_id) REFERENCES products(product_id),
     FOREIGN KEY (size_id) REFERENCES sizes(size_id),

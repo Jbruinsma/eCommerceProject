@@ -6,6 +6,13 @@ DROP PROCEDURE IF EXISTS createBid;
 
 CREATE PROCEDURE createBid(
     IN input_user_id CHAR(36),
+    IN input_name VARCHAR(100),
+    IN input_address_line1 VARCHAR(255),
+    IN input_address_line2 VARCHAR(255),
+    IN input_city VARCHAR(100),
+    IN input_state VARCHAR(100),
+    IN input_zip_code VARCHAR(20),
+    IN input_country VARCHAR(100),
     IN input_product_id INT UNSIGNED,
     IN input_product_size VARCHAR(50),
     IN input_product_condition ENUM('new', 'used', 'worn'),
@@ -20,15 +27,44 @@ BEGIN
     DECLARE bid_transaction_fee DECIMAL(10,2);
     DECLARE total_payment DECIMAL(10,2);
 
+    DECLARE address_record_id INT UNSIGNED;
+
     SET new_bid_id = UUID();
     SET bid_transaction_fee = (input_bid_amount * (SELECT buyer_fee_percentage FROM fee_structures WHERE id = input_fee_structure_id));
     SET total_payment = input_bid_amount + bid_transaction_fee;
 
+    INSERT INTO addresses(
+                          user_id,
+                          purpose,
+                          name,
+                          address_line_1,
+                          address_line_2,
+                          city,
+                          state,
+                          zip_code,
+                          country
+
+    )
+    VALUES (
+            input_user_id,
+            'shipping',
+            input_name,
+            input_address_line1,
+            input_address_line2,
+            input_city,
+            input_state,
+            input_zip_code,
+            input_country
+    );
+
+    SET address_record_id = (SELECT address_id FROM addresses WHERE user_id = input_user_id ORDER BY created_at DESC LIMIT 1);
+
     INSERT INTO bids(
                     bid_id,
                     user_id,
+                    address_id,
                     product_id,
-                    product_size_id,
+                    size_id,
                     product_condition,
                     bid_amount,
                     transaction_fee,
@@ -43,6 +79,7 @@ BEGIN
         VALUES (
                 new_bid_id,
                 input_user_id,
+                address_record_id,
                 input_product_id,
                 (SELECT size_id FROM sizes WHERE size_id IN (SELECT size_id FROM products_sizes WHERE product_id = input_product_id) AND size_value = input_product_size),
                 input_product_condition,

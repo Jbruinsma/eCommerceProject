@@ -12,7 +12,7 @@ CREATE PROCEDURE addAddress(
     IN input_city VARCHAR(100),
     IN input_state VARCHAR(100),
     IN input_zip_code VARCHAR(20),
-    IN input_country VARCHAR(100)
+    IN input_country VARCHAR(100),
 )
 
 BEGIN

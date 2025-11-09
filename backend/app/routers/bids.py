@@ -11,6 +11,15 @@ from ..db import get_session
 from ..pydantic_models.error_message import ErrorMessage
 from ..utils.bids import process_bids
 
+
+states = [
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+    "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+    "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+    "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
+]
+
 router = APIRouter(prefix="/bids", tags=["bids"])
 
 @router.get("/{user_uuid}")
@@ -130,11 +139,18 @@ async def delete_bid(bid_id: str, user_uuid: str, session: AsyncSession = Depend
 
 @router.post("/{user_uuid}")
 async def create_bid(new_bid_info: NewBidInfo, user_uuid: str, session: AsyncSession = Depends(get_session)):
+    global states
+
     if not user_uuid:
         return ErrorMessage(message="User UUID is required", error="MissingUserUUID")
 
     if user_uuid != new_bid_info.user_id:
         return ErrorMessage(message="User UUID does not match bid info user ID", error="UserUUIDMismatch")
+
+    shipping_info = new_bid_info.shipping_info
+
+    if shipping_info.state not in states:
+        return ErrorMessage(message="Invalid shipping state", error="InvalidShippingState")
 
     payment_origin = new_bid_info.payment_origin
 
@@ -146,9 +162,16 @@ async def create_bid(new_bid_info: NewBidInfo, user_uuid: str, session: AsyncSes
     product_condition = new_bid_info.product_condition.lower()
     size = new_bid_info.size
 
-    statement = text("CALL createBid(:input_user_id, :input_product_id, :input_product_size, :input_product_condition, :input_bid_amount, :input_fee_structure_id, :input_payment_origin);")
+    statement = text("CALL createBid(:input_user_id, :input_name, :input_address_line1, :input_address_line2, :input_city, :input_state, :input_zip_code, :input_country, :input_product_id, :input_product_size, :input_product_condition, :input_bid_amount, :input_fee_structure_id, :input_payment_origin);")
     result = await session.execute(statement, {
         "input_user_id": new_bid_info.user_id,
+        "input_name": shipping_info.name,
+        "input_address_line1": shipping_info.address_line_1,
+        "input_address_line2": shipping_info.address_line_2,
+        "input_city": shipping_info.city,
+        "input_state": shipping_info.state,
+        "input_zip_code": shipping_info.zip_code,
+        "input_country": shipping_info.country,
         "input_product_id": new_bid_info.product_id,
         "input_product_size": size,
         "input_product_condition": product_condition,

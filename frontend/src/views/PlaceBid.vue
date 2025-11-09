@@ -111,11 +111,16 @@
                   placeholder="0.00"
                 />
               </div>
-              <p v-if="bidMatchesHighestError" class="error-message">
-                Your bid cannot be the same as the current highest bid.
+              <p v-if="bidNotHighEnoughError" class="error-message">
+                Your bid must be greater than the highest bid of
+                {{ formatCurrency(marketInfo.highestBid) }}.
               </p>
               <p v-if="bidExceedsLowestAskError" class="error-message">
-                Bid cannot be higher than the lowest ask. To buy now, match the lowest ask price.
+                Bid cannot be higher than the lowest ask.
+              </p>
+              <p v-if="bidTooCloseError" class="error-message">
+                Bid is too close to the lowest ask. Maximum bid is
+                {{ formatCurrency(maxAllowedBid) }}.
               </p>
               <ul class="fee-breakdown">
                 <li>
@@ -185,16 +190,25 @@
                   ><input type="text" id="city" v-model="shippingInfo.city" />
                 </div>
                 <div class="form-group">
-                  <label for="state">State</label
-                  ><input type="text" id="state" v-model="shippingInfo.state" />
+                  <label for="state">State</label>
+                  <select id="state" v-model="shippingInfo.state">
+                    <option :value="null" disabled>Select a state</option>
+                    <option
+                      v-for="state in usStates"
+                      :key="state.abbreviation"
+                      :value="state.abbreviation"
+                    >
+                      {{ state.name }}
+                    </option>
+                  </select>
                 </div>
                 <div class="form-group">
                   <label for="zip_code">Zip Code</label
                   ><input type="text" id="zip_code" v-model="shippingInfo.zip_code" />
                 </div>
                 <div class="form-group">
-                  <label for="country">Country</label
-                  ><input type="text" id="country" v-model="shippingInfo.country" />
+                  <label for="country">Country</label>
+                  <input type="text" id="country" v-model="shippingInfo.country" disabled />
                 </div>
               </div>
             </div>
@@ -293,7 +307,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchFromAPI, postToAPI } from '@/utils/index.js'
 import { useAuthStore } from '@/stores/authStore.js'
@@ -304,7 +318,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const currentStep = ref(1)
-const totalSteps = ref(3) // UPDATED
+const totalSteps = ref(3)
 
 const productId = route.params.listingId
 const selectedSize = ref(route.query.size || null)
@@ -316,31 +330,85 @@ const product = ref({
   imageUrl: 'https://placehold.co/400x300/1a1a1a/ffffff?text=Item',
 })
 
-// NEW: For Step 2
 const shippingInfo = ref({
   name: '',
   address_line_1: '',
   address_line_2: '',
   city: '',
-  state: '',
+  state: null,
   zip_code: '',
   country: 'United States',
 })
 
-const marketInfo = ref({ highestBid: null, lowestAsk: null })
+const usStates = ref([
+  { name: 'Alabama', abbreviation: 'AL' },
+  { name: 'Alaska', abbreviation: 'AK' },
+  { name: 'Arizona', abbreviation: 'AZ' },
+  { name: 'Arkansas', abbreviation: 'AR' },
+  { name: 'California', abbreviation: 'CA' },
+  { name: 'Colorado', abbreviation: 'CO' },
+  { name: 'Connecticut', abbreviation: 'CT' },
+  { name: 'Delaware', abbreviation: 'DE' },
+  { name: 'Florida', abbreviation: 'FL' },
+  { name: 'Georgia', abbreviation: 'GA' },
+  { name: 'Hawaii', abbreviation: 'HI' },
+  { name: 'Idaho', abbreviation: 'ID' },
+  { name: 'Illinois', abbreviation: 'IL' },
+  { name: 'Indiana', abbreviation: 'IN' },
+  { name: 'Iowa', abbreviation: 'IA' },
+  { name: 'Kansas', abbreviation: 'KS' },
+  { name: 'Kentucky', abbreviation: 'KY' },
+  { name: 'Louisiana', abbreviation: 'LA' },
+  { name: 'Maine', abbreviation: 'ME' },
+  { name: 'Maryland', abbreviation: 'MD' },
+  { name: 'Massachusetts', abbreviation: 'MA' },
+  { name: 'Michigan', abbreviation: 'MI' },
+  { name: 'Minnesota', abbreviation: 'MN' },
+  { name: 'Mississippi', abbreviation: 'MS' },
+  { name: 'Missouri', abbreviation: 'MO' },
+  { name: 'Montana', abbreviation: 'MT' },
+  { name: 'Nebraska', abbreviation: 'NE' },
+  { name: 'Nevada', abbreviation: 'NV' },
+  { name: 'New Hampshire', abbreviation: 'NH' },
+  { name: 'New Jersey', abbreviation: 'NJ' },
+  { name: 'New Mexico', abbreviation: 'NM' },
+  { name: 'New York', abbreviation: 'NY' },
+  { name: 'North Carolina', abbreviation: 'NC' },
+  { name: 'North Dakota', abbreviation: 'ND' },
+  { name: 'Ohio', abbreviation: 'OH' },
+  { name: 'Oklahoma', abbreviation: 'OK' },
+  { name: 'Oregon', abbreviation: 'OR' },
+  { name: 'Pennsylvania', abbreviation: 'PA' },
+  { name: 'Rhode Island', abbreviation: 'RI' },
+  { name: 'South Carolina', abbreviation: 'SC' },
+  { name: 'South Dakota', abbreviation: 'SD' },
+  { name: 'Tennessee', abbreviation: 'TN' },
+  { name: 'Texas', abbreviation: 'TX' },
+  { name: 'Utah', abbreviation: 'UT' },
+  { name: 'Vermont', abbreviation: 'VT' },
+  { name: 'Virginia', abbreviation: 'VA' },
+  { name: 'Washington', abbreviation: 'WA' },
+  { name: 'West Virginia', abbreviation: 'WV' },
+  { name: 'Wisconsin', abbreviation: 'WI' },
+  { name: 'Wyoming', abbreviation: 'WY' },
+])
+
+const marketInfo = ref({
+  highestBid: null,
+  lowestAsk: null,
+  lowestAskListingId: null,
+})
 const bidAmount = ref(null)
 const bidInput = ref('')
 const userBalance = ref(0)
 const paymentMethod = ref(null)
-
-const bidMatch = ref(false)
-const submitButtonText = ref('Confirm Bid')
 
 const isLoading = ref(false)
 const submissionResult = ref(null)
 
 const MIN_BID = 0.01
 const MAX_BID = 99999999.99
+const BID_BUFFER_PERCENTAGE = 0.01
 let transactionFeeRate = ref({
   rateId: null,
   rate: 0.01,
@@ -359,10 +427,11 @@ const isBidAmountValid = computed(() => {
   )
 })
 
-const bidMatchesHighestError = computed(() => {
-  return (
-    bidAmount.value !== null && bidAmount.value > 0 && bidAmount.value === marketInfo.value.highestBid
-  )
+const bidNotHighEnoughError = computed(() => {
+  if (marketInfo.value.highestBid === null || !isBidAmountValid.value) {
+    return false
+  }
+  return bidAmount.value <= marketInfo.value.highestBid
 })
 
 const bidExceedsLowestAskError = computed(() => {
@@ -372,17 +441,56 @@ const bidExceedsLowestAskError = computed(() => {
   );
 });
 
-// NEW: Validation for address form
+const maxAllowedBid = computed(() => {
+  if (marketInfo.value.lowestAsk === null) {
+    return null
+  }
+  const maxBid = marketInfo.value.lowestAsk * (1 - BID_BUFFER_PERCENTAGE)
+  return Math.floor(maxBid * 100) / 100
+})
+
+const bidTooCloseError = computed(() => {
+  if (
+    !isBidAmountValid.value ||
+    maxAllowedBid.value === null ||
+    bidExceedsLowestAskError.value
+  ) {
+    return false
+  }
+  if (bidAmount.value === marketInfo.value.lowestAsk) {
+    return false
+  }
+  return bidAmount.value > maxAllowedBid.value
+})
+
 const isFormComplete = computed(() => {
   const { name, address_line_1, city, state, zip_code, country } = shippingInfo.value
   const requiredFields = [name, address_line_1, city, state, zip_code, country]
-  return requiredFields.every((field) => field && field.trim() !== '')
+  return requiredFields.every((field) => field && String(field).trim() !== '')
 })
 
-// UPDATED: For 3 steps
+const bidMatch = computed(() => {
+  if (marketInfo.value.lowestAsk === null || marketInfo.value.lowestAsk <= 0) {
+    return false
+  }
+  return bidAmount.value === marketInfo.value.lowestAsk
+})
+
+const submitButtonText = computed(() => {
+  return bidMatch.value ? 'Buy Now' : 'Confirm Bid'
+})
+
 const isStepReady = computed(() => {
   if (currentStep.value === 1) {
-    return isBidAmountValid.value && !bidMatchesHighestError.value && !bidExceedsLowestAskError.value
+    if (bidMatch.value) {
+      return true
+    }
+    return (
+      isBidAmountValid.value &&
+      !bidNotHighEnoughError.value &&
+      !bidExceedsLowestAskError.value &&
+      !bidTooCloseError.value
+    )
   }
   if (currentStep.value === 2) {
     return isFormComplete.value
@@ -393,13 +501,16 @@ const isStepReady = computed(() => {
   return false
 })
 
-// UPDATED: Final check includes address form
 const isBidValid = computed(
   () =>
-    isBidAmountValid.value &&
-    !bidMatchesHighestError.value &&
-    !bidExceedsLowestAskError.value &&
-    isFormComplete.value && // Added
+    (
+      (isBidAmountValid.value &&
+        !bidNotHighEnoughError.value &&
+        !bidExceedsLowestAskError.value &&
+        !bidTooCloseError.value) ||
+      bidMatch.value
+    ) &&
+    isFormComplete.value &&
     !!paymentMethod.value &&
     selectedSize.value &&
     selectedCondition.value,
@@ -440,6 +551,19 @@ function selectPaymentMethod(method) {
 }
 
 function nextStep() {
+  if (currentStep.value === 1 && bidMatch.value) {
+    if (marketInfo.value.lowestAskListingId) {
+      router.push({
+        name: 'PlaceOrder',
+        params: { listingId: marketInfo.value.lowestAskListingId },
+        query: { size: selectedSize.value, condition: selectedCondition.value },
+      })
+    } else {
+      console.error('Could not find listingId for "Buy Now" redirect.')
+    }
+    return
+  }
+
   if (currentStep.value < totalSteps.value) currentStep.value++
 }
 
@@ -472,6 +596,7 @@ onMounted(async () => {
         marketInfo.value = {
           highestBid: bidData ? bidData.amount : null,
           lowestAsk: askData ? askData.price : null,
+          lowestAskListingId: askData ? askData.listingId : null,
         }
       }
     }
@@ -484,81 +609,43 @@ onMounted(async () => {
   }
 })
 
-watch(bidAmount, (newValue) => {
-  if (marketInfo.value.lowestAsk > 0 && newValue === marketInfo.value.lowestAsk) {
-    bidMatch.value = true
-    submitButtonText.value = 'Buy Now'
-  } else {
-    bidMatch.value = false
-    submitButtonText.value = 'Confirm Bid'
-  }
-})
-
 async function submitBid() {
   if (!isBidValid.value) return
 
   isLoading.value = true
   submissionResult.value = null
 
-  console.log('Submitting bid:', {
-    user_id: authStore.uuid,
-    product_id: productId,
-    size: selectedSize.value,
-    product_condition: selectedCondition.value,
-    bid_amount: bidAmount.value,
-    fee_structure_id: transactionFeeRate.value.rateId,
-    payment_origin: paymentMethod.value,
-    shipping_info: shippingInfo.value,
-  })
+  try {
+    const bidResponse = await postToAPI(`/bids/${authStore.uuid}`, {
+      user_id: authStore.uuid,
+      product_id: productId,
+      size: selectedSize.value,
+      product_condition: selectedCondition.value,
+      bid_amount: bidAmount.value,
+      fee_structure_id: transactionFeeRate.value.rateId,
+      payment_origin: paymentMethod.value,
+      shipping_info: shippingInfo.value,
+    })
 
-  // try {
-  //   const bidResponse = await postToAPI(`/bids/${authStore.uuid}`, {
-  //     user_id: authStore.uuid,
-  //     product_id: productId,
-  //     size: selectedSize.value,
-  //     product_condition: selectedCondition.value,
-  //     bid_amount: bidAmount.value,
-  //     fee_structure_id: transactionFeeRate.value.rateId,
-  //     payment_origin: paymentMethod.value,
-  //     shipping_info: shippingInfo.value,
-  //   })
-  //
-  //   if (bidResponse && bidResponse.bid_id) {
-  //     submissionResult.value = { success: true, data: bidResponse }
-  //   } else {
-  //     throw new Error('Invalid response from server.')
-  //   }
-  // } catch (error) {
-  //   submissionResult.value = {
-  //     success: false,
-  //     message: error.data?.message || error.message || 'An unknown error occurred.',
-  //   }
-  //   console.error('Error submitting bid:', error)
-  // } finally {
-  //   isLoading.value = false
-  // }
+    if (bidResponse && bidResponse.bid_id) {
+      submissionResult.value = { success: true, data: bidResponse }
+    } else {
+      throw new Error('Invalid response from server.')
+    }
+  } catch (error) {
+    submissionResult.value = {
+      success: false,
+      message: error.data?.message || error.message || 'An unknown error occurred.',
+    }
+    console.error('Error submitting bid:', error)
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
 <style scoped>
-/* Copied from PlaceOrder.vue */
 .address-line { color: #ffffff; font-size: 1rem; line-height: 1.5; margin: 0.25rem 0; }
-.form-grid { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; }
-.form-group { display: flex; flex-direction: column; }
-.form-group input { background-color: #2c2c2c; border: 1px solid #444; border-radius: 6px; color: #ffffff; font-size: 1rem; padding: 0.75rem; }
-.form-group input:focus { border-color: #ffffff; outline: none; }
-.form-group label { color: #aaa; font-size: 0.9rem; margin-bottom: 0.5rem; }
-.form-group.full-width { grid-column: 1 / -1; }
-.shipping-preview { border-bottom: 1px solid #333; margin-bottom: 2rem; padding-bottom: 1.5rem; }
-.shipping-preview h4 { color: #aaa; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
-
-/* Existing Styles */
-h1, h2, h3, h4 { font-family: Spectral, sans-serif; font-weight: 600; }
-h1.page-title { border-bottom: 1px solid #333; font-size: 2.2rem; margin-bottom: 3rem; padding-bottom: 1.5rem; text-align: center; }
-h2 { flex-grow: 1; font-size: 1.8rem; margin: 0; text-align: center; }
-h2.brand-name { color: #ccc; font-size: 1.2rem; margin: 0; }
-h3.product-name { font-size: 1.5rem; margin: 0.25rem 0 0; }
-p { color: #cccccc; line-height: 1.6; }
 .balance-insufficient { color: #ff6b6b; font-size: 0.9rem; margin-top: 1rem; text-align: center; }
 .bid-container { color: #ffffff; padding: 4rem 5%; }
 .bid-content { margin: 0 auto; max-width: 900px; }
@@ -584,6 +671,20 @@ p { color: #cccccc; line-height: 1.6; }
 .fee-breakdown { list-style: none; margin: 0 0 2rem; padding: 0; }
 .fee-breakdown li { align-items: center; display: flex; font-size: 1rem; justify-content: space-between; margin-bottom: 0.75rem; }
 .fee-breakdown span:first-child { color: #aaa; }
+.form-grid { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; }
+.form-group input, .form-group select { background-color: #2c2c2c; border: 1px solid #444; border-radius: 6px; color: #ffffff; font-size: 1rem; padding: 0.75rem; }
+.form-group input:disabled { background-color: #2c2c2c; color: #777; cursor: not-allowed; }
+.form-group input:focus, .form-group select:focus { border-color: #ffffff; outline: none; }
+.form-group label { color: #aaa; font-size: 0.9rem; margin-bottom: 0.5rem; }
+.form-group select { -webkit-appearance: none; appearance: none; }
+.form-group select:hover { cursor: pointer; }
+.form-group.full-width { grid-column: 1 / -1; }
+h1, h2, h3, h4 { font-family: Spectral, sans-serif; font-weight: 600; }
+h1.page-title { border-bottom: 1px solid #333; font-size: 2.2rem; margin-bottom: 3rem; padding-bottom: 1.5rem; text-align: center; }
+h2 { flex-grow: 1; font-size: 1.8rem; margin: 0; text-align: center; }
+h2.brand-name { color: #ccc; font-size: 1.2rem; margin: 0; }
+h3.product-name { font-size: 1.5rem; margin: 0.25rem 0 0; }
 .loading-overlay { align-items: center; display: flex; flex-direction: column; justify-content: center; min-height: 500px; padding: 2rem; }
 .loading-overlay p { color: #888; font-weight: bold; margin-top: 1rem; }
 .market-context { border-bottom: 1px solid #333; display: grid; grid-template-columns: 1fr 1fr; padding-bottom: 1rem; text-align: center; }
@@ -600,6 +701,7 @@ p { color: #cccccc; line-height: 1.6; }
 .payment-options { display: flex; flex-direction: column; gap: 1rem; }
 .payment-section { border-top: 1px solid #333; margin-top: 2rem; padding-top: 2rem; }
 .payment-title { color: #e0e0e0; font-size: 1.1rem; margin-bottom: 1.5rem; text-align: left; }
+p { color: #cccccc; line-height: 1.6; }
 .product-image { border-radius: 8px; margin-bottom: 1.5rem; max-width: 100%; }
 .product-info { text-align: center; }
 .product-size { color: #aaa; font-size: 1.1rem; margin-top: 0.5rem; }
@@ -611,6 +713,8 @@ p { color: #cccccc; line-height: 1.6; }
 .result-summary { background-color: #121212; border-radius: 8px; margin: 1.5rem 0; padding: 1rem; text-align: left; }
 .result-summary p { margin: 0.5rem 0; }
 .section-header { align-items: center; display: flex; justify-content: space-between; margin-bottom: 2rem; }
+.shipping-preview { border-bottom: 1px solid #333; margin-bottom: 2rem; padding-bottom: 1.5rem; }
+.shipping-preview h4 { color: #aaa; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
 .spinner { animation: spin 1s linear infinite; border: 4px solid #333; border-radius: 50%; border-top: 4px solid #ffffff; height: 50px; width: 50px; }
 .submission-result-screen { align-items: center; display: flex; flex-direction: column; justify-content: center; min-height: 500px; padding: 2rem; }
 .total-cost { border-top: 1px solid #333; font-size: 1.2rem !important; font-weight: bold; margin-top: 1rem; padding-top: 1rem; }
@@ -618,7 +722,7 @@ p { color: #cccccc; line-height: 1.6; }
 @media (max-width: 768px) {
   .bid-container { padding: 2rem 5%; }
   .bid-grid { grid-template-columns: 1fr; }
-  .form-grid { grid-template-columns: 1fr; } /* Added */
+  .form-grid { grid-template-columns: 1fr; }
   h1.page-title { font-size: 1.8rem; margin-bottom: 2rem; padding-bottom: 1rem; }
   .market-context { gap: 1rem; grid-template-columns: 1fr; }
   .product-summary { margin-bottom: 2rem; margin-left: auto; margin-right: auto; max-width: 300px; }
