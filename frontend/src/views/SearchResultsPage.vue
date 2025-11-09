@@ -17,37 +17,35 @@
         >
           <h3>Category</h3>
           <ul class="filter-options">
-            <li v-for="category in filterOptions.categories" :key="category">
+            <li v-for="item in filterOptions.categories" :key="item.category">
               <label>
                 <input
                   type="checkbox"
-                  :value="category"
-                  :checked="activeFilters.category.includes(category)"
-                  @change="applyFilter('category', category)"
+                  :value="item.category"
+                  :checked="activeFilters.category.includes(item.category)"
+                  @change="applyFilter('category', item.category)"
                 />
-                {{ category }}
+                {{ item.category }} ({{ item.count }})
               </label>
             </li>
           </ul>
         </div>
-
         <div v-if="filterOptions.brands && filterOptions.brands.length" class="filter-group">
           <h3>Brand</h3>
           <ul class="filter-options">
-            <li v-for="brand in filterOptions.brands" :key="brand">
+            <li v-for="item in filterOptions.brands" :key="item.brandName">
               <label>
                 <input
                   type="checkbox"
-                  :value="brand"
-                  :checked="activeFilters.brand.includes(brand)"
-                  @change="applyFilter('brand', brand)"
+                  :value="item.brandName"
+                  :checked="activeFilters.brand.includes(item.brandName)"
+                  @change="applyFilter('brand', item.brandName)"
                 />
-                {{ brand }}
+                {{ item.brandName }} ({{ item.count }})
               </label>
             </li>
           </ul>
         </div>
-
         <div class="filter-group">
           <h3>Price Range</h3>
           <div class="price-inputs">
@@ -147,9 +145,7 @@ function updateBrowserQuery() {
   }
 
   router.replace({ query })
-
 }
-
 
 onMounted(async () => {
   const categoryQuery = route.query.category || ''
@@ -178,7 +174,6 @@ onMounted(async () => {
   }
 
   await searchProducts(currentSearchQuery, categoryQuery)
-
 })
 
 watch(searchQuery, async (newQuery) => {
@@ -189,42 +184,47 @@ watch(searchQuery, async (newQuery) => {
   updateBrowserQuery() // Update URL
 })
 
-watch(activeFilters, () => {
-  const categoryFilters = activeFilters.value.category;
-  const brandFilters = activeFilters.value.brand;
-  const minPrice = activeFilters.value.price.min;
-  const maxPrice = activeFilters.value.price.max;
+watch(
+  activeFilters,
+  () => {
+    const categoryFilters = activeFilters.value.category
+    const brandFilters = activeFilters.value.brand
+    const minPrice = activeFilters.value.price.min
+    const maxPrice = activeFilters.value.price.max
 
-  let filteredResults = searchResultStorage.value;
+    let filteredResults = searchResultStorage.value
 
-  if (categoryFilters.length > 0) {
-    filteredResults = filteredResults.filter(product =>
-      categoryFilters.includes(product.productType)
-    );
-  }
+    if (categoryFilters.length > 0) {
+      filteredResults = filteredResults.filter((product) =>
+        categoryFilters.includes(product.productType),
+      )
+    }
 
-  if (brandFilters.length > 0) {
-    filteredResults = filteredResults.filter(product =>
-      brandFilters.includes(product.brandName)
-    );
-  }
+    if (brandFilters.length > 0) {
+      filteredResults = filteredResults.filter((product) =>
+        brandFilters.includes(product.brandName),
+      )
+    }
 
-  if (minPrice !== null) {
-    filteredResults = filteredResults.filter(product =>
-      product.lowestAskingPrice !== null && product.lowestAskingPrice >= minPrice
-    );
-  }
+    if (minPrice !== null) {
+      filteredResults = filteredResults.filter(
+        (product) =>
+          product.lowestAskingPrice !== null && product.lowestAskingPrice >= minPrice,
+      )
+    }
 
-  if (maxPrice !== null) {
-    filteredResults = filteredResults.filter(product =>
-      product.lowestAskingPrice !== null && product.lowestAskingPrice <= maxPrice
-    );
-  }
+    if (maxPrice !== null) {
+      filteredResults = filteredResults.filter(
+        (product) =>
+          product.lowestAskingPrice !== null && product.lowestAskingPrice <= maxPrice,
+      )
+    }
 
-  searchResults.value = filteredResults
-  sortResultsByPrice(sortOption.value)
-
-}, { deep: true });
+    searchResults.value = filteredResults
+    sortResultsByPrice(sortOption.value)
+  },
+  { deep: true },
+)
 
 watch(sortOption, (newValue) => {
   if (['newest', 'price-asc', 'price-desc'].includes(newValue)) {
@@ -314,9 +314,7 @@ async function searchProducts(searchQuery = null, category = null) {
     searchResultStorage.value = response.products || []
     filterOptions.value = response.filters || {}
 
-    // 6. (Bug Fix) Removed the line 'route.query.q = queryString'
-    // It's read-only and our new function handles this now.
-
+    sortResultsByPrice(sortOption.value)
   } catch (error) {
     console.error('Error fetching search results:', error)
     searchResults.value = []
@@ -324,7 +322,6 @@ async function searchProducts(searchQuery = null, category = null) {
     filterOptions.value = {}
   }
 }
-
 </script>
 
 <style scoped>

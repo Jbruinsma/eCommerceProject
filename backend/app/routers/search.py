@@ -1,3 +1,4 @@
+from operator import itemgetter
 from typing import Optional
 
 from fastapi import APIRouter, Depends
@@ -103,7 +104,27 @@ async def search_by_product_id(product_id: str, session: AsyncSession = Depends(
     )
 
 def format_filters(product_rows):
+
+    filters = {
+        "brands": {},
+        "categories": {}
+    }
+
+    for product_dict in product_rows:
+        brand_name = product_dict.brand_name
+        category = product_dict.product_type
+
+        if brand_name not in filters["brands"]:
+            filters["brands"][brand_name] = { "brandName": brand_name, "count": 0 }
+        if category not in filters["categories"]:
+            filters["categories"][category] = { "category": category, "count": 0 }
+
+        filters["brands"][brand_name]["count"] += 1
+        filters["categories"][category]["count"] += 1
+
+    sort_key = itemgetter("count")
+
     return {
-        "brands": set(product_dict.brand_name for product_dict in product_rows),
-        "categories":  set(product_dict.product_type for product_dict in product_rows)
+        "brands": sorted(filters["brands"].values(), key=sort_key, reverse=True),
+        "categories": sorted(filters["categories"].values(), key=sort_key, reverse=True)
     }

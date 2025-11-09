@@ -27,13 +27,28 @@
 
             <div class="form-group">
               <label for="size-select">Size</label>
-              <select id="size-select" v-model="selectedSize">
-                <option v-for="size in availableSizes" :key="size" :value="size">
-                  {{ size }}
-                </option>
-              </select>
+              <div class="size-selector-wrapper">
+                <select id="size-select" v-model="selectedSize">
+                  <option v-for="size in availableSizes" :key="size" :value="size">
+                    {{ size }}
+                  </option>
+                </select>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="size-arrow-icon"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                  />
+                </svg>
+              </div>
             </div>
-
             <div class="action-buttons">
               <router-link
                 v-if="currentMarketData.lowestAsk && currentMarketData.lowestAsk.price"
@@ -45,7 +60,9 @@
                 class="btn btn-buy"
               >
                 Buy Now
-                <span class="btn-price">{{ formatCurrency(currentMarketData.lowestAsk.price) }}</span>
+                <span class="btn-price">{{
+                    formatCurrency(currentMarketData.lowestAsk.price)
+                  }}</span>
               </router-link>
 
               <button v-else class="btn btn-buy" disabled>
@@ -64,7 +81,7 @@
                 Place Bid
                 <span class="btn-price">{{
                     formatCurrency(
-                      currentMarketData.highestBid ? currentMarketData.highestBid.amount : null
+                      currentMarketData.highestBid ? currentMarketData.highestBid.amount : null,
                     )
                   }}</span>
               </router-link>
@@ -75,10 +92,12 @@
             <h3>Product Details</h3>
             <ul>
               <li>
-                <strong>Retail Price</strong><span>{{ formatCurrency(product.retailPrice) }}</span>
+                <strong>Retail Price</strong
+                ><span>{{ formatCurrency(product.retailPrice) }}</span>
               </li>
               <li>
-                <strong>Release Date</strong><span>{{ formatDate(product.releaseDate) }}</span>
+                <strong>Release Date</strong
+                ><span>{{ formatDate(product.releaseDate) }}</span>
               </li>
             </ul>
           </div>
@@ -150,7 +169,7 @@ const currentSalesHistory = computed(() => {
     return []
   }
   const historyEntryKey = Object.keys(salesHistory.value).find(
-    (key) => salesHistory.value[key].sizeValue === selectedSize.value
+    (key) => salesHistory.value[key].sizeValue === selectedSize.value,
   )
   if (!historyEntryKey) {
     return []
@@ -322,10 +341,12 @@ ul { list-style: none; padding: 0; }
 .btn-price { color: #ccc; font-size: 0.8rem; margin-top: 0.25rem; }
 .condition-selector { display: flex; gap: 0.5rem; }
 .form-group { margin-bottom: 1rem; }
-.market-link { color: #ccc; display: block; font-size: 0.9rem; margin-top: 1.5rem; text-align: center; text-decoration: underline; }
 .product-details li { align-items: center; display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
 .product-details span { color: #aaa; }
-select { appearance: none; background-color: #2c2c2c; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%Vsvg%3E"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; border: 1px solid #444; border-radius: 8px; color: #ffffff; font-size: 1rem; padding: 0.75rem 2.5rem 0.75rem 1rem; width: 100%; }
+.size-arrow-icon { color: #aaa; height: 1.25rem; pointer-events: none; position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); width: 1.25rem; }
+.size-selector-wrapper { position: relative; }
+.size-selector-wrapper select:hover { cursor: pointer; }
+select { appearance: none; background-color: #2c2c2c; border: 1px solid #444; border-radius: 8px; color: #ffffff; font-size: 1rem; padding: 0.75rem 2.5rem 0.75rem 1rem; width: 100%; }
 .chart-container { margin: 0 auto; max-width: 1200px; padding: 1rem 5% 4rem; }
 .chart-container h3 { font-size: 1.5rem; }
 .chart-container h3 span { color: #aaa; font-size: 1.1rem; font-weight: 400; }
