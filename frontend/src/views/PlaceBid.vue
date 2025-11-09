@@ -133,7 +133,73 @@
               </ul>
             </div>
 
-            <div v-if="currentStep === 2" class="bid-form">
+            <div v-if="currentStep === 2" class="bid-form shipping-form">
+              <div class="section-header">
+                <button @click="prevStep" class="btn-nav">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18"
+                    />
+                  </svg>
+                </button>
+                <h2>Shipping Address</h2>
+                <button @click="nextStep" :disabled="!isStepReady" class="btn-nav">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div class="form-grid">
+                <div class="form-group full-width">
+                  <label for="name">Full Name</label
+                  ><input type="text" id="name" v-model="shippingInfo.name" />
+                </div>
+                <div class="form-group full-width">
+                  <label for="address_line_1">Address Line 1</label
+                  ><input type="text" id="address_line_1" v-model="shippingInfo.address_line_1" />
+                </div>
+                <div class="form-group full-width">
+                  <label for="address_line_2">Address Line 2 (Optional)</label
+                  ><input type="text" id="address_line_2" v-model="shippingInfo.address_line_2" />
+                </div>
+                <div class="form-group">
+                  <label for="city">City</label
+                  ><input type="text" id="city" v-model="shippingInfo.city" />
+                </div>
+                <div class="form-group">
+                  <label for="state">State</label
+                  ><input type="text" id="state" v-model="shippingInfo.state" />
+                </div>
+                <div class="form-group">
+                  <label for="zip_code">Zip Code</label
+                  ><input type="text" id="zip_code" v-model="shippingInfo.zip_code" />
+                </div>
+                <div class="form-group">
+                  <label for="country">Country</label
+                  ><input type="text" id="country" v-model="shippingInfo.country" />
+                </div>
+              </div>
+            </div>
+
+            <div v-if="currentStep === 3" class="bid-form">
               <div class="section-header">
                 <button @click="prevStep" class="btn-nav">
                   <svg
@@ -152,6 +218,19 @@
                 </button>
                 <h2>Confirm Bid</h2>
                 <div class="nav-placeholder"></div>
+              </div>
+
+              <div class="shipping-preview">
+                <h4>Shipping To</h4>
+                <p class="address-line">{{ shippingInfo.name }}</p>
+                <p class="address-line">{{ shippingInfo.address_line_1 }}</p>
+                <p v-if="shippingInfo.address_line_2" class="address-line">
+                  {{ shippingInfo.address_line_2 }}
+                </p>
+                <p class="address-line">
+                  {{ shippingInfo.city }}, {{ shippingInfo.state }} {{ shippingInfo.zip_code }}
+                </p>
+                <p class="address-line">{{ shippingInfo.country }}</p>
               </div>
 
               <ul class="fee-breakdown">
@@ -225,7 +304,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 
 const currentStep = ref(1)
-const totalSteps = 2
+const totalSteps = ref(3) // UPDATED
 
 const productId = route.params.listingId
 const selectedSize = ref(route.query.size || null)
@@ -235,6 +314,17 @@ const product = ref({
   brandName: 'Loading...',
   name: '...',
   imageUrl: 'https://placehold.co/400x300/1a1a1a/ffffff?text=Item',
+})
+
+// NEW: For Step 2
+const shippingInfo = ref({
+  name: '',
+  address_line_1: '',
+  address_line_2: '',
+  city: '',
+  state: '',
+  zip_code: '',
+  country: 'United States',
 })
 
 const marketInfo = ref({ highestBid: null, lowestAsk: null })
@@ -275,7 +365,6 @@ const bidMatchesHighestError = computed(() => {
   )
 })
 
-// NEW: Computed property to check if bid is over the lowest ask
 const bidExceedsLowestAskError = computed(() => {
   return (
     marketInfo.value.lowestAsk !== null &&
@@ -283,23 +372,37 @@ const bidExceedsLowestAskError = computed(() => {
   );
 });
 
+// NEW: Validation for address form
+const isFormComplete = computed(() => {
+  const { name, address_line_1, city, state, zip_code, country } = shippingInfo.value
+  const requiredFields = [name, address_line_1, city, state, zip_code, country]
+  return requiredFields.every((field) => field && field.trim() !== '')
+})
+
+// UPDATED: For 3 steps
 const isStepReady = computed(() => {
   if (currentStep.value === 1) {
-    // MODIFIED: Added new validation check
     return isBidAmountValid.value && !bidMatchesHighestError.value && !bidExceedsLowestAskError.value
   }
-  if (currentStep.value === 2) return !!paymentMethod.value
+  if (currentStep.value === 2) {
+    return isFormComplete.value
+  }
+  if (currentStep.value === 3) {
+    return !!paymentMethod.value
+  }
   return false
 })
 
+// UPDATED: Final check includes address form
 const isBidValid = computed(
   () =>
     isBidAmountValid.value &&
     !bidMatchesHighestError.value &&
-    !bidExceedsLowestAskError.value && // MODIFIED: Added new validation check
+    !bidExceedsLowestAskError.value &&
+    isFormComplete.value && // Added
     !!paymentMethod.value &&
     selectedSize.value &&
-    selectedCondition.value
+    selectedCondition.value,
 )
 
 const formatCurrency = (amount) => {
@@ -337,7 +440,7 @@ function selectPaymentMethod(method) {
 }
 
 function nextStep() {
-  if (currentStep.value < totalSteps) currentStep.value++
+  if (currentStep.value < totalSteps.value) currentStep.value++
 }
 
 function prevStep() {
@@ -397,35 +500,59 @@ async function submitBid() {
   isLoading.value = true
   submissionResult.value = null
 
-  try {
-    const bidResponse = await postToAPI(`/bids/${authStore.uuid}`, {
-      user_id: authStore.uuid,
-      product_id: productId,
-      size: selectedSize.value,
-      product_condition: selectedCondition.value,
-      bid_amount: bidAmount.value,
-      fee_structure_id: transactionFeeRate.value.rateId,
-      payment_origin: paymentMethod.value,
-    })
+  console.log('Submitting bid:', {
+    user_id: authStore.uuid,
+    product_id: productId,
+    size: selectedSize.value,
+    product_condition: selectedCondition.value,
+    bid_amount: bidAmount.value,
+    fee_structure_id: transactionFeeRate.value.rateId,
+    payment_origin: paymentMethod.value,
+    shipping_info: shippingInfo.value,
+  })
 
-    if (bidResponse && bidResponse.bid_id) {
-      submissionResult.value = { success: true, data: bidResponse }
-    } else {
-      throw new Error('Invalid response from server.')
-    }
-  } catch (error) {
-    submissionResult.value = {
-      success: false,
-      message: error.data?.message || error.message || 'An unknown error occurred.',
-    }
-    console.error('Error submitting bid:', error)
-  } finally {
-    isLoading.value = false
-  }
+  // try {
+  //   const bidResponse = await postToAPI(`/bids/${authStore.uuid}`, {
+  //     user_id: authStore.uuid,
+  //     product_id: productId,
+  //     size: selectedSize.value,
+  //     product_condition: selectedCondition.value,
+  //     bid_amount: bidAmount.value,
+  //     fee_structure_id: transactionFeeRate.value.rateId,
+  //     payment_origin: paymentMethod.value,
+  //     shipping_info: shippingInfo.value,
+  //   })
+  //
+  //   if (bidResponse && bidResponse.bid_id) {
+  //     submissionResult.value = { success: true, data: bidResponse }
+  //   } else {
+  //     throw new Error('Invalid response from server.')
+  //   }
+  // } catch (error) {
+  //   submissionResult.value = {
+  //     success: false,
+  //     message: error.data?.message || error.message || 'An unknown error occurred.',
+  //   }
+  //   console.error('Error submitting bid:', error)
+  // } finally {
+  //   isLoading.value = false
+  // }
 }
 </script>
 
 <style scoped>
+/* Copied from PlaceOrder.vue */
+.address-line { color: #ffffff; font-size: 1rem; line-height: 1.5; margin: 0.25rem 0; }
+.form-grid { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; }
+.form-group input { background-color: #2c2c2c; border: 1px solid #444; border-radius: 6px; color: #ffffff; font-size: 1rem; padding: 0.75rem; }
+.form-group input:focus { border-color: #ffffff; outline: none; }
+.form-group label { color: #aaa; font-size: 0.9rem; margin-bottom: 0.5rem; }
+.form-group.full-width { grid-column: 1 / -1; }
+.shipping-preview { border-bottom: 1px solid #333; margin-bottom: 2rem; padding-bottom: 1.5rem; }
+.shipping-preview h4 { color: #aaa; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
+
+/* Existing Styles */
 h1, h2, h3, h4 { font-family: Spectral, sans-serif; font-weight: 600; }
 h1.page-title { border-bottom: 1px solid #333; font-size: 2.2rem; margin-bottom: 3rem; padding-bottom: 1.5rem; text-align: center; }
 h2 { flex-grow: 1; font-size: 1.8rem; margin: 0; text-align: center; }
@@ -488,5 +615,19 @@ p { color: #cccccc; line-height: 1.6; }
 .submission-result-screen { align-items: center; display: flex; flex-direction: column; justify-content: center; min-height: 500px; padding: 2rem; }
 .total-cost { border-top: 1px solid #333; font-size: 1.2rem !important; font-weight: bold; margin-top: 1rem; padding-top: 1rem; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-@media (max-width: 768px) { .bid-grid { grid-template-columns: 1fr; } .product-summary { margin-bottom: 2rem; } }
+@media (max-width: 768px) {
+  .bid-container { padding: 2rem 5%; }
+  .bid-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; } /* Added */
+  h1.page-title { font-size: 1.8rem; margin-bottom: 2rem; padding-bottom: 1rem; }
+  .market-context { gap: 1rem; grid-template-columns: 1fr; }
+  .product-summary { margin-bottom: 2rem; margin-left: auto; margin-right: auto; max-width: 300px; }
+  .result-card { padding: 1.5rem; }
+  .result-icon { height: 60px; width: 60px; }
+  .submission-result-screen, .loading-overlay { min-height: 400px; padding: 1rem; }
+}
+@media (max-width: 480px) {
+  .bid-container { padding: 2rem 3%; }
+  .bid-form { padding: 1.5rem; }
+}
 </style>

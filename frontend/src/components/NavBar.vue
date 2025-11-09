@@ -1,7 +1,8 @@
 <template>
   <nav class="navbar">
     <a class="logo" href="/">The Vault</a>
-    <ul class="nav-links">
+
+    <ul class="nav-links" :class="{ 'is-open': isMenuOpen }">
       <li class="nav-customization"><a href="/search?category=sneakers">Sneakers</a></li>
       <li class="nav-customization"><a href="/search?category=apparel">Apparel</a></li>
       <li class="nav-customization"><a href="/search?category=collectibles">Collectibles</a></li>
@@ -77,6 +78,22 @@
           d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
         />
       </svg>
+
+      <svg
+        @click="isMenuOpen = !isMenuOpen"
+        class="menu-toggle"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+        />
+      </svg>
     </div>
   </nav>
 </template>
@@ -91,6 +108,9 @@ import router from '@/router/index.js'
 const searchQuery = ref('')
 const authStore = useAuthStore()
 const route = useRoute()
+
+
+const isMenuOpen = ref(false)
 
 const isSearchPage = computed(() => {
   const name = route.name ? String(route.name) : ''
@@ -131,12 +151,30 @@ a { color: #ffffff; text-decoration: none; }
 .nav-links { align-items: center; display: flex; gap: 2rem; list-style: none; }
 .nav-links a { transition: color 0.3s ease; }
 .nav-links a:hover { color: #bbbbbb; }
-.nav-customization { font-size: 20px; font-weight: 500; display: inline-flex; }
+.nav-customization { display: inline-flex; font-size: 20px; font-weight: 500; }
 .nav-icons { align-items: center; display: flex; gap: 1.5rem; }
-.account-icon, .cart-icon { cursor: pointer; height: 28px; width: 28px; color: #ffffff; stroke: #ffffff; }
+.account-icon, .cart-icon { color: #ffffff; cursor: pointer; height: 28px; stroke: #ffffff; width: 28px; }
 .header-search-bar { align-items: center; background-color: #2c2c2c; border-radius: 12px; display: flex; padding: 0.3rem 0.8rem; }
-.search-icon { fill: #888; height: 30px; margin-right: 0.5rem; width: 15px; cursor: pointer; }
+.search-icon { cursor: pointer; fill: #888; height: 30px; margin-right: 0.5rem; width: 15px; }
 .search-input { background-color: transparent; border: none; color: #ffffff; font-size: 0.9rem; outline: none; width: 200px; }
 .search-input::placeholder { color: #888; }
-.bars-icon { cursor: pointer; height: 28px; width: 28px; color: #ffffff; stroke: #ffffff; }
+.bars-icon { color: #ffffff; cursor: pointer; height: 28px; stroke: #ffffff; width: 28px; }
+.menu-toggle { color: #ffffff; cursor: pointer; display: none; height: 28px; stroke: #ffffff; width: 28px; }
+
+@media (max-width: 900px) {
+  .nav-links { background-color: #1a1a1a; border-bottom: 1px solid #333; display: none; flex-direction: column; gap: 0; left: 0; padding: 1rem 0; position: absolute; top: 60px; width: 100%; z-index: 1000; }
+  .nav-links.is-open { display: flex; }
+  .nav-customization { text-align: center; width: 100%; }
+  .nav-customization a { display: block; padding: 1rem 0; width: 100%; }
+  .menu-toggle { display: block; }
+  .search-input { display: none; }
+  .header-search-bar { background-color: transparent; padding: 0; }
+  .search-icon { height: 28px; margin-right: 0; width: 28px; }
+}
+
+@media (max-width: 480px) {
+  .navbar { padding: 1rem 3%; }
+  .logo { font-size: 1.25rem; }
+  .nav-icons { gap: 1rem; }
+}
 </style>

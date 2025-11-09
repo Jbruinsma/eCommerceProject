@@ -50,32 +50,30 @@
               </div>
             </div>
             <div class="action-buttons">
-              <router-link
+              <button
                 v-if="currentMarketData.lowestAsk && currentMarketData.lowestAsk.price"
-                :to="{
-                  name: 'PlaceOrder',
-                  params: { listingId: currentMarketData.lowestAsk.listingId },
-                  query: { size: selectedSize, condition: selectedCondition },
-                }"
+                @click="
+                  redirectToBuyPage(
+                    currentMarketData.lowestAsk.listingId,
+                    selectedSize,
+                    selectedCondition,
+                  )
+                "
                 class="btn btn-buy"
               >
                 Buy Now
                 <span class="btn-price">{{
                     formatCurrency(currentMarketData.lowestAsk.price)
                   }}</span>
-              </router-link>
+              </button>
 
               <button v-else class="btn btn-buy" disabled>
                 Buy Now
                 <span class="btn-price">{{ formatCurrency(null) }}</span>
               </button>
 
-              <router-link
-                :to="{
-                  name: 'PlaceBid',
-                  params: { listingId: product.productId },
-                  query: { size: selectedSize, condition: selectedCondition },
-                }"
+              <button
+                @click="redirectToBidPage(product.productId, selectedSize, selectedCondition)"
                 class="btn btn-bid"
               >
                 Place Bid
@@ -84,7 +82,7 @@
                       currentMarketData.highestBid ? currentMarketData.highestBid.amount : null,
                     )
                   }}</span>
-              </router-link>
+              </button>
             </div>
           </div>
 
@@ -127,6 +125,8 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { fetchFromAPI } from '@/utils/index.js'
 import { Chart, registerables } from 'chart.js'
+import { redirectToBuyPage, redirectToBidPage } from '@/utils/routing.js'
+
 Chart.register(...registerables)
 
 const route = useRoute()
@@ -232,7 +232,7 @@ const renderChart = () => {
       scales: {
         x: {
           ticks: { color: '#aaa' },
-          grid: { color: 'rgba(255, 255, 255, 0.1)' }, // <-- UPDATED
+          grid: { color: 'rgba(255, 255, 255, 0.1)' },
         },
         y: {
           ticks: {
@@ -351,5 +351,17 @@ select { appearance: none; background-color: #2c2c2c; border: 1px solid #444; bo
 .chart-container h3 { font-size: 1.5rem; }
 .chart-container h3 span { color: #aaa; font-size: 1.1rem; font-weight: 400; }
 .chart-wrapper { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; height: 400px; padding: 1.5rem; position: relative; }
-@media (max-width: 900px) { .product-grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) {
+  .action-buttons { grid-template-columns: 1fr; }
+  .chart-container { padding: 1rem 5% 3rem; }
+  .chart-wrapper { height: 350px; }
+  .product-content { padding: 2rem 5%; }
+  .product-grid { gap: 2rem; grid-template-columns: 1fr; }
+  h1.product-name { font-size: 1.8rem; }
+  h2.brand-name { font-size: 1.2rem; }
+}
+@media (max-width: 480px) {
+  .chart-container { padding: 1rem 3% 2rem; }
+  .product-content { padding: 2rem 3%; }
+}
 </style>

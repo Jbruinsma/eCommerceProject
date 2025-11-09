@@ -1,4 +1,8 @@
+from __future__ import annotations
+
 from pydantic import BaseModel
+
+from ..pydantic_models.address import Address
 
 
 class NewBidInfo(BaseModel):
@@ -9,3 +13,4 @@ class NewBidInfo(BaseModel):
     bid_amount: float
     fee_structure_id: int
     payment_origin: str
+    shipping_info: Address

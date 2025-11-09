@@ -8,7 +8,12 @@
     </header>
 
     <div class="main-content">
-      <aside class="filters-sidebar">
+      <aside class="filters-sidebar" :class="{ 'is-open': isFiltersOpen }">
+        <div class="filters-header-mobile">
+          <h2>Filters</h2>
+          <button @click="isFiltersOpen = false" class="filters-close-btn">Done</button>
+        </div>
+
         <h2>Filters</h2>
 
         <div
@@ -68,6 +73,7 @@
 
       <main class="results-container">
         <div class="results-header">
+          <button @click="isFiltersOpen = true" class="mobile-filter-toggle">Filters</button>
           <p>{{ searchResults.length }} Results</p>
           <select v-model="sortOption" class="sort-dropdown">
             <option value="newest">Sort by: Newest</option>
@@ -113,6 +119,7 @@ const searchQuery = ref('')
 const minPrice = ref(null)
 const maxPrice = ref(null)
 const sortOption = ref('newest')
+const isFiltersOpen = ref(false) // State for mobile filter overlay
 const activeFilters = ref({
   category: [],
   brand: [],
@@ -326,7 +333,6 @@ async function searchProducts(searchQuery = null, category = null) {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Abel&family=Bodoni+Moda+SC:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inclusive+Sans&family=Inconsolata:wght@200;300;400;500;600&family=Manrope:wght@600;700;800&family=Mulish:ital,wght@0,300;0,400;0,700;1,200;1,400;1,600&family=Nanum+Myeongjo&family=Quicksand:wght@300..700&family=Scope+One&family=Sono:wght@200;300;400&family=Spectral:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&family=Zeyada&display=swap');
-
 a { color: #ffffff; text-decoration: none; }
 h1 { font-family: Bodoni Moda, BlinkMacSystemFont, serif; font-size: 2.8rem; font-weight: 600; margin-bottom: 2rem; text-align: center; }
 h2 { border-bottom: 1px solid #333; font-family: Spectral, sans-serif; font-size: 1.8rem; font-weight: 600; margin-bottom: 1.5rem; padding-bottom: 1rem; }
@@ -358,4 +364,34 @@ ul { list-style: none; margin: 0; padding: 0; }
 .search-bar button:hover { background-color: #121212; color: #ffffff; }
 .search-bar input { background-color: #1a1a1a; border: 1px solid #555; border-bottom-left-radius: 6px; border-right: none; border-top-left-radius: 6px; color: #ffffff; flex-grow: 1; font-size: 1rem; padding: 0.75rem 1rem; }
 .sort-dropdown { background-color: #1a1a1a; border: 1px solid #555; border-radius: 4px; color: #ffffff; padding: 0.5rem; }
+.mobile-filter-toggle { background-color: #333; border: 1px solid #555; border-radius: 4px; color: #ffffff; cursor: pointer; display: none; font-size: 0.9rem; padding: 0.5rem 1rem; }
+.filters-header-mobile { display: none; }
+
+@media (max-width: 900px) {
+  .marketplace-container { padding: 2rem 0; }
+  .page-header { padding: 0 5% 2rem; }
+  .main-content { flex-direction: column; gap: 0; padding: 0 5%; }
+  .filters-sidebar { background-color: #1a1a1a; border-right: none; height: 100vh; left: 0; overflow-y: auto; padding: 1.5rem; position: fixed; top: 0; transform: translateX(-100%); transition: transform 0.3s ease-in-out; width: 100%; z-index: 1001; }
+  .filters-sidebar.is-open { transform: translateX(0); }
+  .filters-header-mobile { align-items: center; border-bottom: 1px solid #333; display: flex; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; }
+  .filters-sidebar > h2 { display: none; }
+  .filters-header-mobile h2 { border-bottom: none; font-size: 1.5rem; margin-bottom: 0; padding-bottom: 0; }
+  .filters-close-btn { background: #ffffff; border: none; border-radius: 4px; color: #1a1a1a; cursor: pointer; font-weight: bold; padding: 0.5rem 1rem; }
+  .results-container { padding: 0; }
+  .results-header { margin-bottom: 1.5rem; }
+  .mobile-filter-toggle { display: block; }
+  .product-grid { gap: 1rem; grid-template-columns: repeat(2, 1fr); justify-content: space-between; }
+}
+
+@media (max-width: 480px) {
+  .page-header { padding: 0 3% 1.5rem; }
+  .main-content { padding: 0 3%; }
+  .search-bar { flex-direction: column; gap: 0.5rem; }
+  .search-bar input { border-radius: 6px; border-right: 1px solid #555; }
+  .search-bar button { border-radius: 6px; }
+  .results-header { align-items: flex-start; flex-direction: column; gap: 1rem; }
+  .results-header p { order: 1; }
+  .mobile-filter-toggle { order: 2; text-align: center; width: 100%; }
+  .sort-dropdown { order: 3; width: 100%; }
+}
 </style>

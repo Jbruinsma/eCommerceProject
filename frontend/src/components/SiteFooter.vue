@@ -42,4 +42,10 @@
 .footer-column a { color: #cccccc; text-decoration: none; transition: color 0.3s ease; }
 .footer-column a:hover { color: #ffffff; text-decoration: underline; }
 .footer-bottom { border-top: 1px solid #333; padding-top: 2rem; text-align: center; color: #888; font-size: 0.9rem; }
+
+@media (max-width: 768px) {
+  .footer-container { justify-content: flex-start; padding-left: 2rem; padding-right: 2rem; gap: 2.5rem; }
+  .footer-column { min-width: 200px; }
+}
+
 </style>
