@@ -522,18 +522,55 @@ SELECT
     END AS starting_balance
 FROM users u;
 
+-- Truncate transactional tables before inserting new data
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE addresses;
+TRUNCATE TABLE portfolio_items;
+TRUNCATE TABLE transactions;
+TRUNCATE TABLE orders;
+TRUNCATE TABLE listings;
+TRUNCATE TABLE bids;
+TRUNCATE TABLE account_balance;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- Re-populate account_balance for all users, with a starting balance "curve"
+INSERT INTO account_balance (user_id, balance)
+SELECT
+    u.uuid,
+    CASE
+        -- "Month 0: $0" (Users created in the current month)
+        WHEN TIMESTAMPDIFF(MONTH, u.created_at, NOW()) = 0 THEN 0.00
+
+        -- "Month 1: $500" (Users created 1 month ago)
+        WHEN TIMESTAMPDIFF(MONTH, u.created_at, NOW()) = 1 THEN 500.00
+
+        -- "At a certain point it becomes random" (Users > 1 month old)
+        ELSE
+            -- Start with a base of 500, plus a random amount ($0-$200) for each month they've been active.
+            ROUND(500.00 + (TIMESTAMPDIFF(MONTH, u.created_at, NOW()) * RAND() * 200), 2)
+    END AS starting_balance
+FROM users u;
+
 -- =================================================================
--- PROCEDURE 1: CreatePastSales (*** MODIFIED ***)
--- Loops through every product/size/condition and creates 15-30 sales for each.
--- Includes "hype" price logic.
--- Checks buyer balance.
+-- UNIFIED PROCEDURE: CreateMarketHistory
+--
+-- This single procedure replaces CreatePastSales, CreateActiveListings,
+-- and CreateActiveBids.
+--
+-- 1. It iterates through every product/size/condition.
+-- 2. It generates a *chronological* sales history (15-30 sales)
+--    where each sale price is a slight "random walk" from the
+--    previous sale price, making the history trend up or down.
+-- 3. It uses the FINAL sale price from that history as an anchor.
+-- 4. It then generates 3-5 realistic active bids and 3-5 active
+--    asks, creating a "spread" based on that last sale price.
 -- =================================================================
 
-DROP PROCEDURE IF EXISTS CreatePastSales;
+DROP PROCEDURE IF EXISTS CreateMarketHistory;
 
 DELIMITER $$
 
-CREATE PROCEDURE CreatePastSales()
+CREATE PROCEDURE CreateMarketHistory()
 BEGIN
     -- Cursor variables
     DECLARE done INT DEFAULT FALSE;
@@ -549,14 +586,21 @@ BEGIN
     DECLARE sales_iterator INT;
     DECLARE num_sales_for_item INT;
 
+    -- Price/Time variables
+    DECLARE v_sale_price DECIMAL(10, 2);
+    DECLARE v_last_sale_price DECIMAL(10, 2);
+    DECLARE v_initial_market_price DECIMAL(10, 2);
+    DECLARE v_base_price_multiplier DECIMAL(5, 2);
+    DECLARE v_price_walk_multiplier DECIMAL(5, 2);
+    DECLARE v_current_timestamp DATETIME;
+    DECLARE v_time_increment_days INT;
+
     -- Order variables
     DECLARE v_order_id CHAR(36);
     DECLARE v_buyer_id CHAR(36);
     DECLARE v_seller_id CHAR(36);
     DECLARE v_buyer_first_name VARCHAR(100);
     DECLARE v_buyer_last_name VARCHAR(100);
-    DECLARE v_sale_price DECIMAL(10, 2);
-    DECLARE v_base_price_multiplier DECIMAL(5, 2);
 
     -- Fee variables
     DECLARE v_fee_id INT UNSIGNED DEFAULT 1;
@@ -571,9 +615,14 @@ BEGIN
     DECLARE v_buyer_current_balance DECIMAL(15, 2);
     DECLARE v_payment_origin ENUM('account_balance', 'credit_card', 'other');
 
-    -- Other
-    DECLARE v_order_status ENUM('pending', 'paid', 'shipped', 'completed', 'cancelled', 'refunded');
-    DECLARE v_created_at DATETIME;
+    -- Active Bid/Ask variables
+    DECLARE v_active_loop_i INT;
+    DECLARE v_num_active_bids INT;
+    DECLARE v_num_active_asks INT;
+    DECLARE v_ask_price DECIMAL(10, 2);
+    DECLARE v_bid_amount DECIMAL(10, 2);
+    DECLARE v_total_bid_amount DECIMAL(10, 2);
+    DECLARE v_active_created_at DATETIME;
 
     -- Declare the cursor
     DECLARE product_cursor CURSOR FOR
@@ -612,8 +661,49 @@ BEGIN
                 SET v_product_condition = 'worn';
             END IF;
 
+            -- =================================================
+            -- PART 1: CREATE CHRONOLOGICAL PAST SALES
+            -- =================================================
+
+            -- 1. Calculate the *Initial* "Hype" Price for this item.
+            -- This is the anchor for the *first* sale.
+            SET v_base_price_multiplier = (0.8 + RAND() * 1.0); -- 80% - 180%
+            IF v_brand_id IN (13, 19, 3, 6, 7) THEN -- Hype brands
+                SET v_base_price_multiplier = (1.2 + RAND() * 1.8); -- 120% - 300%
+            END IF;
+            IF
+                v_product_name LIKE '%Travis Scott%'
+                   OR
+                v_product_name LIKE '%(The Ten)%'
+                    OR
+                v_product_name LIKE '%(Lost & Found)%'
+                    OR
+                v_product_name LIKE '%Shattered Backboard%'
+                    OR
+                v_product_name LIKE 'SB Dunk High%'
+                THEN
+                SET v_base_price_multiplier = (2.5 + RAND() * 4.5); -- 250% - 700%
+            END IF;
+
+            -- Adjust multiplier based on condition
+            IF v_product_condition = 'new' THEN
+                SET v_initial_market_price = ROUND(v_retail_price * v_base_price_multiplier, 2);
+            ELSEIF v_product_condition = 'used' THEN
+                SET v_initial_market_price = ROUND(v_retail_price * v_base_price_multiplier * (0.5 + RAND() * 0.3), 2);
+            ELSE -- 'worn'
+                SET v_initial_market_price = ROUND(v_retail_price * v_base_price_multiplier * (0.2 + RAND() * 0.3), 2);
+            END IF;
+
+            -- This variable will be updated after each sale
+            SET v_last_sale_price = v_initial_market_price;
+
+            -- Set the starting time for the sales history
+            SET v_current_timestamp = NOW() - INTERVAL 720 DAY;
+
             -- Loop 2: Create 15-30 sales for this item/size/condition
             SET num_sales_for_item = FLOOR(15 + RAND() * 16); -- 15 to 30
+            SET v_time_increment_days = FLOOR(720 / num_sales_for_item); -- Avg days between sales
+
             SET sales_iterator = 0;
             WHILE sales_iterator < num_sales_for_item DO
 
@@ -629,42 +719,25 @@ BEGIN
                 SELECT uuid INTO v_seller_id
                 FROM users WHERE uuid != v_buyer_id ORDER BY RAND() LIMIT 1;
 
-                -- 2. Calculate "Hype" Sale Price
-                -- Default multiplier
-                SET v_base_price_multiplier = (0.8 + RAND() * 1.0); -- 80% - 180%
+                -- 2. Calculate NEW Sale Price (Random Walk)
+                -- The new price is a slight variation (95% to 105%) of the *last* sale price.
+                -- This creates a more realistic, trending price history.
+                SET v_price_walk_multiplier = (0.95 + RAND() * 0.1); -- 0.95 to 1.05
+                SET v_sale_price = ROUND(v_last_sale_price * v_price_walk_multiplier, 2);
 
-                -- Hype brands (Off-White, Supreme, Balenciaga, Dior, Fear of God)
-                IF v_brand_id IN (13, 19, 3, 6, 7) THEN
-                    SET v_base_price_multiplier = (1.2 + RAND() * 1.8); -- 120% - 300%
-                END IF;
-
-                -- Specific Hype Items
-                IF v_product_name LIKE '%Travis Scott%' OR v_product_name LIKE '%(The Ten)%' OR v_product_name LIKE '%(Lost & Found)%' OR v_product_name LIKE '%Shattered Backboard%' THEN
-                    SET v_base_price_multiplier = (2.5 + RAND() * 4.5); -- 250% - 700%
-                END IF;
-
-                -- Adjust multiplier based on condition
-                IF v_product_condition = 'new' THEN
-                    SET v_sale_price = ROUND(v_retail_price * v_base_price_multiplier, 2);
-                ELSEIF v_product_condition = 'used' THEN
-                    SET v_sale_price = ROUND(v_retail_price * v_base_price_multiplier * (0.5 + RAND() * 0.3), 2); -- 50-80% of 'new' price
-                ELSE -- 'worn'
-                    SET v_sale_price = ROUND(v_retail_price * v_base_price_multiplier * (0.2 + RAND() * 0.3), 2); -- 20-50% of 'new' price
-                END IF;
-
-                -- 3. Set status
-                SET v_order_status = 'completed';
-
-                -- 4. Calculate fees
+                -- 3. Calculate fees
                 SET v_seller_tx_fee = ROUND(v_sale_price * v_seller_fee_pct, 2);
                 SET v_seller_final_payout = v_sale_price - v_seller_tx_fee;
                 SET v_buyer_tx_fee = ROUND(v_sale_price * v_buyer_fee_pct, 2);
                 SET v_buyer_final_price = v_sale_price + v_buyer_tx_fee;
 
-                -- 5. Set random date
-                SET v_created_at = NOW() - INTERVAL FLOOR(RAND() * 730) DAY - INTERVAL FLOOR(RAND() * 86400) SECOND;
+                -- 4. Set chronological date
+                SET v_current_timestamp = v_current_timestamp + INTERVAL (v_time_increment_days + FLOOR(RAND() * 5 - 2)) DAY;
+                IF v_current_timestamp > NOW() THEN
+                    SET v_current_timestamp = NOW() - INTERVAL 1 SECOND;
+                END IF;
 
-                -- 6. === INSERT into orders ===
+                -- 5. === INSERT into orders ===
                 INSERT INTO orders (
                     order_id, buyer_id, seller_id, product_id, size_id, product_condition,
                     sale_price,
@@ -676,10 +749,10 @@ BEGIN
                     v_sale_price,
                     v_buyer_tx_fee, v_fee_id, v_buyer_final_price,
                     v_seller_tx_fee, v_fee_id, v_seller_final_payout,
-                    v_order_status, v_created_at, v_created_at
+                    'completed', v_current_timestamp, v_current_timestamp
                 );
 
-                -- 7. === INSERT into addresses ===
+                -- 6. === INSERT into addresses ===
                 INSERT INTO addresses (
                     user_id, order_id, purpose, name,
                     address_line_1, city, state, zip_code, country
@@ -688,25 +761,21 @@ BEGIN
                     '123 Market St', 'Fakeville', 'CA', '90210', 'USA'
                 );
 
-                -- 8. === INSERT into listings ===
+                -- 7. === INSERT into listings ('sold') ===
                 INSERT INTO listings (
                     user_id, product_id, size_id, listing_type, price,
                     fee_structure_id, item_condition, status, created_at, updated_at
                 ) VALUES (
                     v_seller_id, v_product_id, v_size_id, 'sale', v_sale_price,
-                    v_fee_id, v_product_condition, 'sold', v_created_at, v_created_at
+                    v_fee_id, v_product_condition, 'sold', v_current_timestamp, v_current_timestamp
                 );
 
-                -- 9. === INSERT into transactions (buyer) ===
+                -- 8. === INSERT into transactions (buyer) ===
                 IF v_buyer_current_balance >= v_buyer_final_price THEN
                     SET v_payment_origin = 'account_balance';
-                    -- Debit the buyer's account
-                    UPDATE account_balance
-                       SET balance = balance - v_buyer_final_price
-                     WHERE user_id = v_buyer_id;
+                    UPDATE account_balance SET balance = balance - v_buyer_final_price WHERE user_id = v_buyer_id;
                 ELSE
                     SET v_payment_origin = 'credit_card';
-                    -- No update to account_balance
                 END IF;
 
                 INSERT INTO transactions (
@@ -714,33 +783,96 @@ BEGIN
                     payment_origin, payment_purpose, created_at
                 ) VALUES (
                     v_buyer_id, v_order_id, -v_buyer_final_price, 'completed',
-                    v_payment_origin, 'purchase_funds', v_created_at
+                    v_payment_origin, 'purchase_funds', v_current_timestamp
                 );
 
-                -- 10. === INSERT into transactions (seller) & UPDATE seller balance ===
+                -- 9. === INSERT into transactions (seller) & UPDATE seller balance ===
                 INSERT INTO transactions (
                     user_id, order_id, amount, transaction_status,
                     payment_destination, payment_purpose, created_at
                 ) VALUES (
                     v_seller_id, v_order_id, v_seller_final_payout, 'completed',
-                    'account_balance', 'sale_proceeds', v_created_at + INTERVAL 1 DAY
+                    'account_balance', 'sale_proceeds', v_current_timestamp + INTERVAL 1 DAY
                 );
+                UPDATE account_balance SET balance = balance + v_seller_final_payout WHERE user_id = v_seller_id;
 
-                UPDATE account_balance
-                   SET balance = balance + v_seller_final_payout
-                 WHERE user_id = v_seller_id;
-
-                -- 11. === INSERT into portfolio_items ===
+                -- 10. === INSERT into portfolio_items ===
                 INSERT INTO portfolio_items (
                     portfolio_item_id, user_id, product_id, size_id,
                     acquisition_date, acquisition_price, item_condition
                 ) VALUES (
                     UUID(), v_buyer_id, v_product_id, v_size_id,
-                    DATE(v_created_at), v_sale_price, v_product_condition
+                    DATE(v_current_timestamp), v_sale_price, v_product_condition
                 );
+
+                -- 11. UPDATE v_last_sale_price FOR NEXT LOOP
+                SET v_last_sale_price = v_sale_price;
 
                 SET sales_iterator = sales_iterator + 1;
             END WHILE; -- End sales_iterator loop
+
+            -- =================================================
+            -- PART 2: CREATE ACTIVE BIDS & ASKS
+            -- Use v_last_sale_price as the anchor
+            -- =================================================
+
+            -- Create 3-5 Active Asks
+            SET v_num_active_asks = FLOOR(3 + RAND() * 3);
+            SET v_active_loop_i = 0;
+            WHILE v_active_loop_i < v_num_active_asks DO
+                SELECT uuid INTO v_seller_id FROM users ORDER BY RAND() LIMIT 1;
+
+                -- Ask price is 2% to 15% *above* the last sale price
+                SET v_ask_price = ROUND(v_last_sale_price * (1.02 + RAND() * 0.13), 2);
+                SET v_active_created_at = NOW() - INTERVAL FLOOR(RAND() * 30) DAY;
+
+                INSERT INTO listings (
+                    user_id, product_id, size_id, listing_type, price,
+                    fee_structure_id, item_condition, status, created_at, updated_at
+                ) VALUES (
+                    v_seller_id, v_product_id, v_size_id, 'sale', v_ask_price,
+                    v_fee_id, v_product_condition, 'active', v_active_created_at, v_active_created_at
+                );
+
+                SET v_active_loop_i = v_active_loop_i + 1;
+            END WHILE;
+
+            -- Create 3-5 Active Bids
+            SET v_num_active_bids = FLOOR(3 + RAND() * 3);
+            SET v_active_loop_i = 0;
+            WHILE v_active_loop_i < v_num_active_bids DO
+                SELECT uuid, b.balance
+                INTO v_buyer_id, v_buyer_current_balance
+                FROM users u
+                JOIN account_balance b ON u.uuid = b.user_id
+                ORDER BY RAND() LIMIT 1;
+
+                -- Bid price is 2% to 15% *below* the last sale price
+                SET v_bid_amount = ROUND(v_last_sale_price * (0.85 + RAND() * 0.13), 2);
+                SET v_active_created_at = NOW() - INTERVAL FLOOR(RAND() * 30) DAY;
+
+                SET v_buyer_tx_fee = ROUND(v_bid_amount * v_buyer_fee_pct, 2);
+                SET v_total_bid_amount = v_bid_amount + v_buyer_tx_fee;
+
+                IF v_buyer_current_balance >= v_total_bid_amount THEN
+                    SET v_payment_origin = 'account_balance';
+                ELSE
+                    SET v_payment_origin = 'credit_card';
+                END IF;
+
+                INSERT INTO bids (
+                    bid_id, user_id, product_id, size_id, product_condition,
+                    bid_amount, transaction_fee, fee_structure_id, total_bid_amount,
+                    bid_status, payment_origin, created_at, updated_at
+                ) VALUES (
+                    UUID(), v_buyer_id, v_product_id, v_size_id, v_product_condition,
+                    v_bid_amount, v_buyer_tx_fee, v_fee_id, v_total_bid_amount,
+                    'active', v_payment_origin, v_active_created_at, v_active_created_at
+                );
+
+                SET v_active_loop_i = v_active_loop_i + 1;
+            END WHILE;
+
 
             SET cond_iterator = cond_iterator + 1;
         END WHILE; -- End cond_iterator loop
@@ -754,209 +886,7 @@ DELIMITER ;
 
 
 -- =================================================================
--- PROCEDURE 2: CreateActiveListings (*** MODIFIED ***)
--- Includes "hype" price logic for asks.
+-- CALL THE NEW UNIFIED PROCEDURE
 -- =================================================================
 
-DROP PROCEDURE IF EXISTS CreateActiveListings;
-
-DELIMITER $$
-
-CREATE PROCEDURE CreateActiveListings(IN num_listings INT)
-BEGIN
-    DECLARE i INT DEFAULT 0;
-
-    DECLARE v_seller_id CHAR(36);
-    DECLARE v_product_id INT UNSIGNED;
-    DECLARE v_size_id INT UNSIGNED;
-    DECLARE v_retail_price DECIMAL(10, 2);
-    DECLARE v_brand_id INT UNSIGNED;
-    DECLARE v_product_name VARCHAR(255);
-    DECLARE v_product_condition ENUM('new', 'used', 'worn');
-
-    DECLARE v_ask_price DECIMAL(10, 2);
-    DECLARE v_base_price_multiplier DECIMAL(5, 2);
-    DECLARE v_fee_id INT UNSIGNED DEFAULT 1;
-    DECLARE v_created_at DATETIME;
-
-    WHILE i < num_listings DO
-        -- 1. Get random user and product
-        SELECT uuid INTO v_seller_id FROM users ORDER BY RAND() LIMIT 1;
-
-        SELECT ps.product_id, ps.size_id, p.retail_price, p.brand_id, p.name
-        INTO v_product_id, v_size_id, v_retail_price, v_brand_id, v_product_name
-        FROM products_sizes ps
-        JOIN products p ON ps.product_id = p.product_id
-        ORDER BY RAND() LIMIT 1;
-
-        IF v_retail_price IS NULL OR v_retail_price = 0 THEN
-            SET v_retail_price = 150.00;
-        END IF;
-
-        SET v_product_condition = ELT(FLOOR(1 + RAND() * 3), 'new', 'used', 'worn');
-
-        -- 2. Calculate "Hype" Ask Price
-        -- Default multiplier
-        SET v_base_price_multiplier = (0.9 + RAND() * 1.1); -- 90% - 200% (asks are slightly higher)
-
-        -- Hype brands (Off-White, Supreme, Balenciaga, Dior, Fear of God)
-        IF v_brand_id IN (13, 19, 3, 6, 7) THEN
-            SET v_base_price_multiplier = (1.3 + RAND() * 1.9); -- 130% - 320%
-        END IF;
-
-        -- Specific Hype Items
-        IF v_product_name LIKE '%Travis Scott%' OR v_product_name LIKE '%(The Ten)%' OR v_product_name LIKE '%(Lost & Found)%' OR v_product_name LIKE '%Shattered Backboard%' THEN
-            SET v_base_price_multiplier = (2.8 + RAND() * 5.0); -- 280% - 780%
-        END IF;
-
-        -- Adjust multiplier based on condition
-        IF v_product_condition = 'new' THEN
-            SET v_ask_price = ROUND(v_retail_price * v_base_price_multiplier, 2);
-        ELSEIF v_product_condition = 'used' THEN
-            SET v_ask_price = ROUND(v_retail_price * v_base_price_multiplier * (0.5 + RAND() * 0.3), 2); -- 50-80% of 'new' price
-        ELSE -- 'worn'
-            SET v_ask_price = ROUND(v_retail_price * v_base_price_multiplier * (0.2 + RAND() * 0.3), 2); -- 20-50% of 'new' price
-        END IF;
-
-        -- 3. Set random creation date
-        SET v_created_at = NOW() - INTERVAL FLOOR(RAND() * 60) DAY;
-
-        -- 4. === INSERT into listings (active 'ask') ===
-        INSERT INTO listings (
-            user_id, product_id, size_id, listing_type, price,
-            fee_structure_id, item_condition, status, created_at, updated_at
-        ) VALUES (
-            v_seller_id, v_product_id, v_size_id, 'sale', v_ask_price,
-            v_fee_id, v_product_condition, 'active', v_created_at, v_created_at
-        );
-
-        SET i = i + 1;
-    END WHILE;
-END$$
-
-DELIMITER ;
-
-
--- =================================================================
--- PROCEDURE 3: CreateActiveBids (*** MODIFIED ***)
--- Includes "hype" price logic for bids.
--- Checks buyer balance.
--- =================================================================
-
-DROP PROCEDURE IF EXISTS CreateActiveBids;
-
-DELIMITER $$
-
-CREATE PROCEDURE CreateActiveBids(IN num_bids INT)
-BEGIN
-    DECLARE i INT DEFAULT 0;
-
-    DECLARE v_buyer_id CHAR(36);
-    DECLARE v_product_id INT UNSIGNED;
-    DECLARE v_size_id INT UNSIGNED;
-    DECLARE v_retail_price DECIMAL(10, 2);
-    DECLARE v_brand_id INT UNSIGNED;
-    DECLARE v_product_name VARCHAR(255);
-    DECLARE v_product_condition ENUM('new', 'used', 'worn');
-
-    DECLARE v_bid_amount DECIMAL(10, 2);
-    DECLARE v_base_price_multiplier DECIMAL(5, 2);
-
-    -- Fee variables
-    DECLARE v_fee_id INT UNSIGNED DEFAULT 1;
-    DECLARE v_buyer_fee_pct DECIMAL(10, 4);
-    DECLARE v_buyer_tx_fee DECIMAL(10, 2);
-    DECLARE v_total_bid_amount DECIMAL(10, 2);
-    DECLARE v_created_at DATETIME;
-
-    -- Balance check variables
-    DECLARE v_buyer_current_balance DECIMAL(15, 2);
-    DECLARE v_payment_origin ENUM('account_balance', 'credit_card', 'other');
-
-    -- Get fee percentage
-    SELECT buyer_fee_percentage
-    INTO v_buyer_fee_pct
-    FROM fee_structures WHERE id = v_fee_id;
-
-    WHILE i < num_bids DO
-        -- 1. Get random user and product
-        SELECT uuid, b.balance
-        INTO v_buyer_id, v_buyer_current_balance
-        FROM users u
-        JOIN account_balance b ON u.uuid = b.user_id
-        ORDER BY RAND() LIMIT 1;
-
-        SELECT ps.product_id, ps.size_id, p.retail_price, p.brand_id, p.name
-        INTO v_product_id, v_size_id, v_retail_price, v_brand_id, v_product_name
-        FROM products_sizes ps
-        JOIN products p ON ps.product_id = p.product_id
-        ORDER BY RAND() LIMIT 1;
-
-        IF v_retail_price IS NULL OR v_retail_price = 0 THEN
-            SET v_retail_price = 150.00;
-        END IF;
-
-        SET v_product_condition = ELT(FLOOR(1 + RAND() * 3), 'new', 'used', 'worn');
-
-        -- 2. Calculate "Hype" Bid Price
-        -- Default multiplier
-        SET v_base_price_multiplier = (0.7 + RAND() * 0.8); -- 70% - 150% (bids are lower)
-
-        -- Hype brands (Off-White, Supreme, Balenciaga, Dior, Fear of God)
-        IF v_brand_id IN (13, 19, 3, 6, 7) THEN
-            SET v_base_price_multiplier = (1.0 + RAND() * 1.5); -- 100% - 250%
-        END IF;
-
-        -- Specific Hype Items
-        IF v_product_name LIKE '%Travis Scott%' OR v_product_name LIKE '%(The Ten)%' OR v_product_name LIKE '%(Lost & Found)%' OR v_product_name LIKE '%Shattered Backboard%' THEN
-            SET v_base_price_multiplier = (2.2 + RAND() * 4.0); -- 220% - 620%
-        END IF;
-
-        -- Adjust multiplier based on condition
-        IF v_product_condition = 'new' THEN
-            SET v_bid_amount = ROUND(v_retail_price * v_base_price_multiplier, 2);
-        ELSEIF v_product_condition = 'used' THEN
-            SET v_bid_amount = ROUND(v_retail_price * v_base_price_multiplier * (0.4 + RAND() * 0.3), 2); -- 40-70% of 'new' price
-        ELSE -- 'worn'
-            SET v_bid_amount = ROUND(v_retail_price * v_base_price_multiplier * (0.1 + RAND() * 0.2), 2); -- 10-30% of 'new' price
-        END IF;
-
-        -- 3. Calculate total bid amount with fees
-        SET v_buyer_tx_fee = ROUND(v_bid_amount * v_buyer_fee_pct, 2);
-        SET v_total_bid_amount = v_bid_amount + v_buyer_tx_fee;
-
-        -- 4. Check balance to determine payment origin
-        IF v_buyer_current_balance >= v_total_bid_amount THEN
-            SET v_payment_origin = 'account_balance';
-        ELSE
-            SET v_payment_origin = 'credit_card';
-        END IF;
-
-        -- 5. Set random creation date
-        SET v_created_at = NOW() - INTERVAL FLOOR(RAND() * 30) DAY;
-
-        -- 6. === INSERT into bids (active 'bid') ===
-        INSERT INTO bids (
-            bid_id, user_id, product_id, size_id, product_condition,
-            bid_amount, transaction_fee, fee_structure_id, total_bid_amount,
-            bid_status, payment_origin, created_at, updated_at
-        ) VALUES (
-            UUID(), v_buyer_id, v_product_id, v_size_id, v_product_condition,
-            v_bid_amount, v_buyer_tx_fee, v_fee_id, v_total_bid_amount,
-            'active', v_payment_origin, v_created_at, v_created_at
-        );
-
-        SET i = i + 1;
-    END WHILE;
-END$$
-
-DELIMITER ;
-
-
--- =================================================================
--- CALL PROCEDURES
--- =================================================================
-
-CALL CreatePastSales();
-CALL CreateActiveListings(2000);
-CALL CreateActiveBids(1500);
+CALL CreateMarketHistory(); #completed in 2 h 28 m 24 s 373 ms

@@ -224,14 +224,11 @@ watch(activeFilters, () => {
   searchResults.value = filteredResults
   sortResultsByPrice(sortOption.value)
 
-  updateBrowserQuery()
-
 }, { deep: true });
 
 watch(sortOption, (newValue) => {
   if (['newest', 'price-asc', 'price-desc'].includes(newValue)) {
     sortResultsByPrice(newValue)
-    updateBrowserQuery()
   } else {
     console.error('Invalid sort option:', newValue)
   }
