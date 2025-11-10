@@ -126,7 +126,8 @@ DROP PROCEDURE IF EXISTS createNewOrder;
 CREATE PROCEDURE createNewOrder(
     IN input_buyer_id CHAR(36),
     IN input_listing_id INT UNSIGNED,
-    IN input_buyer_transaction_fee_structure_id INT UNSIGNED
+    IN input_buyer_transaction_fee_structure_id INT UNSIGNED,
+    IN input_address_id INT UNSIGNED
 )
 
 BEGIN
@@ -192,6 +193,7 @@ BEGIN
 
     INSERT INTO orders(
                        order_id,
+                       address_id,
                        buyer_id,
                        seller_id,
                        product_id,
@@ -210,6 +212,7 @@ BEGIN
         )
         VALUES(
                new_order_id,
+                input_address_id,
                 input_buyer_id,
                 calculated_seller_id,
                 calculated_product_id,
@@ -222,7 +225,7 @@ BEGIN
                 calculated_seller_transaction_fee,
                 calculated_seller_fee_structure_id,
                 calculated_seller_final_payout,
-                'pending',
+                'paid',
                 CURRENT_TIMESTAMP,
                 CURRENT_TIMESTAMP
               );

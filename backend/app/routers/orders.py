@@ -26,10 +26,10 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
     if buyer_payment_origin == 'account_balance':
         statement = text("CALL retrieveUserBalanceById(:input_uuid);")
         result = await session.execute(statement, {"input_uuid": new_order_summary.buyer_id})
-        row = result.mappings().first()
-        if not row:
+        buyer_balance_row = result.mappings().first()
+        if not buyer_balance_row:
             return ErrorMessage(message="User not found", error="UserNotFound")
-        user_balance = row.balance
+        user_balance = buyer_balance_row.balance
         if new_order_summary.purchase_price > user_balance:
             return ErrorMessage(message="Purchase price exceeds user balance", error="PurchasePriceExceedsUserBalance")
 
@@ -37,12 +37,12 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
 
     statement = text("CALL retrieveSpecificActiveListing(:input_listing_id);")
     result = await session.execute(statement, {"input_listing_id": int(listing_id)})
-    row = result.mappings().first()
+    active_listing_row = result.mappings().first()
 
-    if not row:
+    if not active_listing_row:
         return ErrorMessage(message="Listing not found", error="ListingNotFound")
 
-    listing_summary = dict(row)
+    listing_summary = dict(active_listing_row)
 
     buyer_id = new_order_summary.buyer_id
     seller_id = listing_summary['user_id']
@@ -50,13 +50,14 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
     if buyer_id == seller_id:
         return ErrorMessage(message="Buyer and seller cannot be the same", error="BuyerAndSellerCannotBeSame")
 
-    listing_ask_price = listing_summary['price']
+    listing_ask_price = float(listing_summary['price'])
+    purchase_price = float(new_order_summary.purchase_price)
 
-    if new_order_summary.purchase_price != listing_ask_price:
+    if purchase_price != listing_ask_price:
         return ErrorMessage(message="Purchase price does not match listing ask price", error="PurchasePriceMismatch")
 
     statement = text("CALL addAddress(:input_user_id, :input_name, :input_address_line1, :input_address_line2, :input_city, :input_state, :input_zip_code, :input_country);")
-    await session.execute(statement, {
+    result = await session.execute(statement, {
         "input_user_id": new_order_summary.buyer_id,
         "input_name": address.name,
         "input_address_line1": address.address_line_1,
@@ -67,12 +68,18 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
         "input_country": address.country,
     })
     await session.commit()
+    buyer_address_row = result.mappings().first()
 
-    statement = text("CALL createNewOrder(:input_buyer_id, :input_listing_id, :input_transaction_fee)")
+    new_address_id = buyer_address_row.address_id if buyer_address_row else None
+    if not new_address_id:
+        return ErrorMessage(message="Address could not be added", error="AddressAdditionFailed")
+
+    statement = text("CALL createNewOrder(:input_buyer_id, :input_listing_id, :input_transaction_fee, :input_address_id);")
     result = await session.execute(statement, {
         "input_buyer_id": new_order_summary.buyer_id,
         "input_listing_id": new_order_summary.listing_id,
         "input_transaction_fee": new_order_summary.transaction_structure_fee_id,
+        "input_address_id": new_address_id,
     })
     await session.commit()
     new_order = result.mappings().first()
@@ -85,7 +92,6 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
     await session.commit()
 
     order_id = new_order.order_id
-
     buyer_id = new_order.buyer_id
     buyer_amount = new_order.buyer_final_price
 
@@ -97,6 +103,8 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
             "input_balance_adjustment_amount": -1 * buyer_amount,
         })
         await session.commit()
+
+    # Record Buyer Transaction
 
     buyer_transaction_status = 'completed'
     buyer_payment_destination = 'account_balance'
@@ -113,6 +121,8 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
         "input_payment_purpose": buyer_payment_purpose,
     })
     await session.commit()
+
+    # Record Seller Transaction
 
     seller_id = new_order.seller_id
     seller_amount = new_order.seller_final_payout

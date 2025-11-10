@@ -136,4 +136,8 @@ const usStates = ref([
 .form-group select:hover { cursor: pointer; }
 .form-group.full-width { grid-column: 1 / -1; }
 .form-group input:focus { border-color: #ffffff; outline: none; }
+
+@media (max-width: 768px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
 </style>
