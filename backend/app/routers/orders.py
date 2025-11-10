@@ -95,13 +95,14 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
     order_id = new_order.order_id
     buyer_id = new_order.buyer_id
     buyer_amount = new_order.buyer_final_price
+    formatted_buyer_amount = -1 * buyer_amount
 
     if buyer_payment_origin == 'account_balance':
         statement = text("CALL updateBalance(:input_uuid, :input_email, :input_balance_adjustment_amount);")
         await session.execute(statement, {
             "input_uuid": buyer_id,
             "input_email": None,
-            "input_balance_adjustment_amount": -1 * buyer_amount,
+            "input_balance_adjustment_amount": formatted_buyer_amount,
         })
         await session.commit()
 
@@ -115,7 +116,7 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
     await session.execute(statement, {
         "input_user_id": buyer_id,
         "input_order_id": order_id,
-        "input_amount": buyer_amount,
+        "input_amount": formatted_buyer_amount,
         "input_transaction_status": buyer_transaction_status,
         "input_payment_origin": buyer_payment_origin,
         "input_payment_destination": buyer_payment_destination,
