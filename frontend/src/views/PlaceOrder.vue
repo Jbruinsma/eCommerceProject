@@ -111,36 +111,7 @@
                   </svg>
                 </button>
               </div>
-              <div class="form-grid">
-                <div class="form-group full-width">
-                  <label for="name">Full Name</label
-                  ><input type="text" id="name" v-model="shippingInfo.name" />
-                </div>
-                <div class="form-group full-width">
-                  <label for="address_line_1">Address Line 1</label
-                  ><input type="text" id="address_line_1" v-model="shippingInfo.address_line_1" />
-                </div>
-                <div class="form-group full-width">
-                  <label for="address_line_2">Address Line 2 (Optional)</label
-                  ><input type="text" id="address_line_2" v-model="shippingInfo.address_line_2" />
-                </div>
-                <div class="form-group">
-                  <label for="city">City</label
-                  ><input type="text" id="city" v-model="shippingInfo.city" />
-                </div>
-                <div class="form-group">
-                  <label for="state">State</label
-                  ><input type="text" id="state" v-model="shippingInfo.state" />
-                </div>
-                <div class="form-group">
-                  <label for="zip_code">Zip Code</label
-                  ><input type="text" id="zip_code" v-model="shippingInfo.zip_code" />
-                </div>
-                <div class="form-group">
-                  <label for="country">Country</label
-                  ><input type="text" id="country" v-model="shippingInfo.country" />
-                </div>
-              </div>
+              <ShippingForm v-model="shippingInfo" />
             </div>
 
             <div v-if="currentStep === 2" class="info-section payment-section">
@@ -274,6 +245,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchFromAPI, postToAPI } from '@/utils/index.js'
 import { useAuthStore } from '@/stores/authStore.js'
+import ShippingForm from '@/components/ShippingForm.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -294,7 +266,7 @@ const shippingInfo = ref({
   address_line_1: '',
   address_line_2: '',
   city: '',
-  state: '',
+  state: null,
   zip_code: '',
   country: 'United States',
 })
@@ -438,12 +410,6 @@ p { color: #cccccc; line-height: 1.6; }
 .error-screen .btn-primary { background-color: #ff6b6b; }
 .error-screen .btn-primary:hover { background-color: #ff8a8a; }
 .error-screen .result-title { color: #ff8a8a; }
-.form-grid { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; }
-.form-group { display: flex; flex-direction: column; }
-.form-group input { background-color: #2c2c2c; border: 1px solid #444; border-radius: 6px; color: #ffffff; font-size: 1rem; padding: 0.75rem; }
-.form-group input:focus { border-color: #ffffff; outline: none; }
-.form-group label { color: #aaa; font-size: 0.9rem; margin-bottom: 0.5rem; }
-.form-group.full-width { grid-column: 1 / -1; }
 .info-section { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 2rem; }
 .nav-placeholder { height: 44px; width: 44px; }
 .option-detail { color: #aaa; }
@@ -484,7 +450,6 @@ p { color: #cccccc; line-height: 1.6; }
 .total-cost { border-top: 1px solid #333; font-size: 1.2rem !important; font-weight: bold; margin-top: 1rem; padding-top: 1rem; }
 @media (max-width: 900px) {
   .btn { width: 100%; }
-  .form-grid { grid-template-columns: 1fr; }
   h1.page-title { font-size: 1.8rem; margin-bottom: 2rem; padding-bottom: 1rem; }
   .order-container { padding: 2rem 5%; }
   .order-grid { grid-template-columns: 1fr; }
