@@ -58,7 +58,11 @@ async def fulfill_listing(user_uuid: str, sale_info: SaleInfo, session: AsyncSes
         user_balance = user_balance_row.balance
 
         if user_balance - total_bid_amount < 0:
-            return ErrorMessage(message="Insufficient funds", error="InsufficientFunds")
+            statement = text("CALL markBidAsInactive(:input_bid_id);")
+            await session.execute(statement, {"input_bid_id": sale_info.target_bid_id})
+            await session.commit()
+
+            return ErrorMessage(message="Failed to connect sale to bid.", error="InsufficientFunds")
 
     statement = text("CALL connectListingToBid(:input_product_id, :input_seller_id, :input_bid_id, :input_listing_id, :input_sale_price, :input_size_id, :input_seller_fee_structure_id);")
     result = await session.execute(statement, {

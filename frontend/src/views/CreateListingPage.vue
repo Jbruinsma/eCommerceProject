@@ -192,9 +192,10 @@
           <div v-if="listingData.listing_type === 'ask'" class="form-group">
             <label for="price">Your Asking Price</label>
             <input
-              type="number"
+              type="text"
               id="price"
-              v-model.number="listingData.price"
+              :value="priceInput"
+              @input="filterAskInput"
               placeholder="$0.00"
               class="price-input"
             />
@@ -248,6 +249,7 @@ import { formatCurrency } from '@/utils/formatting.js'
 
 const currentStep = ref(1)
 const MINIMUM_PRICE = 1.0
+const MAX_PRICE = 99999999.99 // NEW
 const listingData = reactive({
   listing_type: null,
   brand_id: null,
@@ -267,6 +269,7 @@ const productSearchQuery = ref('')
 const brandSearchQuery = ref('')
 const productsResults = ref([])
 const detailedProductData = ref(null)
+const priceInput = ref('') // NEW: For string value of price
 
 const listingTypes = [
   { value: 'ask', label: 'Ask', description: 'Set a specific price for your item.' },
@@ -291,6 +294,35 @@ onMounted(async () => {
     console.error('Failed during component setup:', error)
   }
 })
+
+// NEW: Input validation function
+function filterAskInput(event) {
+  const previous = priceInput.value
+  let value = event.target.value
+  const validFormat = /^\d*(?:\.\d{0,2})?$/.test(value)
+
+  if (!validFormat) {
+    event.target.value = previous
+    priceInput.value = previous
+    return
+  }
+
+  if (value === '') {
+    priceInput.value = ''
+    listingData.price = null
+    return
+  }
+
+  const parsed = Number(value)
+  if (isNaN(parsed) || parsed > MAX_PRICE) {
+    event.target.value = previous
+    priceInput.value = previous
+    return
+  }
+
+  priceInput.value = value
+  listingData.price = parsed
+}
 
 const filteredBrands = computed(() => {
   if (!brandSearchQuery.value) return brands.value
@@ -383,14 +415,12 @@ async function searchForProducts() {
   }
 }
 
-watch(() => listingData.price, (newValue) => {
-  if (typeof newValue !== 'number') return;
-  const valueStr = String(newValue);
-  const decimalPart = valueStr.split('.')[1];
-  if (decimalPart && decimalPart.length > 2) {
-    setTimeout(() => {
-      listingData.price = parseFloat(newValue.toFixed(2));
-    }, 10);
+// UPDATED: This watch now syncs the numeric price to the string input
+watch(() => listingData.price, (newPrice) => {
+  if (newPrice === null) {
+    priceInput.value = ''
+  } else if (Number(priceInput.value) !== newPrice) {
+    priceInput.value = String(newPrice)
   }
 });
 
@@ -420,6 +450,10 @@ watch(
   (newSizeId) => {
     if (listingData.listing_type === 'sale' && newSizeId) {
       listingData.price = highestBid.value
+    } else if (listingData.listing_type === 'ask') {
+      // Clear price when size changes in 'ask' mode
+      listingData.price = null
+      priceInput.value = ''
     }
   },
 )
@@ -479,6 +513,8 @@ async function submitListing() {
       } else {
         throw new Error('Could not find the corresponding bid to sell to.')
       }
+
+      // console.log('Payload for sale:', payload)
 
       response = await postToAPI(`/listings/${authStore.uuid}/fulfill`, payload)
     }
@@ -549,7 +585,7 @@ a { color: #ffffff; text-decoration: none; }
 .result-icon.success { color: #6ef0a3; }
 .result-summary { background-color: #121212; border-radius: 8px; margin: 1.5rem 0; max-width: 350px; padding: 1rem; text-align: left; width: 100%; }
 .result-summary p { margin: 0.5rem 0; }
-.search-input { background-color: #2c2c2c; border: 1px solid #444; border-radius: 8px; color: #ffffff; font-size: 1rem; margin-bottom: 1.5rem; max-width: 500px; padding: 0.75rem; width: 100%; }
+.search-input { background-color: #2c2c2c; border: 1px solid #444; border-radius: 8px; color: #ffffff; font-size: 1rem; margin-bottom: 1.5rem; margin-top: 1rem; max-width: 500px; padding: 0.75rem; width: 100%; }
 .selection-card { align-items: center; background-color: #2c2c2c; border: 2px solid #444; border-radius: 8px; color: #ffffff; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; justify-content: center; padding: 1rem; text-align: center; transition: all 0.2s ease; }
 .selection-card .card-desc { color: #aaa; font-size: 0.95rem; margin: 0; }
 .selection-card .card-title { display: block; font-weight: 700; margin: 0; }

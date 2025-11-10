@@ -230,6 +230,10 @@ BEGIN
                 CURRENT_TIMESTAMP
               );
 
+    UPDATE addresses
+    SET order_id = new_order_id
+    WHERE address_id = input_address_id;
+
     SELECT * FROM orders WHERE order_id = new_order_id;
 
 END //

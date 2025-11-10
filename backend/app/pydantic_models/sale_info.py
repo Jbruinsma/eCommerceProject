@@ -7,6 +7,6 @@ class SaleInfo(BaseModel):
     product_id: int
     size_id: int
     item_condition: str
-    price: int
+    price: float
     fee_id: int
     target_bid_id: str

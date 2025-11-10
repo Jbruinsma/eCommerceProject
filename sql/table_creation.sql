@@ -174,7 +174,7 @@ CREATE TABLE bids(
     transaction_fee DECIMAL(10, 2),
     fee_structure_id INT UNSIGNED,
     total_bid_amount DECIMAL(10, 2),
-    bid_status ENUM('active', 'accepted', 'rejected', 'expired'),
+    bid_status ENUM('active', 'accepted', 'rejected', 'expired', 'inactive'),
     payment_origin ENUM('account_balance', 'credit_card', 'other') NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

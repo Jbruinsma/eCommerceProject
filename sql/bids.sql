@@ -43,7 +43,6 @@ BEGIN
                           state,
                           zip_code,
                           country
-
     )
     VALUES (
             input_user_id,
@@ -96,6 +95,21 @@ BEGIN
     SELECT *
     FROM bids
     WHERE bid_id = new_bid_id;
+
+end //
+
+DROP PROCEDURE IF EXISTS markBidAsInactive;
+
+CREATE PROCEDURE markBidAsInactive(
+    IN input_bid_id CHAR(36)
+)
+
+BEGIN
+
+    UPDATE bids
+    SET bid_status = 'inactive',
+        updated_at = CURRENT_TIMESTAMP
+    WHERE bid_id = input_bid_id;
 
 end //
 
@@ -171,19 +185,18 @@ BEGIN
         bids b
     INNER JOIN (
         SELECT
-            product_size_id,
+            size_id,
             MAX(bid_amount) AS max_bid
         FROM
             bids
         WHERE
             product_id = input_product_id AND bid_status = 'active'
         GROUP BY
-            product_size_id
+            size_id
     ) AS highest_bids
-        ON b.product_size_id = highest_bids.product_size_id
-        AND b.bid_amount = highest_bids.max_bid
+        ON b.size_id = highest_bids.size_id
     JOIN
-        sizes s ON b.product_size_id = s.size_id
+        sizes s ON b.size_id = s.size_id
     WHERE
         b.product_id = input_product_id AND b.bid_status = 'active'
     ORDER BY
@@ -201,7 +214,7 @@ BEGIN
 
     SELECT *
     FROM bids
-    JOIN sizes ON bids.product_size_id = sizes.size_id
+    JOIN sizes ON bids.size_id = sizes.size_id
     JOIN products ON bids.product_id = products.product_id
     WHERE user_id = input_user_id;
 
@@ -218,7 +231,7 @@ BEGIN
 
     SELECT *
     FROM bids
-    JOIN sizes ON bids.product_size_id = sizes.size_id
+    JOIN sizes ON bids.size_id = sizes.size_id
     JOIN products ON bids.product_id = products.product_id
     WHERE user_id = input_user_id AND bid_status = 'active';
 
@@ -234,7 +247,7 @@ BEGIN
 
     SELECT *
     FROM bids
-    JOIN sizes ON bids.product_size_id = sizes.size_id
+    JOIN sizes ON bids.size_id = sizes.size_id
     JOIN products ON bids.product_id = products.product_id
     WHERE bid_id = input_bid_id;
 

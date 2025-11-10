@@ -15,6 +15,10 @@ CREATE PROCEDURE connectListingToBid(
 )
 BEGIN
     DECLARE calculated_buyer_id CHAR(36);
+
+    DECLARE calculated_buyer_address_id INT UNSIGNED;
+    DECLARE calculated_product_condition ENUM('new', 'used', 'worn');
+
     DECLARE buyer_fee_id INT UNSIGNED;
     DECLARE buyer_fee_percentage DECIMAL(10, 4);
     DECLARE calculated_buyer_transaction_fee DECIMAL(10,2);
@@ -41,14 +45,22 @@ BEGIN
     SELECT user_id INTO calculated_buyer_id FROM bids WHERE bid_id = input_bid_id;
     UPDATE bids SET bid_status = 'accepted' WHERE bid_id = input_bid_id;
 
+    SELECT address_id INTO calculated_buyer_address_id
+    FROM addresses
+    WHERE order_id = input_listing_id;
+
+    SELECT product_condition INTO calculated_product_condition
+    FROM bids
+    WHERE bid_id = input_bid_id;
+
     INSERT INTO orders (
-        order_id, buyer_id, seller_id, product_id, size_id, sale_price,
+        order_id, address_id, buyer_id, seller_id, product_id, size_id, product_condition, sale_price,
         buyer_transaction_fee, buyer_fee_structure_id, buyer_final_price,
         seller_transaction_fee, seller_fee_structure_id, seller_final_payout,
         order_status, created_at, updated_at
     ) VALUES (
-        new_order_id, calculated_buyer_id, input_seller_id, input_product_id,
-        input_size_id, input_sale_price, calculated_buyer_transaction_fee,
+        new_order_id, calculated_buyer_address_id, calculated_buyer_id, input_seller_id, input_product_id,
+        input_size_id, input_sale_price, calculated_product_condition,calculated_buyer_transaction_fee,
         buyer_fee_id, calculated_buyer_final_price, calculated_seller_transaction_fee,
         input_seller_fee_structure_id, calculated_seller_final_payout,
         'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP

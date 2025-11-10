@@ -56,9 +56,10 @@ async def fulfil_order(listing_id: int, new_order_summary: NewOrder, session: As
     if purchase_price != listing_ask_price:
         return ErrorMessage(message="Purchase price does not match listing ask price", error="PurchasePriceMismatch")
 
-    statement = text("CALL addAddress(:input_user_id, :input_name, :input_address_line1, :input_address_line2, :input_city, :input_state, :input_zip_code, :input_country);")
+    statement = text("CALL addAddress(:input_user_id, :input_order_id, :input_name, :input_address_line1, :input_address_line2, :input_city, :input_state, :input_zip_code, :input_country);")
     result = await session.execute(statement, {
         "input_user_id": new_order_summary.buyer_id,
+        "input_order_id": None,
         "input_name": address.name,
         "input_address_line1": address.address_line_1,
         "input_address_line2": address.address_line_2,
