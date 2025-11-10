@@ -190,4 +190,14 @@ p { color: #cccccc; }
   .order-card { grid-template-columns: 80px 1fr; }
   .order-card-status { grid-column: 2; justify-self: start; margin-top: 0.5rem; }
 }
+
+@media (max-width: 480px) {
+  .orders-content { padding: 2rem 3%; }
+  .page-title { font-size: 1.8rem; margin-bottom: 2rem; }
+  .order-card {grid-template-columns: 1fr; gap: 1rem; padding: 1rem; }
+  .order-card-image { max-width: 150px; margin: 0 auto; }
+  .order-card-details { text-align: center; }
+  .order-card-header { justify-content: center; }
+  .order-card-status { grid-column: 1; justify-self: center; margin-top: 0.25rem; }
+}
 </style>

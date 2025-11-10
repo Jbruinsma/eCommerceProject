@@ -1,12 +1,21 @@
 <template>
   <div class="create-listing-container">
     <main class="create-content">
-      <div class="wizard-card">
-        <div v-if="isLoading" class="loading-overlay">
-          <div class="spinner"></div>
-          <p>Submitting your listing...</p>
-        </div>
-        <div v-else-if="submissionResult" class="submission-result-screen">
+      <WizardLayout
+        :is-loading="isLoading"
+        loading-text="Submitting your listing..."
+        :submission-result="submissionResult"
+        title="Create a Listing"
+        :current-step="currentStep"
+        :total-steps="5"
+        :step-titles="['Select Listing Type', 'Select Brand', 'Find Your Item', 'Add Details', 'Set Your Price']"
+        :is-step-valid="isStepValid"
+        submit-button-text="Submit Listing"
+        @prev="prevStep"
+        @next="nextStep"
+        @submit="submitListing"
+      >
+        <template #result>
           <div v-if="submissionResult.success">
             <svg class="result-icon success" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
@@ -53,204 +62,176 @@
             </p>
             <button @click="submissionResult = null" class="btn btn-secondary">Try Again</button>
           </div>
+        </template>
+
+        <div v-if="currentStep === 1" class="step-content">
+          <div class="selection-grid">
+            <button
+              v-for="type in listingTypes"
+              :key="type.value"
+              class="selection-card"
+              :class="{ selected: listingData.listing_type === type.value }"
+              @click="selectListingType(type.value)"
+            >
+              <span class="card-title">{{ type.label }}</span>
+              <span class="card-desc">{{ type.description }}</span>
+            </button>
+          </div>
+        </div>
+        <div v-if="currentStep === 2" class="step-content">
+          <input
+            type="text"
+            v-model="brandSearchQuery"
+            placeholder="Search for brand..."
+            class="search-input"
+          />
+          <div class="selection-grid product-results">
+            <button
+              v-for="brand in filteredBrands"
+              :key="brand.brand_id"
+              class="selection-card"
+              :class="{ selected: listingData.brand_id === brand.brand_id }"
+              @click="selectBrand(brand.brand_id)"
+            >
+              <img
+                v-if="brand.brand_logo_url"
+                :src="brand.brand_logo_url"
+                :alt="`${brand.brand_name} Logo`"
+                class="brand-logo"
+              />
+              <span :class="['card-title', { 'with-logo': !brand.brand_logo_url }]">{{
+                  brand.brand_name
+                }}</span>
+            </button>
+          </div>
+        </div>
+        <div v-if="currentStep === 3" class="step-content">
+          <input
+            type="text"
+            v-model="productSearchQuery"
+            placeholder="Search for product by name..."
+            class="search-input"
+          />
+          <div class="product-results">
+            <div v-if="!listingData.brand_id" class="no-results">
+              Please select a brand first.
+            </div>
+            <div v-else-if="filteredProducts.length === 0" class="no-results">
+              No products found.
+            </div>
+            <div
+              v-else
+              v-for="product in filteredProducts"
+              :key="product.productId"
+              class="product-item"
+              :class="{ selected: listingData.product_id === product.productId }"
+              @click="selectProduct(product)"
+            >
+              <img :src="product.imageUrl" :alt="product.name" />
+              <span>{{ product.name }}</span>
+            </div>
+          </div>
         </div>
 
-        <template v-else>
-          <div class="progress-bar">
-            <div class="progress" :style="{ width: `${(currentStep - 1) * 25}%` }"></div>
-          </div>
-          <div class="wizard-header">
-            <h2>Create a Listing</h2>
-            <p>Step {{ currentStep }} of 5: {{ stepTitle }}</p>
-          </div>
-          <div v-if="currentStep === 1" class="step-content">
-            <div class="selection-grid">
+        <div v-if="currentStep === 4" class="step-content">
+          <div class="form-group">
+            <label>1. Select Condition</label>
+            <div class="radio-group">
               <button
-                v-for="type in listingTypes"
-                :key="type.value"
-                class="selection-card"
-                :class="{ selected: listingData.listing_type === type.value }"
-                @click="selectListingType(type.value)"
+                v-for="condition in conditions"
+                :key="condition"
+                class="radio-btn"
+                :class="{ selected: listingData.item_condition === condition }"
+                @click="listingData.item_condition = condition"
               >
-                <span class="card-title">{{ type.label }}</span>
-                <span class="card-desc">{{ type.description }}</span>
+                {{ condition }}
               </button>
             </div>
           </div>
-          <div v-if="currentStep === 2" class="step-content">
-            <input
-              type="text"
-              v-model="brandSearchQuery"
-              placeholder="Search for brand..."
-              class="search-input"
-            />
-            <div class="selection-grid product-results">
+          <div class="form-group" v-if="listingData.item_condition">
+            <label>2. Select Size</label>
+            <div v-if="availableSizesForListing.length > 0" class="radio-group size-group">
               <button
-                v-for="brand in filteredBrands"
-                :key="brand.brand_id"
-                class="selection-card"
-                :class="{ selected: listingData.brand_id === brand.brand_id }"
-                @click="selectBrand(brand.brand_id)"
+                v-for="size in availableSizesForListing"
+                :key="size.sizeId"
+                class="radio-btn"
+                :class="{ selected: listingData.size_id === size.sizeId }"
+                @click="listingData.size_id = size.sizeId"
               >
-                <img
-                  v-if="brand.brand_logo_url"
-                  :src="brand.brand_logo_url"
-                  :alt="`${brand.brand_name} Logo`"
-                  class="brand-logo"
-                />
-                <span :class="['card-title', { 'with-logo': !brand.brand_logo_url }]">{{
-                    brand.brand_name
-                  }}</span>
+                <span class="size-value">{{ size.size }}</span>
               </button>
             </div>
-          </div>
-          <div v-if="currentStep === 3" class="step-content">
-            <input
-              type="text"
-              v-model="productSearchQuery"
-              placeholder="Search for product by name..."
-              class="search-input"
-            />
-            <div class="product-results">
-              <div v-if="!listingData.brand_id" class="no-results">
-                Please select a brand first.
-              </div>
-              <div v-else-if="filteredProducts.length === 0" class="no-results">
-                No products found.
-              </div>
-              <div
-                v-else
-                v-for="product in filteredProducts"
-                :key="product.productId"
-                class="product-item"
-                :class="{ selected: listingData.product_id === product.productId }"
-                @click="selectProduct(product)"
-              >
-                <img :src="product.imageUrl" :alt="product.name" />
-                <span>{{ product.name }}</span>
-              </div>
+            <div v-else-if="listingData.listing_type === 'sale'" class="no-results">
+              <p>
+                No sizes with active bids are available for this item in "{{
+                  listingData.item_condition
+                }}" condition. Please go back and create an "Ask" to list this item.
+              </p>
             </div>
-          </div>
 
-          <div v-if="currentStep === 4" class="step-content">
-            <div class="form-group">
-              <label>1. Select Condition</label>
-              <div class="radio-group">
-                <button
-                  v-for="condition in conditions"
-                  :key="condition"
-                  class="radio-btn"
-                  :class="{ selected: listingData.item_condition === condition }"
-                  @click="listingData.item_condition = condition"
-                >
-                  {{ condition }}
-                </button>
-              </div>
-            </div>
-            <div class="form-group" v-if="listingData.item_condition">
-              <label>2. Select Size</label>
-              <div v-if="availableSizesForListing.length > 0" class="radio-group size-group">
-                <button
-                  v-for="size in availableSizesForListing"
-                  :key="size.sizeId"
-                  class="radio-btn"
-                  :class="{ selected: listingData.size_id === size.sizeId }"
-                  @click="listingData.size_id = size.sizeId"
-                >
-                  <span class="size-value">{{ size.size }}</span>
-                </button>
-              </div>
-              <div v-else-if="listingData.listing_type === 'sale'" class="no-results">
-                <p>
-                  No sizes with active bids are available for this item in "{{
-                    listingData.item_condition
-                  }}" condition. Please go back and create an "Ask" to list this item.
-                </p>
-              </div>
-
-              <div
-                v-if="listingData.size_id && detailedProductData"
-                class="market-data-panel"
-              >
-                <h4>Market for Size {{ selectedSizeValue }} ({{listingData.item_condition}})</h4>
-                <div class="market-data-content">
-                  <div class="data-point">
-                    <span class="data-label">Highest Bid</span>
-                    <span class="data-value bid">{{ formatCurrency(highestBid) }}</span>
-                  </div>
-                  <div v-if="listingData.listing_type === 'ask'" class="data-point">
-                    <span class="data-label">Lowest Ask</span>
-                    <span class="data-value ask">{{ formatCurrency(lowestAsk) }}</span>
-                  </div>
+            <div
+              v-if="listingData.size_id && detailedProductData"
+              class="market-data-panel"
+            >
+              <h4>Market for Size {{ selectedSizeValue }} ({{listingData.item_condition}})</h4>
+              <div class="market-data-content">
+                <div class="data-point">
+                  <span class="data-label">Highest Bid</span>
+                  <span class="data-value bid">{{ formatCurrency(highestBid) }}</span>
+                </div>
+                <div v-if="listingData.listing_type === 'ask'" class="data-point">
+                  <span class="data-label">Lowest Ask</span>
+                  <span class="data-value ask">{{ formatCurrency(lowestAsk) }}</span>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div v-if="currentStep === 5" class="step-content review-step">
-            <div v-if="listingData.listing_type === 'ask'" class="form-group">
-              <label for="price">Your Asking Price</label>
-              <input
-                type="number"
-                id="price"
-                v-model.number="listingData.price"
-                placeholder="$0.00"
-                class="price-input"
-              />
-              <p class="input-note">
-                Minimum asking price is {{ formatCurrency(minimumAskPrice) }}
-              </p>
+        <div v-if="currentStep === 5" class="step-content review-step">
+          <div v-if="listingData.listing_type === 'ask'" class="form-group">
+            <label for="price">Your Asking Price</label>
+            <input
+              type="number"
+              id="price"
+              v-model.number="listingData.price"
+              placeholder="$0.00"
+              class="price-input"
+            />
+            <p class="input-note">
+              Minimum asking price is {{ formatCurrency(minimumAskPrice) }}
+            </p>
+          </div>
+          <div v-else class="form-group locked-price">
+            <label>Sale Price (Locked to Highest Bid)</label>
+            <div class="price-display">{{ formatCurrency(listingData.price) }}</div>
+          </div>
+          <div class="earnings-summary">
+            <div class="summary-item">
+              <span>Transaction Fee ({{ feePercentage }}):</span>
+              <span class="negative"> -{{ formatCurrency(transactionFee) }}</span>
             </div>
-            <div v-else class="form-group locked-price">
-              <label>Sale Price (Locked to Highest Bid)</label>
-              <div class="price-display">{{ formatCurrency(listingData.price) }}</div>
+            <div class="summary-item total">
+              <span>Your Payout:</span> <span>{{ formatCurrency(sellerPayout) }}</span>
             </div>
-            <div class="earnings-summary">
-              <div class="summary-item">
-                <span>Transaction Fee ({{ feePercentage }})</span>
-                <span class="negative">-{{ formatCurrency(transactionFee) }}</span>
-              </div>
-              <div class="summary-item total">
-                <span>Your Payout</span> <span>{{ formatCurrency(sellerPayout) }}</span>
-              </div>
-            </div>
-            <div class="listing-review" v-if="selectedProductInfo">
-              <h4>Review Your Listing</h4>
-              <p><strong>Item:</strong> {{ selectedProductInfo.name }}</p>
+          </div>
+          <div class="listing-review" v-if="selectedProductInfo">
+            <h4>Review Your Listing</h4>
+            <p><strong>Item:</strong> {{ selectedProductInfo.name }}</p>
+            <p>
+              <strong>Size:</strong> {{ selectedSizeValue }} | <strong>Condition:</strong>
+              {{ listingData.item_condition }}
+            </p>
+            <p><strong>Listing Type:</strong> {{ listingData.listing_type }}</p>
+            <div class="market-context">
               <p>
-                <strong>Size:</strong> {{ selectedSizeValue }} | <strong>Condition:</strong>
-                {{ listingData.item_condition }}
+                <strong>Retail Price:</strong> {{ formatCurrency(selectedProductInfo.retailPrice) }}
               </p>
-              <p><strong>Listing Type:</strong> {{ listingData.listing_type }}</p>
-              <div class="market-context">
-                <p>
-                  <strong>Retail Price:</strong> {{ formatCurrency(selectedProductInfo.retailPrice) }}
-                </p>
-                <p><strong>Highest Bid:</strong> {{ formatCurrency(highestBid) }}</p>
-              </div>
+              <p><strong>Highest Bid:</strong> {{ formatCurrency(highestBid) }}</p>
             </div>
           </div>
-          <div class="wizard-footer">
-            <button v-if="currentStep > 1" @click="prevStep" class="btn btn-secondary">Back</button>
-            <button
-              v-if="currentStep < 5"
-              @click="nextStep"
-              :disabled="!isStepValid"
-              class="btn btn-primary"
-            >
-              Next
-            </button>
-            <button
-              v-if="currentStep === 5"
-              @click="submitListing"
-              :disabled="!isStepValid"
-              class="btn btn-primary"
-            >
-              Submit Listing
-            </button>
-          </div>
-        </template>
-      </div>
+        </div>
+      </WizardLayout>
     </main>
     <footer class="site-footer"></footer>
   </div>
@@ -262,6 +243,8 @@ import { fetchFromAPI, postToAPI } from '@/utils/index.js'
 import { useAuthStore } from '@/stores/authStore.js'
 import router from '@/router/index.js'
 import { getSellerFee } from '@/utils/fees.js'
+import WizardLayout from '@/components/WizardLayout.vue'
+import { formatCurrency } from '@/utils/formatting.js'
 
 const currentStep = ref(1)
 const MINIMUM_PRICE = 1.0
@@ -309,14 +292,6 @@ onMounted(async () => {
   }
 })
 
-const stepTitle = computed(() => {
-  return (
-    ['Select Listing Type', 'Select Brand', 'Find Your Item', 'Add Details', 'Set Your Price'][
-    currentStep.value - 1
-      ] || ''
-  )
-})
-
 const filteredBrands = computed(() => {
   if (!brandSearchQuery.value) return brands.value
   return brands.value.filter((b) =>
@@ -356,7 +331,6 @@ const lowestAsk = computed(() => {
   return sizeInfo?.lowestAskingPrice[listingData.item_condition]?.price
 })
 
-// NEW: Dynamic minimum ask price
 const minimumAskPrice = computed(() => {
   if (listingData.listing_type === 'ask' && highestBid.value > 0) {
     return highestBid.value + 1.00;
@@ -388,7 +362,7 @@ const isStepValid = computed(() => {
       return !!listingData.product_id
     case 4:
       return !!listingData.size_id && !!listingData.item_condition
-    case 5: // MODIFIED: Uses new minimumAskPrice
+    case 5:
       return listingData.listing_type === 'sale' || (listingData.price && listingData.price >= minimumAskPrice.value)
     default:
       return false
@@ -409,7 +383,6 @@ async function searchForProducts() {
   }
 }
 
-// NEW: Watcher to format price input
 watch(() => listingData.price, (newValue) => {
   if (typeof newValue !== 'number') return;
   const valueStr = String(newValue);
@@ -531,10 +504,6 @@ function navigateToNext() {
   router.push(route);
 }
 
-const formatCurrency = (amount) => {
-  if (typeof amount !== 'number') return '---'
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
-}
 </script>
 
 <style scoped>
@@ -543,7 +512,6 @@ a { color: #ffffff; text-decoration: none; }
 .btn { border: 1px solid transparent; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: bold; padding: 0.75rem 1.5rem; transition: all 0.3s ease; }
 .btn-primary { background-color: #ffffff; color: #121212; }
 .btn-secondary { background-color: #2c2c2c; border-color: #444; color: #ffffff; }
-.btn:disabled { background-color: #333; border-color: #444; color: #888; cursor: not-allowed; }
 .create-content { display: flex; justify-content: center; padding: 4rem 5%; }
 .create-listing-container { color: #ffffff; font-family: Spectral, sans-serif; }
 .data-label { color: #888; display: block; font-size: 0.8rem; margin-bottom: 0.25rem; }
@@ -554,16 +522,11 @@ a { color: #ffffff; text-decoration: none; }
 .earnings-summary { border-top: 1px solid #333; margin: 1.5rem 0; padding-top: 1.5rem; }
 .form-group { margin-bottom: 1.5rem; }
 .form-group label { display: block; font-weight: bold; margin-bottom: 0.75rem; }
-h2 { font-size: 1.8rem; margin-bottom: 0.5rem; text-align: left; }
-.highest-bid-value { color: #6ef0a3; font-size: 0.8rem; font-weight: bold; }
 .input-note { color: #888; font-size: 0.8rem; margin-top: 0.5rem; }
 .listing-created-header, .listing-created-p { text-align: center; }
 .listing-review { background-color: #121212; border-radius: 8px; margin-top: 1.5rem; padding: 1rem; }
 .listing-review h4 { margin-top: 0; }
-.loading-overlay { align-items: center; display: flex; flex-direction: column; justify-content: center; min-height: 400px; padding: 2rem; }
-.loading-overlay p { color: #888; font-weight: bold; margin-top: 1rem; }
 .locked-price label { margin-bottom: 0.5rem; }
-.logo { font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; }
 .market-context { border-top: 1px solid #333; margin-top: 1rem; padding-top: 1rem; }
 .market-context p { margin: 0.5rem 0; }
 .market-data-content { display: flex; gap: 1rem; justify-content: space-around; }
@@ -571,7 +534,6 @@ h2 { font-size: 1.8rem; margin-bottom: 0.5rem; text-align: left; }
 .market-data-panel h4 { color: #aaa; font-size: 1rem; font-weight: normal; margin-bottom: 1rem; margin-top: 0; text-align: center; }
 .negative { color: #f06e6e; }
 .no-results { color: #888; padding: 2rem; text-align: center; }
-.page-header { align-items: center; border-bottom: 1px solid #2a2a2a; display: flex; justify-content: space-between; padding: 1.5rem 5%; }
 .price-display { background-color: #2c2c2c; border: 1px solid #444; border-radius: 8px; font-size: 1.5rem; font-weight: bold; padding: 0.75rem; text-align: center; }
 .price-input { background-color: #2c2c2c; border: 1px solid #444; border-radius: 8px; color: #ffffff; font-size: 1.5rem; font-weight: bold; padding: 0.75rem; width: 100%; }
 .product-item { align-items: center; border: 2px solid transparent; border-radius: 8px; cursor: pointer; display: flex; gap: 1rem; padding: 0.75rem; }
@@ -579,8 +541,6 @@ h2 { font-size: 1.8rem; margin-bottom: 0.5rem; text-align: left; }
 .product-item.selected { border-color: #ffffff; }
 .product-item:hover { background-color: #2c2c2c; }
 .product-results { max-height: 250px; overflow-y: auto; }
-.progress { background-color: #ffffff; height: 100%; transition: width 0.3s ease; }
-.progress-bar { background-color: #2c2c2c; height: 8px; width: 100%; }
 .radio-btn { background-color: #2c2c2c; border: 2px solid #444; border-radius: 20px; color: #ffffff; cursor: pointer; font-size: 0.9rem; padding: 0.5rem 1.25rem; text-transform: capitalize; transition: all 0.2s ease; }
 .radio-btn.selected { background-color: #383838; border-color: #ffffff; }
 .radio-group { display: flex; flex-wrap: wrap; gap: 0.75rem; }
@@ -597,17 +557,18 @@ h2 { font-size: 1.8rem; margin-bottom: 0.5rem; text-align: left; }
 .selection-card.selected { background-color: #383838; border-color: #ffffff; }
 .selection-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 .size-value { font-weight: 600; }
-.spinner { animation: spin 1s linear infinite; border: 4px solid #333; border-radius: 50%; border-top: 4px solid #ffffff; height: 50px; width: 50px; }
 .step-content { min-height: 300px; padding: 1rem 2rem; }
-.submission-result-screen { align-items: center; display: flex; flex-direction: column; justify-content: center; min-height: 400px; padding: 2rem; text-align: center; }
-.submission-result-screen h2 { border-bottom: none; font-size: 2rem; }
-.submission-result-screen p { color: #aaa; max-width: 400px; }
-.summary-item { align-items: center; display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
-.summary-item.total { font-size: 1.2rem; font-weight: bold; }
-.wizard-card { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; max-width: 800px; overflow: hidden; width: 100%; }
-.wizard-footer { align-items: center; background-color: #121212; border-top: 1px solid #2a2a2a; display: flex; justify-content: space-between; padding: 1.5rem 2rem; }
-.wizard-header { padding: 2rem 2rem 1rem; }
-.wizard-header p { color: #888; margin: 0; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@media (max-width: 768px) {
+  .create-content { padding: 2rem 3%; }
+  .market-data-content { flex-direction: column; }
+  .price-input { font-size: 1.2rem; }
+  .selection-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .step-content { padding: 1rem 1.5rem; }
+}
+@media (max-width: 480px) {
+  .create-content { padding: 1rem 3%; }
+  .selection-grid { grid-template-columns: 1fr; }
+  .step-content { padding: 1rem; }
+}
 </style>

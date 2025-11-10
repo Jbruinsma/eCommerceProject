@@ -118,127 +118,44 @@ function redirectToAddItem() {
 </script>
 
 <style scoped>
-a {
-  color: #ffffff;
-  text-decoration: none;
-}
-h2 {
-  border-bottom: 1px solid #333;
-  font-size: 1.8rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  text-align: left;
-}
-.page-header {
-  border-bottom: 1px solid #2a2a2a;
-  padding: 1.5rem 5%;
-}
-.portfolio-container {
-  color: #ffffff;
-  font-family: Spectral, sans-serif;
-}
-.portfolio-content {
-  margin: 0 auto;
-  max-width: 1200px;
-  padding: 4rem 5%;
-}
-.overview-section {
-  margin-bottom: 4rem;
-}
-.stats-grid {
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-}
-.stat-card {
-  background-color: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  border-radius: 8px;
-  padding: 2rem;
-  text-align: center;
-}
-.stat-card h3 {
-  color: #ffffff;
-  font-size: 2.2rem;
-  margin: 0 0 0.5rem 0;
-}
-.stat-card p {
-  color: #888;
-  font-size: 0.9rem;
-  margin: 0;
-}
-/* MODIFICATION: New style for the items header */
-.items-header {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-}
-.items-header h2 {
-  border-bottom: none;
-  margin-bottom: 1rem;
-}
-.table-wrapper {
-  overflow-x: auto;
-}
-.portfolio-table {
-  border-collapse: collapse;
-  width: 100%;
-}
-thead th {
-  background-color: #1a1a1a;
-  border-bottom: 2px solid #333;
-  color: #ffffff;
-  font-weight: 600;
-  padding: 1rem;
-  text-align: left;
-}
-tbody td {
-  border-bottom: 1px solid #2a2a2a;
-  padding: 1rem;
-  vertical-align: middle;
-}
-tbody tr:hover {
-  background-color: #1f1f1f;
-}
-.product-cell {
-  align-items: center;
-  display: flex;
-  gap: 1rem;
-}
-.product-image {
-  border-radius: 4px;
-  height: 50px;
-  object-fit: cover;
-  width: 50px;
-}
-.gain {
-  color: #6ef0a3;
-}
-.loss {
-  color: #f06e6e;
-}
-.btn {
-  border: 1px solid transparent;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: bold;
-  padding: 0.6rem 1.2rem;
-  transition: all 0.3s ease;
-}
-.btn-primary {
-  background-color: #ffffff;
-  color: #121212;
-}
-.btn-primary:hover {
-  background-color: #cccccc;
+a { color: #ffffff; text-decoration: none; }
+h2 { border-bottom: 1px solid #333; font-size: 1.8rem; margin-bottom: 2rem; padding-bottom: 1rem; text-align: left; }
+.portfolio-container { color: #ffffff; font-family: Spectral, sans-serif; }
+.portfolio-content { margin: 0 auto; max-width: 1200px; padding: 4rem 5%; }
+.overview-section { margin-bottom: 4rem; }
+.stats-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.stat-card { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 2rem; text-align: center; }
+.stat-card h3 { color: #ffffff; font-size: 2.2rem; margin: 0 0 0.5rem 0; }
+.stat-card p { color: #888; font-size: 0.9rem; margin: 0; }
+.items-header { align-items: center; display: flex; justify-content: space-between; }
+.items-header h2 { border-bottom: none; margin-bottom: 1rem; }
+.table-wrapper { overflow-x: auto; }
+.portfolio-table { border-collapse: collapse; width: 100%; }
+thead th { background-color: #1a1a1a; border-bottom: 2px solid #333; color: #ffffff; font-weight: 600; padding: 1rem; text-align: left; }
+tbody td { border-bottom: 1px solid #2a2a2a; padding: 1rem; vertical-align: middle; }
+tbody tr:hover { background-color: #1f1f1f; }
+.product-cell { align-items: center; display: flex; gap: 1rem; }
+.product-image { border-radius: 4px; height: 50px; object-fit: cover; width: 50px; }
+.gain { color: #6ef0a3; }
+.loss { color: #f06e6e; }
+.btn { border: 1px solid transparent; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: bold; padding: 0.6rem 1.2rem; transition: all 0.3s ease; }
+.btn-primary { background-color: #ffffff; color: #121212; }
+.btn-primary:hover { background-color: #cccccc; }
+.site-footer { background-color: #1a1a1a; border-top: 1px solid #333; color: #888; padding: 2rem 5%; text-align: center; }
+
+@media (max-width: 768px) {
+  .portfolio-content { padding: 2rem 5%; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .stat-card { padding: 1.5rem; }
+  .stat-card h3 { font-size: 1.8rem; }
+  .items-header { align-items: flex-start; flex-direction: column; gap: 1rem; }
+  .items-header h2 { margin-bottom: 0; }
+  .btn { width: 100%; }
+  thead th, tbody td { font-size: 0.9rem; padding: 0.75rem; white-space: nowrap; }
+  .product-cell span { white-space: normal; }
 }
 
-.site-footer {
-  background-color: #1a1a1a;
-  border-top: 1px solid #333;
-  color: #888;
-  padding: 2rem 5%;
-  text-align: center;
+@media (max-width: 480px) {
+  .portfolio-content { padding: 2rem 3%; }
 }
 </style>
