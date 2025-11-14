@@ -1,9 +1,6 @@
 <template>
-  <router-link
-    :to="{ name: 'ProductDetail', params: { id: productId } }"
-    class="product-card"
-  >
-    <img :src="imageUrl" :alt="name" class="product-image" />
+  <router-link :to="{ name: 'ProductDetail', params: { id: productId } }" class="product-card">
+    <img :src="displayedImageUrl" :alt="name" class="product-image" />
 
     <div class="product-details">
       <h3 class="product-name">{{ name }}</h3>
@@ -18,30 +15,34 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue'
-import { formatProductCardPrice } from '@/utils/formatting.js'
+import { defineProps, computed } from 'vue'
+import { formatProductCardPrice, formatValidatedImageUrl } from '@/utils/formatting.js'
 
-defineProps({
+const props = defineProps({
   productId: {
     type: [String, Number],
-    required: true
+    required: true,
   },
   name: {
-    type: String,
-    required: true
+    type: [String, null],
+    required: true,
   },
   imageUrl: {
     type: String,
-    required: true
+    required: true,
   },
   price: {
     type: Number,
-    default: null
+    default: null,
   },
   brandName: {
     type: String,
-    default: null
-  }
+    default: null,
+  },
+})
+
+const displayedImageUrl = computed(() => {
+  return formatValidatedImageUrl(props.imageUrl)
 })
 </script>
 

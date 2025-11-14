@@ -3,7 +3,7 @@
     <main class="product-content">
       <div class="product-grid">
         <div class="product-image-container">
-          <img :src="product.imageUrl" :alt="product.name" class="product-image" />
+          <img :src="displayedImageUrl" :alt="product.name" class="product-image" />
         </div>
 
         <div class="product-info-container">
@@ -126,6 +126,7 @@ import { useRoute } from 'vue-router'
 import { fetchFromAPI } from '@/utils/index.js'
 import { Chart, registerables } from 'chart.js'
 import { redirectToBuyPage, redirectToBidPage } from '@/utils/routing.js'
+import { formatValidatedImageUrl } from '@/utils/formatting.js'
 
 Chart.register(...registerables)
 
@@ -140,6 +141,13 @@ const product = ref({
   releaseDate: '',
   imageUrl: 'https://placehold.co/800x600/1a1a1a/ffffff?text=Loading',
 })
+
+const displayedImageUrl = computed(() => {
+  if (product.value.imageUrl !== null && product.value.imageUrl.startsWith('https://placehold.co')) {
+    return product.value.imageUrl;
+  }
+  return formatValidatedImageUrl(product.value.imageUrl);
+});
 
 const availableSizes = ref([])
 const selectedSize = ref(null)
@@ -256,6 +264,8 @@ const renderChart = () => {
 }
 
 onMounted(async () => {
+  window.scrollTo(0, 0);
+
   try {
     const [response, salesHistoryResponse] = await Promise.all([
       fetchFromAPI(`/search/${productId}`),
@@ -301,6 +311,7 @@ onMounted(async () => {
   } catch (error) {
     console.error('Error fetching product details:', error)
     product.value.name = 'Product Not Found'
+    product.value.imageUrl = null
   }
 })
 

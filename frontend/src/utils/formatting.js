@@ -27,3 +27,16 @@ export function formatDate(dateString) {
   date.setDate(date.getDate() + 1);
   return date.toLocaleDateString('en-US', options);
 }
+
+const DEFAULT_IMAGE_PATH = '/favicon.svg';
+const ALLOWED_EXTENSIONS = ['.jpg', '.avif'];
+
+export function formatValidatedImageUrl(imageUrl) {
+  if (imageUrl) {
+    const lowerCaseUrl = imageUrl.toLowerCase();
+    if (ALLOWED_EXTENSIONS.some(ext => lowerCaseUrl.endsWith(ext))) {
+      return imageUrl;
+    }
+  }
+  return DEFAULT_IMAGE_PATH;
+}

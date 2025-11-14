@@ -82,22 +82,28 @@
           </select>
         </div>
 
-        <div v-if="searchResults.length > 0" class="product-grid">
-          <ProductCard
-            v-for="product in searchResults"
-            :key="product.productId"
-            :productId="product.productId"
-            :imageUrl="product.imageUrl"
-            :name="product.name"
-            :price="product.lowestAskingPrice"
-            :brandName="product.brandName"
-          />
+        <div v-if="isLoading" class="loading-spinner-container">
+          <div class="loading-spinner"></div>
         </div>
 
-        <div v-else class="no-results">
-          <h2>No Results Found</h2>
-          <p>Try adjusting your search or filters to find what you're looking for.</p>
-        </div>
+        <template v-if="!isLoading">
+          <div v-if="searchResults.length > 0" class="product-grid">
+            <ProductCard
+              v-for="product in searchResults"
+              :key="product.productId"
+              :productId="product.productId"
+              :imageUrl="product.imageUrl"
+              :name="product.name"
+              :price="product.lowestAskingPrice"
+              :brandName="product.brandName"
+            />
+          </div>
+
+          <div v-else class="no-results">
+            <h2>No Results Found</h2>
+            <p>Try adjusting your search or filters to find what you're looking for.</p>
+          </div>
+        </template>
       </main>
     </div>
   </div>
@@ -115,6 +121,7 @@ const filterOptions = ref({})
 const route = useRoute()
 const router = useRouter()
 
+const isLoading = ref(false)
 const searchQuery = ref('')
 const minPrice = ref(null)
 const maxPrice = ref(null)
@@ -302,6 +309,7 @@ function applyPriceFilter() {
 }
 
 async function searchProducts(searchQuery = null, category = null) {
+  isLoading.value = true
   const params = new URLSearchParams()
 
   if (searchQuery) {
@@ -327,6 +335,8 @@ async function searchProducts(searchQuery = null, category = null) {
     searchResults.value = []
     searchResultStorage.value = []
     filterOptions.value = {}
+  } finally {
+    isLoading.value = false
   }
 }
 </script>
@@ -344,9 +354,13 @@ ul { list-style: none; margin: 0; padding: 0; }
 .filter-options input[type='checkbox']:checked { background-color: #ffffff; border-color: #ffffff; transition: background-color 0.2s, border-color 0.2s; }
 .filter-options label { align-items: center; color: #cccccc; cursor: pointer; display: flex; margin-bottom: 0.75rem; }
 .filter-options label:hover { color: #ffffff; }
+.filters-header-mobile { display: none; }
 .filters-sidebar { border-right: 1px solid #2a2a2a; flex: 0 0 260px; padding-right: 2rem; }
+.loading-spinner { animation: spin 1s linear infinite; border: 4px solid #555; border-radius: 50%; border-top: 4px solid #ffffff; height: 40px; width: 40px; }
+.loading-spinner-container { align-items: center; display: flex; justify-content: center; padding: 4rem; }
 .main-content { display: flex; gap: 1rem; padding: 0 5%; }
 .marketplace-container { color: #ffffff; padding: 4rem 0; }
+.mobile-filter-toggle { background-color: #333; border: 1px solid #555; border-radius: 4px; color: #ffffff; cursor: pointer; display: none; font-size: 0.9rem; padding: 0.5rem 1rem; }
 .no-results { color: #888; padding: 4rem 2rem; text-align: center; }
 .no-results h2 { border-bottom: none; font-size: 1.8rem; margin-bottom: 1rem; }
 .no-results p { font-size: 1.1rem; margin: 0 auto; max-width: 400px; }
@@ -364,9 +378,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .search-bar button:hover { background-color: #121212; color: #ffffff; }
 .search-bar input { background-color: #1a1a1a; border: 1px solid #555; border-bottom-left-radius: 6px; border-right: none; border-top-left-radius: 6px; color: #ffffff; flex-grow: 1; font-size: 1rem; padding: 0.75rem 1rem; }
 .sort-dropdown { background-color: #1a1a1a; border: 1px solid #555; border-radius: 4px; color: #ffffff; padding: 0.5rem; }
-.mobile-filter-toggle { background-color: #333; border: 1px solid #555; border-radius: 4px; color: #ffffff; cursor: pointer; display: none; font-size: 0.9rem; padding: 0.5rem 1rem; }
-.filters-header-mobile { display: none; }
-
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 @media (max-width: 900px) {
   .marketplace-container { padding: 2rem 0; }
   .page-header { padding: 0 5% 2rem; }
@@ -382,7 +394,6 @@ ul { list-style: none; margin: 0; padding: 0; }
   .mobile-filter-toggle { display: block; }
   .product-grid { gap: 1rem; grid-template-columns: repeat(2, 1fr); justify-content: space-between; }
 }
-
 @media (max-width: 480px) {
   .page-header { padding: 0 3% 1.5rem; }
   .main-content { padding: 0 3%; }
