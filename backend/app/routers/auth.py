@@ -59,10 +59,10 @@ async def register(registration_credentials: RegisterCredentials, session: Async
         })
         await session.commit()
 
-        row = result.mappings().first()
-        if not row:
+        new_user_info_row = result.mappings().first()
+        if not new_user_info_row:
             return ErrorMessage(message="User could not be registered", error="UserRegistrationFailed")
 
-        return Message(message="User registered successfully", extra=dict(row))
+        return Message(message="User registered successfully", extra=dict(new_user_info_row))
 
     return ErrorMessage(message="The email provided is already associated with another account.", error="UserAlreadyExists")
