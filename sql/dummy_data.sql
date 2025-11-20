@@ -318,8 +318,8 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (11, 'New Balance Fresh Foam X 1080v14 ''White Silver Metallic Sea Salt''', 'M1080W14', 'White/Sea Salt/Black', 'Sneakers', 164.99, '2024-03-01', '/products/M1080W14.avif'),
 
 -- ASICS
-(2, 'ASICS GEL-KAYANO 14 ''White/Midnight''', '1201A019-107', 'White/Midnight', 'Sneakers', 150.00, '2022-08-01', '/products/1201A019-107'),
-(2, 'ASICS GEL-KAYANO 14 ''White/Pure Silver''', '1201A019-108', 'White/Pure Silver', 'Sneakers', 150.00, '2023-11-17', '/products/1201A019-108'),
+(2, 'ASICS GEL-KAYANO 14 ''White/Midnight''', '1201A019-107', 'White/Midnight', 'Sneakers', 150.00, '2022-08-01', '/products/1201A019-107.avif'),
+(2, 'ASICS GEL-KAYANO 14 ''White/Pure Silver''', '1201A019-108', 'White/Pure Silver', 'Sneakers', 150.00, '2023-11-17', '/products/1201A019-108.avif'),
 (2, 'ASICS GEL-1130 ''Clay Canyon''', '1201A256-200', 'Clay Canyon/Simply Taupe', 'Sneakers', 95.00, '2022-08-19', '/products/1201A256-200'),
 (2, 'ASICS GEL-1130 ''White/Oatmeal''', '1201A256-120', 'White/Oatmeal', 'Sneakers', 100.00, '2023-08-10', '/products/1201A256-120'),
 (2, 'ASICS GEL-1130 ''Black/Slate Grey''', '1201A256-004', 'Black/Slate Grey', 'Sneakers', 99.99, '2023-03-01', '/products/1201A256-004'),
