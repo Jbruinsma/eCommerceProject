@@ -1,3 +1,5 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
 DROP SCHEMA IF EXISTS ecommerce;
 CREATE SCHEMA ecommerce;
 USE ecommerce;
@@ -16,7 +18,7 @@ DROP TABLE IF EXISTS brands;
 DROP TABLE IF EXISTS sizes;
 DROP TABLE IF EXISTS fee_structures;
 
-
+SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE users(
     uuid CHAR(36) PRIMARY KEY NOT NULL,
@@ -37,7 +39,6 @@ CREATE TABLE brands(
     brand_logo_url VARCHAR(2083)
 );
 
--- Table: sizes
 CREATE TABLE sizes(
   size_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   size_value VARCHAR(50) NOT NULL UNIQUE
@@ -53,34 +54,29 @@ CREATE TABLE fee_structures (
     CHECK (buyer_fee_percentage >= 0)
 );
 
--- Table: account_balance
 CREATE TABLE account_balance(
     user_id CHAR(36) PRIMARY KEY,
     balance DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
-
     FOREIGN KEY (user_id) REFERENCES users(uuid) ON DELETE CASCADE
 );
 
--- Table: products
 CREATE TABLE products(
     product_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
     brand_id INT UNSIGNED NOT NULL,
     name VARCHAR(255) NOT NULL,
     sku VARCHAR(100) UNIQUE,
     colorway VARCHAR(250),
-    retail_price DECIMAL(10, 2) NOT NULL,
+    retail_price DECIMAL(10, 2),
     release_date DATE,
     image_url VARCHAR(2083),
     product_type VARCHAR(100) NOT NULL,
     CHECK (retail_price >= 0),
-
     FOREIGN KEY (brand_id) REFERENCES brands(brand_id)
 );
 
 CREATE TABLE products_sizes(
     product_id INT UNSIGNED,
     size_id INT UNSIGNED,
-
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
     FOREIGN KEY (size_id) REFERENCES sizes(size_id) ON DELETE CASCADE,
     PRIMARY KEY(product_id, size_id)
@@ -88,28 +84,23 @@ CREATE TABLE products_sizes(
 
 CREATE TABLE orders(
     order_id CHAR(36) PRIMARY KEY NOT NULL,
-    address_id INT UNSIGNED,
+    address_id INT UNSIGNED, 
     buyer_id CHAR(36) NOT NULL,
     seller_id CHAR(36) NOT NULL,
     product_id INT UNSIGNED NOT NULL,
     size_id INT UNSIGNED NOT NULL,
     product_condition ENUM('new', 'used', 'worn') NOT NULL,
-
     sale_price DECIMAL(10, 2) NOT NULL,
-
     buyer_transaction_fee DECIMAL(10, 2) NOT NULL,
     buyer_fee_structure_id INT UNSIGNED,
     buyer_final_price DECIMAL(10, 2) NOT NULL,
-
     seller_transaction_fee DECIMAL(10, 2) NOT NULL,
     seller_fee_structure_id INT UNSIGNED,
     seller_final_payout DECIMAL(10, 2) NOT NULL,
-
     order_status ENUM('pending', 'paid', 'shipped', 'completed', 'cancelled', 'refunded') NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (address_id) REFERENCES addresses(address_id),
+    
     FOREIGN KEY (buyer_id) REFERENCES users(uuid),
     FOREIGN KEY (seller_id) REFERENCES users(uuid),
     FOREIGN KEY (product_id) REFERENCES products(product_id),
@@ -136,7 +127,11 @@ CREATE TABLE addresses(
     FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE SET NULL
 );
 
--- Table: listings
+ALTER TABLE orders 
+ADD CONSTRAINT fk_orders_address 
+FOREIGN KEY (address_id) REFERENCES addresses(address_id);
+
+-- 3. REMAINING TABLES
 CREATE TABLE listings(
     listing_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
     user_id CHAR(36) NOT NULL,
@@ -156,7 +151,6 @@ CREATE TABLE listings(
     FOREIGN KEY (fee_structure_id) REFERENCES fee_structures(id)
 );
 
--- Table: portfolio_items
 CREATE TABLE portfolio_items(
     portfolio_item_id CHAR(36) PRIMARY KEY NOT NULL,
     user_id CHAR(36) NOT NULL,
@@ -194,7 +188,6 @@ CREATE TABLE bids(
     FOREIGN KEY (fee_structure_id) REFERENCES fee_structures(id)
 );
 
--- Table: transactions
 CREATE TABLE transactions(
     transaction_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
     user_id CHAR(36) NOT NULL,

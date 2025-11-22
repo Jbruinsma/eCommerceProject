@@ -2,6 +2,7 @@ USE ecommerce;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- 1. CLEANUP
 TRUNCATE TABLE fee_structures;
 TRUNCATE TABLE account_balance;
 TRUNCATE TABLE users;
@@ -18,99 +19,10 @@ TRUNCATE TABLE bids;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
+-- 2. STATIC DATA
 INSERT INTO fee_structures
 (id, seller_fee_percentage, buyer_fee_percentage, is_active)
 VALUES(1, 0.10, 0.025, true);
-
-
-DROP PROCEDURE IF EXISTS InsertDummyUsers;
-
-DELIMITER $$
-
-CREATE PROCEDURE InsertDummyUsers()
-BEGIN
-    DECLARE i INT DEFAULT 0;
-
-    DECLARE v_first_name VARCHAR(100);
-    DECLARE v_last_name VARCHAR(100);
-    DECLARE v_domain VARCHAR(100);
-    DECLARE v_email VARCHAR(225);
-    DECLARE v_location VARCHAR(255);
-    DECLARE v_birth_date DATE;
-    DECLARE v_role ENUM('user', 'admin');
-    DECLARE v_created_at DATETIME;
-
-    -- A realistic bcrypt hash for the password '123456'
-    DECLARE v_password_hash VARCHAR(255) DEFAULT '$2a$12$w0J/utshaw.IcuHwz.dagGyTLPS.sa';
-
-    WHILE i < 1000 DO
-        SET v_first_name = ELT(FLOOR(1 + RAND() * 20),
-            'Alex', 'Jamie', 'Chris', 'Taylor', 'Jordan', 'Morgan', 'Casey', 'Riley', 'Jesse', 'Drew',
-            'Liam', 'Olivia', 'Noah', 'Emma', 'Oliver', 'Ava', 'Elijah', 'Charlotte', 'William', 'Sophia'
-        );
-        SET v_last_name = ELT(FLOOR(1 + RAND() * 20),
-            'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez',
-            'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'
-        );
-        SET v_domain = ELT(FLOOR(1 + RAND() * 5),
-            'gmail.com', 'yahoo.com', 'outlook.com', 'example.com', 'icloud.com'
-        );
-        SET v_email = CONCAT(LOWER(v_first_name), '.', LOWER(v_last_name), i, '@', v_domain);
-
-        SET v_location = ELT(FLOOR(1 + RAND() * 6),
-            'New York, NY, USA', 'Los Angeles, CA, USA', 'Chicago, IL, USA', 'London, UK', 'Toronto, ON, CA', 'Sydney, AUS'
-        );
-        SET v_birth_date = CURDATE() - INTERVAL FLOOR(6570 + RAND() * 11680) DAY;
-        IF i < 995 THEN
-            SET v_role = 'user';
-        ELSE
-            SET v_role = 'admin';
-        END IF;
-        -- This line is already correct and spreads users over 2 years
-        SET v_created_at = NOW() - INTERVAL FLOOR(RAND() * 730) DAY - INTERVAL FLOOR(RAND() * 86400) SECOND;
-        INSERT INTO users (
-            uuid, email, password, first_name, last_name,
-            location, birth_date, role, created_at, updated_at
-        ) VALUES (
-            UUID(),
-            v_email,
-            v_password_hash,
-            v_first_name,
-            v_last_name,
-            v_location,
-            v_birth_date,
-            v_role,
-            v_created_at,
-            v_created_at
-        );
-        SET i = i + 1;
-    END WHILE;
-
-END$$
-DELIMITER ;
-
-
-
-CALL InsertDummyUsers();
-
--- Re-populate account_balance for all users, with a starting balance "curve"
-INSERT INTO account_balance (user_id, balance)
-SELECT
-    u.uuid,
-    CASE
-        -- "Month 0: $0" (Users created in the current month)
-        WHEN TIMESTAMPDIFF(MONTH, u.created_at, NOW()) = 0 THEN 0.00
-
-        -- "Month 1: $500" (Users created 1 month ago)
-        WHEN TIMESTAMPDIFF(MONTH, u.created_at, NOW()) = 1 THEN 500.00
-
-        -- "At a certain point it becomes random" (Users > 1 month old)
-        -- We'll give them a random balance based on their "age"
-        ELSE
-            -- Start with a base of 500, plus a random amount ($0-$200) for each month they've been active.
-            ROUND(500.00 + (TIMESTAMPDIFF(MONTH, u.created_at, NOW()) * RAND() * 200), 2)
-    END AS starting_balance
-FROM users u;
 
 INSERT INTO brands (brand_id, brand_name, brand_logo_url) VALUES
 (1, 'Adidas', '/brand_logos/adidasLogo.png'),
@@ -134,10 +46,13 @@ INSERT INTO brands (brand_id, brand_name, brand_logo_url) VALUES
 (19, 'Supreme', '/brand_logos/SupremeLogo.png'),
 (20, 'Vans', '/brand_logos/VansLogo.png');
 
+-- FIXED: Added (99, 'One Size') to prevent FK Error 1452
 INSERT INTO sizes (size_id, size_value) VALUES
 (11, '9'), (12, '9.5'), (13, '10'), (14, '10.5'), (15, '11'), (16, '11.5'), (17, '12'), (18, '13'), (19, '14'), (20, '15'),
-(21, 'XS'), (22, 'S'), (23, 'M'), (24, 'L'), (25, 'XL'), (26, 'XXL');
+(21, 'XS'), (22, 'S'), (23, 'M'), (24, 'L'), (25, 'XL'), (26, 'XXL'),
+(99, 'One Size');
 
+-- 3. PRODUCTS
 INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price, release_date, image_url) VALUES
 -- Nike
 (12, 'Nike Air Force 1 ''07 ''Triple White''', 'DD8959-100', 'White/White/White/White', 'Sneakers', 115.00, '2020-12-21', '/products/DD8959-100.avif'),
@@ -179,7 +94,6 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (8, 'Air Jordan 4 Retro ''Bred'' (Reimagined)', 'FV5029-006', 'Black/Fire Red/Cement Grey/Summit White', 'Sneakers', 215.00, '2024-02-17', '/products/FV5029-006.avif'),
 (8, 'Air Jordan 11 Retro ''Concord'' (2018)', '378037-100', 'White/Black-Dark Concord', 'Sneakers', 220.00, '2018-12-08', '/products/378037-100.avif'),
 (8, 'Air Jordan 5 Retro ''Fire Red'' (2020)', 'DA1911-102', 'White/Black-Metallic Silver-Fire Red', 'Sneakers', 200.00, '2020-05-02', '/products/DA1911-102.avif'),
-(8, 'Air Jordan 5 Retro ''Fire Red Silver Tongue'' (2020)', 'DA1911-102', 'White/Black-Metallic Silver-Fire Red', 'Sneakers', 200.00, '2020-05-02', '/products/DA1911-102.avif'),
 (8, 'Air Jordan 4 Retro ''Black Cat'' (2020)', 'CU1110-010', 'Black/Black-Light Graphite', 'Sneakers', 190.00, '2020-01-22', '/products/CU1110-010.jpg'),
 (8, 'Air Jordan 1 Mid ''White/Black''', 'DQ8426-132', 'White/Black-White-Black', 'Sneakers', 125.00, '2023-12-12', '/products/DQ8426-132.avif'),
 (8, 'Air Jordan 3 Retro ''El Vuelo''', 'IO1752-100', 'Summit White/Metallic Gold/Pine Green/Dragon Red/Sail', 'Sneakers', 230.00, '2025-09-16', '/products/IO1752-100.avif'),
@@ -279,7 +193,7 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (9, 'Kith Classic Logo Hoodie ''Tiger Camo''', 'FW17_02', 'Tiger Camo', 'Apparel - Hoodie', 150.00, '2017-12-04', '/products/FW17_02.avif'),
 (9, 'Kith Classic Logo Williams II Hoodie ''Heather Grey''', 'FW18_01HGH', 'Heather Grey', 'Apparel - Hoodie', 160.00, '2018-11-26', '/products/FW18_01HGH.jpg'),
 (9, 'Kith Retro Logo Tee ''White''', 'khm034785-101', 'White', 'Apparel - T-Shirt', 65.00, '2022-08-04', '/products/khm034785-101.avif'),
-(9, 'Kith Retro Logo Tee ''Black''', 'khm034785-001', 'Black', 'Apparel - T-Shirt', 65.00, 2022-08-04, '/products/khm034785-001.avif'),
+(9, 'Kith Retro Logo Tee ''Black''', 'khm034785-001', 'Black', 'Apparel - T-Shirt', 65.00, '2022-08-04', '/products/khm034785-001.avif'),
 (9, 'Kith x Looney Tunes KithJam Vintage Tee ''Black''', 'KH3808-100', 'Black', 'Apparel - T-Shirt', 75.00, '2020-07-13', '/products/KH3808-100.webp'),
 (9, 'Kith x Disney Plush Through the Ages (Box set of 8)', 'KHxDP_8', 'Multicolor', 'Accessory', 105.00, '2019-11-18', '/products/KHxDP_8.avif'),
 (9, 'Kith x ASICS Gel-Lyte III ''The Palette'' (Hallow)', '1201A224-253', 'Hallow', 'Sneakers', 180.00, '2020-11-27', '/products/1201A224-253.avif'),
@@ -333,7 +247,7 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (2, 'ASICS GEL-LYTE III OG ''Cream Olive Gray''', '1201A382-101', 'Cream/Olive Grey', 'Sneakers', 90.00, '2022-12-22', '/products/1201A382-101.avif'),
 
 -- Salomon
-(17, 'Salomon XT-6 ''Triple Black''', 'L41086600', 'Black/Black/Phantom', 'Sneakers', 190.00, '2020-034-27', '/products/L41086600.jpg'),
+(17, 'Salomon XT-6 ''Triple Black''', 'L41086600', 'Black/Black/Phantom', 'Sneakers', 190.00, '2020-03-27', '/products/L41086600.jpg'),
 (17, 'Salomon XT-4 OG Protective ''Safari Almond Milk''', 'L47730300', 'Safari/Almond Milk/Kelp', 'Sneakers', 200.00, NULL, '/products/L47730300.jpg'),
 (17, 'Salomon XT-6 Gore-Tex ''Black Silver''', 'L47450600', 'Black/Black/Footwear Silver', 'Sneakers', 200.00, '2024-01-27', '/products/L47450600.jpg'),
 (17, 'Salomon XT-6 Expanse ''Lily Pad Pewter''', 'L47134200', 'Lily Pad/Laurel Wreath/Pewter', 'Sneakers', 180.00, '2023-02-01', '/products/L47134200.jpg'),
@@ -447,6 +361,10 @@ INSERT INTO Products (brand_id, name, sku, colorway, product_type, retail_price,
 (10, 'Maison Margiela Dress-Age Hobo Bag ''Black/Chestnut/Black''', 'SB2WD0096-P7268-HA755', 'Black/Chestnut/Black', 'Accessories - Bags', 2500.00, NULL, '/products/SB2WD0096-P7268-HA755.jpg'),
 (10, 'Gentle Monster Maison Margiela Glasses ''Black Clear''', 'MM210-01', 'Black Clear', 'Accessories - Glasses', 291.00, '2025-03-06', '/products/MM210-01.jpg');
 
+-- 4. LINK SIZES TO PRODUCTS
+
+-- A. SHOES (Sizes 9-15)
+-- Added 'Shoes - Loafers' to this list
 INSERT INTO products_sizes (product_id, size_id)
 SELECT p.product_id, s.size_id
 FROM products p
@@ -456,10 +374,12 @@ WHERE
         'Sneakers',
         'Sandals',
         'Slides',
-        'Shoes - Flats'
+        'Shoes - Flats',
+        'Shoes - Loafers'
     )
     AND s.size_id BETWEEN 11 AND 20;
 
+-- B. APPAREL (Sizes XS-XXL)
 INSERT INTO products_sizes (product_id, size_id)
 SELECT p.product_id, s.size_id
 FROM products p
@@ -475,409 +395,109 @@ WHERE
     )
     AND s.size_id BETWEEN 21 AND 26;
 
+-- C. SPECIFIC EXCEPTION: Boxers are 'Accessory' but need S-XXL
 INSERT INTO products_sizes (product_id, size_id)
 SELECT p.product_id, s.size_id
 FROM products p
 CROSS JOIN sizes s
 WHERE
-    p.name = 'Supreme Hanes Boxer Briefs (4 Pack) ''White'''
+    p.name LIKE '%Boxer Briefs%'
     AND s.size_id BETWEEN 21 AND 26;
 
--- Truncate transactional tables before inserting new data
-SET FOREIGN_KEY_CHECKS = 0;
-TRUNCATE TABLE addresses;
-TRUNCATE TABLE portfolio_items;
-TRUNCATE TABLE transactions;
-TRUNCATE TABLE orders;
-TRUNCATE TABLE listings;
-TRUNCATE TABLE bids;
-TRUNCATE TABLE account_balance;
-SET FOREIGN_KEY_CHECKS = 1;
+-- D. ACCESSORIES (One Size)
+-- Catches 'Accessory', 'Accessories - Bags', 'Accessories - Eyewear', etc.
+-- Excludes Boxers because we already gave them sized entries above.
+INSERT INTO products_sizes (product_id, size_id)
+SELECT p.product_id, 99
+FROM products p
+WHERE
+    (p.product_type LIKE 'Accessor%' OR p.product_type = 'Accessory')
+    AND p.name NOT LIKE '%Boxer Briefs%';
 
--- Re-populate account_balance for all users, with a starting balance "curve"
-INSERT INTO account_balance (user_id, balance)
-SELECT
-    u.uuid,
-    CASE
-        -- "Month 0: $0" (Users created in the current month)
-        WHEN TIMESTAMPDIFF(MONTH, u.created_at, NOW()) = 0 THEN 0.00
-
-        -- "Month 1: $500" (Users created 1 month ago)
-        WHEN TIMESTAMPDIFF(MONTH, u.created_at, NOW()) = 1 THEN 500.00
-
-        -- "At a certain point it becomes random" (Users > 1 month old)
-        -- We'll give them a random balance based on their "age"
-        ELSE
-            -- Start with a base of 500, plus a random amount ($0-$200) for each month they've been active.
-            ROUND(500.00 + (TIMESTAMPDIFF(MONTH, u.created_at, NOW()) * RAND() * 200), 2)
-    END AS starting_balance
-FROM users u;
-
--- Truncate transactional tables before inserting new data
-SET FOREIGN_KEY_CHECKS = 0;
-TRUNCATE TABLE addresses;
-TRUNCATE TABLE portfolio_items;
-TRUNCATE TABLE transactions;
-TRUNCATE TABLE orders;
-TRUNCATE TABLE listings;
-TRUNCATE TABLE bids;
-TRUNCATE TABLE account_balance;
-SET FOREIGN_KEY_CHECKS = 1;
-
--- Re-populate account_balance for all users, with a starting balance "curve"
-INSERT INTO account_balance (user_id, balance)
-SELECT
-    u.uuid,
-    CASE
-        -- "Month 0: $0" (Users created in the current month)
-        WHEN TIMESTAMPDIFF(MONTH, u.created_at, NOW()) = 0 THEN 0.00
-
-        -- "Month 1: $500" (Users created 1 month ago)
-        WHEN TIMESTAMPDIFF(MONTH, u.created_at, NOW()) = 1 THEN 500.00
-
-        -- "At a certain point it becomes random" (Users > 1 month old)
-        ELSE
-            -- Start with a base of 500, plus a random amount ($0-$200) for each month they've been active.
-            ROUND(500.00 + (TIMESTAMPDIFF(MONTH, u.created_at, NOW()) * RAND() * 200), 2)
-    END AS starting_balance
-FROM users u;
-
--- =================================================================
--- UNIFIED PROCEDURE: CreateMarketHistory
---
--- This single procedure replaces CreatePastSales, CreateActiveListings,
--- and CreateActiveBids.
---
--- 1. It iterates through every product/size/condition.
--- 2. It generates a *chronological* sales history (15-30 sales)
---    where each sale price is a slight "random walk" from the
---    previous sale price, making the history trend up or down.
--- 3. It uses the FINAL sale price from that history as an anchor.
--- 4. It then generates 3-5 realistic active bids and 3-5 active
---    asks, creating a "spread" based on that last sale price.
--- =================================================================
-
-DROP PROCEDURE IF EXISTS CreateMarketHistory;
+-- 5. USER GENERATION PROCEDURE
+DROP PROCEDURE IF EXISTS InsertDummyUsers;
 
 DELIMITER $$
 
-CREATE PROCEDURE CreateMarketHistory()
+CREATE PROCEDURE InsertDummyUsers()
 BEGIN
-    -- Cursor variables
-    DECLARE done INT DEFAULT FALSE;
-    DECLARE v_product_id INT UNSIGNED;
-    DECLARE v_size_id INT UNSIGNED;
-    DECLARE v_retail_price DECIMAL(10, 2);
-    DECLARE v_brand_id INT UNSIGNED;
-    DECLARE v_product_name VARCHAR(255);
+    DECLARE i INT DEFAULT 0;
 
-    -- Loop variables
-    DECLARE v_product_condition ENUM('new', 'used', 'worn');
-    DECLARE cond_iterator INT;
-    DECLARE sales_iterator INT;
-    DECLARE num_sales_for_item INT;
+    DECLARE v_first_name VARCHAR(100);
+    DECLARE v_last_name VARCHAR(100);
+    DECLARE v_domain VARCHAR(100);
+    DECLARE v_email VARCHAR(225);
+    DECLARE v_location VARCHAR(255);
+    DECLARE v_birth_date DATE;
+    DECLARE v_role ENUM('user', 'admin');
+    DECLARE v_created_at DATETIME;
 
-    -- Price/Time variables
-    DECLARE v_sale_price DECIMAL(10, 2);
-    DECLARE v_last_sale_price DECIMAL(10, 2);
-    DECLARE v_initial_market_price DECIMAL(10, 2);
-    DECLARE v_base_price_multiplier DECIMAL(5, 2);
-    DECLARE v_price_walk_multiplier DECIMAL(5, 2);
-    DECLARE v_current_timestamp DATETIME;
-    DECLARE v_time_increment_days INT;
+    -- A realistic bcrypt hash for the password '123456'
+    DECLARE v_password_hash VARCHAR(255) DEFAULT '$2a$12$w0J/utshaw.IcuHwz.dagGyTLPS.sa';
 
-    -- Order variables
-    DECLARE v_order_id CHAR(36);
-    DECLARE v_buyer_id CHAR(36);
-    DECLARE v_seller_id CHAR(36);
-    DECLARE v_buyer_first_name VARCHAR(100);
-    DECLARE v_buyer_last_name VARCHAR(100);
+    WHILE i < 1000 DO
+        SET v_first_name = ELT(FLOOR(1 + RAND() * 20),
+            'Alex', 'Jamie', 'Chris', 'Taylor', 'Jordan', 'Morgan', 'Casey', 'Riley', 'Jesse', 'Drew',
+            'Liam', 'Olivia', 'Noah', 'Emma', 'Oliver', 'Ava', 'Elijah', 'Charlotte', 'William', 'Sophia'
+        );
+        SET v_last_name = ELT(FLOOR(1 + RAND() * 20),
+            'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez',
+            'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'
+        );
+        SET v_domain = ELT(FLOOR(1 + RAND() * 5),
+            'gmail.com', 'yahoo.com', 'outlook.com', 'example.com', 'icloud.com'
+        );
+        SET v_email = CONCAT(LOWER(v_first_name), '.', LOWER(v_last_name), i, '@', v_domain);
 
-    -- Fee variables
-    DECLARE v_fee_id INT UNSIGNED DEFAULT 1;
-    DECLARE v_seller_fee_pct DECIMAL(10, 4);
-    DECLARE v_buyer_fee_pct DECIMAL(10, 4);
-    DECLARE v_buyer_tx_fee DECIMAL(10, 2);
-    DECLARE v_buyer_final_price DECIMAL(10, 2);
-    DECLARE v_seller_tx_fee DECIMAL(10, 2);
-    DECLARE v_seller_final_payout DECIMAL(10, 2);
-
-    -- Balance check variables
-    DECLARE v_buyer_current_balance DECIMAL(15, 2);
-    DECLARE v_payment_origin ENUM('account_balance', 'credit_card', 'other');
-
-    -- Active Bid/Ask variables
-    DECLARE v_active_loop_i INT;
-    DECLARE v_num_active_bids INT;
-    DECLARE v_num_active_asks INT;
-    DECLARE v_ask_price DECIMAL(10, 2);
-    DECLARE v_bid_amount DECIMAL(10, 2);
-    DECLARE v_total_bid_amount DECIMAL(10, 2);
-    DECLARE v_active_created_at DATETIME;
-
-    -- Declare the cursor
-    DECLARE product_cursor CURSOR FOR
-        SELECT ps.product_id, ps.size_id, p.retail_price, p.brand_id, p.name
-        FROM products_sizes ps
-        JOIN products p ON ps.product_id = p.product_id;
-
-    -- Declare continue handler
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
-
-    -- Get fee percentages ONCE
-    SELECT seller_fee_percentage, buyer_fee_percentage
-    INTO v_seller_fee_pct, v_buyer_fee_pct
-    FROM fee_structures WHERE id = v_fee_id;
-
-    OPEN product_cursor;
-
-    product_loop: LOOP
-        FETCH product_cursor INTO v_product_id, v_size_id, v_retail_price, v_brand_id, v_product_name;
-        IF done THEN
-            LEAVE product_loop;
+        SET v_location = ELT(FLOOR(1 + RAND() * 6),
+            'New York, NY, USA', 'Los Angeles, CA, USA', 'Chicago, IL, USA', 'London, UK', 'Toronto, ON, CA', 'Sydney, AUS'
+        );
+        SET v_birth_date = CURDATE() - INTERVAL FLOOR(6570 + RAND() * 11680) DAY;
+        IF i < 995 THEN
+            SET v_role = 'user';
+        ELSE
+            SET v_role = 'admin';
         END IF;
 
-        IF v_retail_price IS NULL OR v_retail_price = 0 THEN
-            SET v_retail_price = 150.00; -- Default retail if missing
-        END IF;
+        SET v_created_at = NOW() - INTERVAL FLOOR(RAND() * 730) DAY - INTERVAL FLOOR(RAND() * 86400) SECOND;
+        INSERT INTO users (
+            uuid, email, password, first_name, last_name,
+            location, birth_date, role, created_at, updated_at
+        ) VALUES (
+            UUID(),
+            v_email,
+            v_password_hash,
+            v_first_name,
+            v_last_name,
+            v_location,
+            v_birth_date,
+            v_role,
+            v_created_at,
+            v_created_at
+        );
+        SET i = i + 1;
+    END WHILE;
 
-        -- Loop 1: Iterate through all 3 conditions
-        SET cond_iterator = 1;
-        WHILE cond_iterator <= 3 DO
-            IF cond_iterator = 1 THEN
-                SET v_product_condition = 'new';
-            ELSEIF cond_iterator = 2 THEN
-                SET v_product_condition = 'used';
-            ELSE
-                SET v_product_condition = 'worn';
-            END IF;
-
-            -- =================================================
-            -- PART 1: CREATE CHRONOLOGICAL PAST SALES
-            -- =================================================
-
-            -- 1. Calculate the *Initial* "Hype" Price for this item.
-            -- This is the anchor for the *first* sale.
-            SET v_base_price_multiplier = (0.8 + RAND() * 1.0); -- 80% - 180%
-            IF v_brand_id IN (13, 19, 3, 6, 7) THEN -- Hype brands
-                SET v_base_price_multiplier = (1.2 + RAND() * 1.8); -- 120% - 300%
-            END IF;
-            IF
-                v_product_name LIKE '%Travis Scott%'
-                   OR
-                v_product_name LIKE '%(The Ten)%'
-                    OR
-                v_product_name LIKE '%(Lost & Found)%'
-                    OR
-                v_product_name LIKE '%Shattered Backboard%'
-                    OR
-                v_product_name LIKE 'SB Dunk High%'
-                THEN
-                SET v_base_price_multiplier = (2.5 + RAND() * 4.5); -- 250% - 700%
-            END IF;
-
-            -- Adjust multiplier based on condition
-            IF v_product_condition = 'new' THEN
-                SET v_initial_market_price = ROUND(v_retail_price * v_base_price_multiplier, 2);
-            ELSEIF v_product_condition = 'used' THEN
-                SET v_initial_market_price = ROUND(v_retail_price * v_base_price_multiplier * (0.5 + RAND() * 0.3), 2);
-            ELSE -- 'worn'
-                SET v_initial_market_price = ROUND(v_retail_price * v_base_price_multiplier * (0.2 + RAND() * 0.3), 2);
-            END IF;
-
-            -- This variable will be updated after each sale
-            SET v_last_sale_price = v_initial_market_price;
-
-            -- Set the starting time for the sales history
-            SET v_current_timestamp = NOW() - INTERVAL 720 DAY;
-
-            -- Loop 2: Create 15-30 sales for this item/size/condition
-            SET num_sales_for_item = FLOOR(15 + RAND() * 16); -- 15 to 30
-            SET v_time_increment_days = FLOOR(720 / num_sales_for_item); -- Avg days between sales
-
-            SET sales_iterator = 0;
-            WHILE sales_iterator < num_sales_for_item DO
-
-                SET v_order_id = UUID();
-
-                -- 1. Get random users
-                SELECT uuid, first_name, last_name, b.balance
-                INTO v_buyer_id, v_buyer_first_name, v_buyer_last_name, v_buyer_current_balance
-                FROM users u
-                JOIN account_balance b ON u.uuid = b.user_id
-                ORDER BY RAND() LIMIT 1;
-
-                SELECT uuid INTO v_seller_id
-                FROM users WHERE uuid != v_buyer_id ORDER BY RAND() LIMIT 1;
-
-                -- 2. Calculate NEW Sale Price (Random Walk)
-                -- The new price is a slight variation (95% to 105%) of the *last* sale price.
-                -- This creates a more realistic, trending price history.
-                SET v_price_walk_multiplier = (0.95 + RAND() * 0.1); -- 0.95 to 1.05
-                SET v_sale_price = ROUND(v_last_sale_price * v_price_walk_multiplier, 2);
-
-                -- 3. Calculate fees
-                SET v_seller_tx_fee = ROUND(v_sale_price * v_seller_fee_pct, 2);
-                SET v_seller_final_payout = v_sale_price - v_seller_tx_fee;
-                SET v_buyer_tx_fee = ROUND(v_sale_price * v_buyer_fee_pct, 2);
-                SET v_buyer_final_price = v_sale_price + v_buyer_tx_fee;
-
-                -- 4. Set chronological date
-                SET v_current_timestamp = v_current_timestamp + INTERVAL (v_time_increment_days + FLOOR(RAND() * 5 - 2)) DAY;
-                IF v_current_timestamp > NOW() THEN
-                    SET v_current_timestamp = NOW() - INTERVAL 1 SECOND;
-                END IF;
-
-                -- 5. === INSERT into orders ===
-                INSERT INTO orders (
-                    order_id, buyer_id, seller_id, product_id, size_id, product_condition,
-                    sale_price,
-                    buyer_transaction_fee, buyer_fee_structure_id, buyer_final_price,
-                    seller_transaction_fee, seller_fee_structure_id, seller_final_payout,
-                    order_status, created_at, updated_at
-                ) VALUES (
-                    v_order_id, v_buyer_id, v_seller_id, v_product_id, v_size_id, v_product_condition,
-                    v_sale_price,
-                    v_buyer_tx_fee, v_fee_id, v_buyer_final_price,
-                    v_seller_tx_fee, v_fee_id, v_seller_final_payout,
-                    'completed', v_current_timestamp, v_current_timestamp
-                );
-
-                -- 6. === INSERT into addresses ===
-                INSERT INTO addresses (
-                    user_id, order_id, purpose, name,
-                    address_line_1, city, state, zip_code, country
-                ) VALUES (
-                    v_buyer_id, v_order_id, 'shipping', CONCAT(v_buyer_first_name, ' ', v_buyer_last_name),
-                    '123 Market St', 'Fakeville', 'CA', '90210', 'USA'
-                );
-
-                -- 7. === INSERT into listings ('sold') ===
-                INSERT INTO listings (
-                    user_id, product_id, size_id, listing_type, price,
-                    fee_structure_id, item_condition, status, created_at, updated_at
-                ) VALUES (
-                    v_seller_id, v_product_id, v_size_id, 'sale', v_sale_price,
-                    v_fee_id, v_product_condition, 'sold', v_current_timestamp, v_current_timestamp
-                );
-
-                -- 8. === INSERT into transactions (buyer) ===
-                IF v_buyer_current_balance >= v_buyer_final_price THEN
-                    SET v_payment_origin = 'account_balance';
-                    UPDATE account_balance SET balance = balance - v_buyer_final_price WHERE user_id = v_buyer_id;
-                ELSE
-                    SET v_payment_origin = 'credit_card';
-                END IF;
-
-                INSERT INTO transactions (
-                    user_id, order_id, amount, transaction_status,
-                    payment_origin, payment_purpose, created_at
-                ) VALUES (
-                    v_buyer_id, v_order_id, -v_buyer_final_price, 'completed',
-                    v_payment_origin, 'purchase_funds', v_current_timestamp
-                );
-
-                -- 9. === INSERT into transactions (seller) & UPDATE seller balance ===
-                INSERT INTO transactions (
-                    user_id, order_id, amount, transaction_status,
-                    payment_destination, payment_purpose, created_at
-                ) VALUES (
-                    v_seller_id, v_order_id, v_seller_final_payout, 'completed',
-                    'account_balance', 'sale_proceeds', v_current_timestamp + INTERVAL 1 DAY
-                );
-                UPDATE account_balance SET balance = balance + v_seller_final_payout WHERE user_id = v_seller_id;
-
-                -- 10. === INSERT into portfolio_items ===
-                INSERT INTO portfolio_items (
-                    portfolio_item_id, user_id, product_id, size_id,
-                    acquisition_date, acquisition_price, item_condition
-                ) VALUES (
-                    UUID(), v_buyer_id, v_product_id, v_size_id,
-                    DATE(v_current_timestamp), v_sale_price, v_product_condition
-                );
-
-                -- 11. UPDATE v_last_sale_price FOR NEXT LOOP
-                SET v_last_sale_price = v_sale_price;
-
-                SET sales_iterator = sales_iterator + 1;
-            END WHILE; -- End sales_iterator loop
-
-            -- =================================================
-            -- PART 2: CREATE ACTIVE BIDS & ASKS
-            -- Use v_last_sale_price as the anchor
-            -- =================================================
-
-            -- Create 3-5 Active Asks
-            SET v_num_active_asks = FLOOR(3 + RAND() * 3);
-            SET v_active_loop_i = 0;
-            WHILE v_active_loop_i < v_num_active_asks DO
-                SELECT uuid INTO v_seller_id FROM users ORDER BY RAND() LIMIT 1;
-
-                -- Ask price is 2% to 15% *above* the last sale price
-                SET v_ask_price = ROUND(v_last_sale_price * (1.02 + RAND() * 0.13), 2);
-                SET v_active_created_at = NOW() - INTERVAL FLOOR(RAND() * 30) DAY;
-
-                INSERT INTO listings (
-                    user_id, product_id, size_id, listing_type, price,
-                    fee_structure_id, item_condition, status, created_at, updated_at
-                ) VALUES (
-                    v_seller_id, v_product_id, v_size_id, 'sale', v_ask_price,
-                    v_fee_id, v_product_condition, 'active', v_active_created_at, v_active_created_at
-                );
-
-                SET v_active_loop_i = v_active_loop_i + 1;
-            END WHILE;
-
-            -- Create 3-5 Active Bids
-            SET v_num_active_bids = FLOOR(3 + RAND() * 3);
-            SET v_active_loop_i = 0;
-            WHILE v_active_loop_i < v_num_active_bids DO
-                SELECT uuid, b.balance
-                INTO v_buyer_id, v_buyer_current_balance
-                FROM users u
-                JOIN account_balance b ON u.uuid = b.user_id
-                ORDER BY RAND() LIMIT 1;
-
-                -- Bid price is 2% to 15% *below* the last sale price
-                SET v_bid_amount = ROUND(v_last_sale_price * (0.85 + RAND() * 0.13), 2);
-                SET v_active_created_at = NOW() - INTERVAL FLOOR(RAND() * 30) DAY;
-
-                SET v_buyer_tx_fee = ROUND(v_bid_amount * v_buyer_fee_pct, 2);
-                SET v_total_bid_amount = v_bid_amount + v_buyer_tx_fee;
-
-                IF v_buyer_current_balance >= v_total_bid_amount THEN
-                    SET v_payment_origin = 'account_balance';
-                ELSE
-                    SET v_payment_origin = 'credit_card';
-                END IF;
-
-                INSERT INTO bids (
-                    bid_id, user_id, product_id, size_id, product_condition,
-                    bid_amount, transaction_fee, fee_structure_id, total_bid_amount,
-                    bid_status, payment_origin, created_at, updated_at
-                ) VALUES (
-                    UUID(), v_buyer_id, v_product_id, v_size_id, v_product_condition,
-                    v_bid_amount, v_buyer_tx_fee, v_fee_id, v_total_bid_amount,
-                    'active', v_payment_origin, v_active_created_at, v_active_created_at
-                );
-
-                SET v_active_loop_i = v_active_loop_i + 1;
-            END WHILE;
-
-
-            SET cond_iterator = cond_iterator + 1;
-        END WHILE; -- End cond_iterator loop
-
-    END LOOP product_loop;
-
-    CLOSE product_cursor;
 END$$
-
 DELIMITER ;
 
+-- 6. EXECUTE USER GEN
+CALL InsertDummyUsers();
 
--- =================================================================
--- CALL THE NEW UNIFIED PROCEDURE
--- =================================================================
+-- 7. INITIAL BALANCE LOGIC
+INSERT INTO account_balance (user_id, balance)
+SELECT
+    u.uuid,
+    CASE
+        -- "Month 0: $0" (Users created in the current month)
+        WHEN TIMESTAMPDIFF(MONTH, u.created_at, NOW()) = 0 THEN 0.00
 
-CALL CreateMarketHistory(); #completed in 2 h 28 m 24 s 373 ms
+        -- "Month 1: $500" (Users created 1 month ago)
+        WHEN TIMESTAMPDIFF(MONTH, u.created_at, NOW()) = 1 THEN 500.00
+
+        -- "At a certain point it becomes random" (Users > 1 month old)
+        ELSE
+            -- Start with a base of 500, plus a random amount ($0-$200) for each month they've been active.
+            ROUND(500.00 + (TIMESTAMPDIFF(MONTH, u.created_at, NOW()) * RAND() * 200), 2)
+    END AS starting_balance
+FROM users u;
