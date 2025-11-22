@@ -5,7 +5,7 @@ import re
 # Update these paths as needed
 IMAGE_DIR = 'C:/Users/justi/Desktop/currentProjects/eCommerceProject/frontend/public/products/'
 SQL_INPUT_FILE = 'C:/Users/justi/Desktop/currentProjects/eCommerceProject/sql/dummy_data.sql'
-SQL_OUTPUT_FILE = 'C:/Users/justi/Desktop/currentProjects/eCommerceProject/sql/dummy_data_corrected.sql'
+SQL_OUTPUT_FILE = '/sql/dummy_data.sql'
 
 
 # --------------------------
