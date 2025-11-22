@@ -25,7 +25,7 @@
               </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" v-if="availableSizes.length > 1">
               <label for="size-select">Size</label>
               <div class="size-selector-wrapper">
                 <select id="size-select" v-model="selectedSize">
@@ -49,6 +49,7 @@
                 </svg>
               </div>
             </div>
+
             <div class="action-buttons">
               <button
                 v-if="currentMarketData.lowestAsk && currentMarketData.lowestAsk.price"
@@ -63,8 +64,8 @@
               >
                 Buy Now
                 <span class="btn-price">{{
-                    formatCurrency(currentMarketData.lowestAsk.price)
-                  }}</span>
+                  formatCurrency(currentMarketData.lowestAsk.price)
+                }}</span>
               </button>
 
               <button v-else class="btn btn-buy" disabled>
@@ -78,10 +79,10 @@
               >
                 Place Bid
                 <span class="btn-price">{{
-                    formatCurrency(
-                      currentMarketData.highestBid ? currentMarketData.highestBid.amount : null,
-                    )
-                  }}</span>
+                  formatCurrency(
+                    currentMarketData.highestBid ? currentMarketData.highestBid.amount : null,
+                  )
+                }}</span>
               </button>
             </div>
           </div>
@@ -90,12 +91,10 @@
             <h3>Product Details</h3>
             <ul>
               <li>
-                <strong>Retail Price</strong
-                ><span>{{ formatCurrency(product.retailPrice) }}</span>
+                <strong>Retail Price</strong><span>{{ formatCurrency(product.retailPrice) }}</span>
               </li>
               <li>
-                <strong>Release Date</strong
-                ><span>{{ formatDate(product.releaseDate) }}</span>
+                <strong>Release Date</strong><span>{{ formatDate(product.releaseDate) }}</span>
               </li>
             </ul>
           </div>
@@ -103,12 +102,15 @@
       </div>
     </main>
 
-    <section class="chart-container">
+    <section class="chart-container" v-if="currentSalesHistory.length > 0">
       <h3>
         Sales History
-        <span v-if="selectedSize">
+        <span v-if="selectedSize && availableSizes.length > 1">
           ({{ selectedCondition.charAt(0).toUpperCase() + selectedCondition.slice(1) }} - Size
           {{ selectedSize }})
+        </span>
+        <span v-else>
+          ({{ selectedCondition.charAt(0).toUpperCase() + selectedCondition.slice(1) }})
         </span>
       </h3>
       <div class="chart-wrapper">
@@ -143,11 +145,14 @@ const product = ref({
 })
 
 const displayedImageUrl = computed(() => {
-  if (product.value.imageUrl !== null && product.value.imageUrl.startsWith('https://placehold.co')) {
-    return product.value.imageUrl;
+  if (
+    product.value.imageUrl !== null &&
+    product.value.imageUrl.startsWith('https://placehold.co')
+  ) {
+    return product.value.imageUrl
   }
-  return formatValidatedImageUrl(product.value.imageUrl);
-});
+  return formatValidatedImageUrl(product.value.imageUrl)
+})
 
 const availableSizes = ref([])
 const selectedSize = ref(null)
@@ -202,7 +207,17 @@ const formatDate = (dateString) => {
 
 const renderChart = () => {
   if (!salesChartCanvas.value) return
+
   const salesData = currentSalesHistory.value
+
+  if (salesData.length === 0) {
+    if (salesChartInstance) {
+      salesChartInstance.destroy()
+      salesChartInstance = null
+    }
+    return
+  }
+
   const labels = salesData.map((sale) => formatDate(sale.order_date))
   const data = salesData.map((sale) => sale.sale_price)
   const chartConfig = {
@@ -264,13 +279,15 @@ const renderChart = () => {
 }
 
 onMounted(async () => {
-  window.scrollTo(0, 0);
+  window.scrollTo(0, 0)
 
   try {
     const [response, salesHistoryResponse] = await Promise.all([
       fetchFromAPI(`/search/${productId}`),
       fetchFromAPI(`/product/history/${productId}`),
     ])
+
+    console.log(response)
 
     product.value = { ...response, productId: productId }
     if (response.sizes && response.sizes.length > 0) {
@@ -307,7 +324,10 @@ onMounted(async () => {
       }
     }
     salesHistory.value = salesHistoryResponse
-    renderChart()
+
+    setTimeout(() => {
+      renderChart()
+    }, 0)
   } catch (error) {
     console.error('Error fetching product details:', error)
     product.value.name = 'Product Not Found'
@@ -316,7 +336,9 @@ onMounted(async () => {
 })
 
 watch(currentSalesHistory, () => {
-  renderChart()
+  setTimeout(() => {
+    renderChart()
+  }, 0)
 })
 
 onUnmounted(() => {
@@ -327,52 +349,226 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-h1, h2, h3 { font-family: Spectral, sans-serif; font-weight: 600; }
-h1.product-name { font-size: 2.5rem; margin: 0.25rem 0; }
-h2.brand-name { color: #ccc; font-size: 1.5rem; margin-bottom: 0; }
-h3 { border-bottom: 1px solid #333; font-size: 1.2rem; margin-bottom: 1rem; padding-bottom: 1rem; }
-label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem; }
-ul { list-style: none; padding: 0; }
-.product-container { color: #ffffff; }
-.product-content { margin: 0 auto; max-width: 1200px; padding: 4rem 5%; }
-.product-grid { display: grid; gap: 4rem; grid-template-columns: 1fr 1fr; }
-.product-image-container { align-items: center; display: flex; justify-content: center; }
-.product-image { border-radius: 12px; max-width: 100%; }
-.action-box { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; margin-bottom: 2.5rem; margin-top: 2rem; padding: 1.5rem; }
-.action-buttons { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; margin-top: 1rem; }
-.btn { align-items: center; border: 1px solid #444; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; font-size: 1rem; font-weight: bold; padding: 0.75rem; text-decoration: none; transition: all 0.3s ease; }
-.btn-bid { background-color: #2c2c2c; color: #ffffff; }
-.btn-bid:hover { background-color: #383838; }
-.btn-buy { background-color: #1a4a32; border-color: #6ef0a3; color: #ffffff; }
-.btn-buy:disabled { cursor: not-allowed; opacity: 0.5; }
-.btn-buy:hover:not(:disabled) { background-color: #256b48; }
-.btn-condition { background-color: #2c2c2c; border: 1px solid #444; border-radius: 8px; color: #ffffff; cursor: pointer; flex-grow: 1; font-weight: 600; padding: 0.75rem; transition: background-color 0.2s ease, border-color 0.2s ease; }
-.btn-condition.active { background-color: #4a4a4a; border-color: #888; }
-.btn-condition:hover { background-color: #383838; }
-.btn-price { color: #ccc; font-size: 0.8rem; margin-top: 0.25rem; }
-.condition-selector { display: flex; gap: 0.5rem; }
-.form-group { margin-bottom: 1rem; }
-.product-details li { align-items: center; display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
-.product-details span { color: #aaa; }
-.size-arrow-icon { color: #aaa; height: 1.25rem; pointer-events: none; position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); width: 1.25rem; }
-.size-selector-wrapper { position: relative; }
-.size-selector-wrapper select:hover { cursor: pointer; }
-select { appearance: none; background-color: #2c2c2c; border: 1px solid #444; border-radius: 8px; color: #ffffff; font-size: 1rem; padding: 0.75rem 2.5rem 0.75rem 1rem; width: 100%; }
-.chart-container { margin: 0 auto; max-width: 1200px; padding: 1rem 5% 4rem; }
-.chart-container h3 { font-size: 1.5rem; }
-.chart-container h3 span { color: #aaa; font-size: 1.1rem; font-weight: 400; }
-.chart-wrapper { background-color: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; height: 400px; padding: 1.5rem; position: relative; }
+h1,
+h2,
+h3 {
+  font-family: Spectral, sans-serif;
+  font-weight: 600;
+}
+h1.product-name {
+  font-size: 2.5rem;
+  margin: 0.25rem 0;
+}
+h2.brand-name {
+  color: #ccc;
+  font-size: 1.5rem;
+  margin-bottom: 0;
+}
+h3 {
+  border-bottom: 1px solid #333;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+}
+label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+select {
+  appearance: none;
+  background-color: #2c2c2c;
+  border: 1px solid #444;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 1rem;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  width: 100%;
+}
+ul {
+  list-style: none;
+  padding: 0;
+}
+.action-box {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  margin-bottom: 2.5rem;
+  margin-top: 2rem;
+  padding: 1.5rem;
+}
+.action-buttons {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 1rem;
+}
+.btn {
+  align-items: center;
+  border: 1px solid #444;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 0.75rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+.btn-bid {
+  background-color: #2c2c2c;
+  color: #ffffff;
+}
+.btn-bid:hover {
+  background-color: #383838;
+}
+.btn-buy {
+  background-color: #1a4a32;
+  border-color: #6ef0a3;
+  color: #ffffff;
+}
+.btn-buy:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.btn-buy:hover:not(:disabled) {
+  background-color: #256b48;
+}
+.btn-condition {
+  background-color: #2c2c2c;
+  border: 1px solid #444;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  flex-grow: 1;
+  font-weight: 600;
+  padding: 0.75rem;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+.btn-condition.active {
+  background-color: #4a4a4a;
+  border-color: #888;
+}
+.btn-condition:hover {
+  background-color: #383838;
+}
+.btn-price {
+  color: #ccc;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+.chart-container {
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 1rem 5% 4rem;
+}
+.chart-container h3 {
+  font-size: 1.5rem;
+}
+.chart-container h3 span {
+  color: #aaa;
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+.chart-wrapper {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  height: 400px;
+  padding: 1.5rem;
+  position: relative;
+}
+.condition-selector {
+  display: flex;
+  gap: 0.5rem;
+}
+.form-group {
+  margin-bottom: 1rem;
+}
+.product-container {
+  color: #ffffff;
+}
+.product-content {
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 4rem 5%;
+}
+.product-details li {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+.product-details span {
+  color: #aaa;
+}
+.product-grid {
+  display: grid;
+  gap: 4rem;
+  grid-template-columns: 1fr 1fr;
+}
+.product-image {
+  border-radius: 12px;
+  max-width: 100%;
+}
+.product-image-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+.product-info-container {
+  width: 100%;
+}
+.size-arrow-icon {
+  color: #aaa;
+  height: 1.25rem;
+  pointer-events: none;
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+}
+.size-selector-wrapper {
+  position: relative;
+}
+.size-selector-wrapper select:hover {
+  cursor: pointer;
+}
 @media (max-width: 900px) {
-  .action-buttons { grid-template-columns: 1fr; }
-  .chart-container { padding: 1rem 5% 3rem; }
-  .chart-wrapper { height: 350px; }
-  .product-content { padding: 2rem 5%; }
-  .product-grid { gap: 2rem; grid-template-columns: 1fr; }
-  h1.product-name { font-size: 1.8rem; }
-  h2.brand-name { font-size: 1.2rem; }
+  h1.product-name {
+    font-size: 1.8rem;
+  }
+  h2.brand-name {
+    font-size: 1.2rem;
+  }
+  .action-buttons {
+    grid-template-columns: 1fr;
+  }
+  .chart-container {
+    padding: 1rem 5% 3rem;
+  }
+  .chart-wrapper {
+    height: 350px;
+  }
+  .product-content {
+    padding: 2rem 5%;
+  }
+  .product-grid {
+    gap: 2rem;
+    grid-template-columns: 1fr;
+  }
 }
 @media (max-width: 480px) {
-  .chart-container { padding: 1rem 3% 2rem; }
-  .product-content { padding: 2rem 3%; }
+  .chart-container {
+    padding: 1rem 3% 2rem;
+  }
+  .product-content {
+    padding: 2rem 3%;
+  }
 }
 </style>
