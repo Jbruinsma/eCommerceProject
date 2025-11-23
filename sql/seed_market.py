@@ -8,20 +8,12 @@ import os
 from dotenv import load_dotenv
 
 # --- 1. LOAD ENVIRONMENT VARIABLES ---
-# Get the directory where this script is located (the /sql folder)
 script_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Construct path: Go UP one level to project root, then DOWN into 'backend', then find '.env'
-# Path becomes: .../eCommerceProject/backend/.env
 env_path = os.path.join(script_dir, '..', 'backend', '.env')
-
-# Load the .env file
 loaded = load_dotenv(env_path)
 
-# Debugging: Print where we are looking if it fails
 if not loaded:
-    print(f"⚠️  Warning: .env file not loaded.")
-    print(f"   Tried looking at: {os.path.abspath(env_path)}")
+    print(f"⚠️  Warning: .env file not loaded from {env_path}")
 
 # --- 2. CONFIGURATION ---
 DB_CONFIG = {
@@ -32,14 +24,10 @@ DB_CONFIG = {
     'port': int(os.getenv('DB_PORT', 3306))
 }
 
-# Check if variables were actually found
 if not DB_CONFIG['user'] or not DB_CONFIG['database']:
     print("\n❌ Error: Database credentials are missing.")
-    print("   The .env file was found, but DB_USER or DB_NAME is empty.")
-    print("   Please check your .env file content.")
     exit(1)
 
-# Batch size for inserts
 BATCH_SIZE = 5000
 
 
@@ -48,15 +36,12 @@ def get_db_connection():
 
 
 def fetch_existing_data(cursor):
-    """Loads necessary IDs into memory to avoid DB lookups during generation."""
     print("⏳ Fetching existing data (Users, Products, Fees)...")
 
-    # 1. Fetch Users
     cursor.execute("SELECT uuid FROM users")
     user_ids = [row[0] for row in cursor.fetchall()]
 
-    # 2. Fetch Product Sizes AND Release Date
-    # Returns: (product_id, size_id, retail_price, brand_id, name, release_date)
+    # Fetch Product Sizes + Release Date
     cursor.execute("""
                    SELECT ps.product_id, ps.size_id, p.retail_price, p.brand_id, p.name, p.release_date
                    FROM products_sizes ps
@@ -64,12 +49,52 @@ def fetch_existing_data(cursor):
                    """)
     product_sizes = cursor.fetchall()
 
-    # 3. Fetch Fee Structure
     cursor.execute("SELECT id, seller_fee_percentage, buyer_fee_percentage FROM fee_structures LIMIT 1")
     fee_data = cursor.fetchone()
 
     print(f"✅ Loaded {len(user_ids)} users and {len(product_sizes)} product variations.")
     return user_ids, product_sizes, fee_data
+
+
+def calculate_hype_score(brand_id, product_name):
+    """
+    Returns a multiplier (1.0 to 10.0) representing demand/volume.
+    """
+    score = 1.0
+
+    # Brand Multipliers (Based on IDs in your dummy_data.sql)
+    # Nike(12), Jordan(8), Supreme(19), Off-White(13), Balenciaga(3), BAPE(4)
+    hype_brands = {
+        8: 3.0,  # Jordan
+        12: 1.5,  # Nike (General)
+        13: 4.0,  # Off-White
+        19: 3.5,  # Supreme
+        3: 2.0,  # Balenciaga
+        4: 2.0,  # BAPE
+        9: 2.5,  # Kith
+        7: 2.0,  # Fear of God
+        18: 2.5,  # Stussy
+    }
+
+    if brand_id in hype_brands:
+        score = hype_brands[brand_id]
+
+    # Keyword Multipliers (The "Grail" Factor)
+    name_lower = product_name.lower()
+    if 'travis scott' in name_lower: score *= 3.0
+    if 'off-white' in name_lower: score *= 2.5
+    if 'kobe' in name_lower: score *= 2.5
+    if 'dunk' in name_lower: score *= 1.5
+    if 'box logo' in name_lower: score *= 2.0
+    if 'lost & found' in name_lower: score *= 2.0
+    if 'black cat' in name_lower: score *= 2.0
+    if 'yeezy' in name_lower: score *= 2.0
+
+    # Random "Viral" Factor (Some random items just blow up)
+    if random.random() < 0.05:  # 5% chance
+        score *= 3.0
+
+    return score
 
 
 def generate_market_data():
@@ -86,7 +111,7 @@ def generate_market_data():
     seller_fee_pct = float(seller_fee_pct)
     buyer_fee_pct = float(buyer_fee_pct)
 
-    # Storage for bulk inserts
+    # Buffers
     orders_buffer = []
     listings_buffer = []
     transactions_buffer = []
@@ -96,109 +121,110 @@ def generate_market_data():
 
     user_balance_deltas = {}
 
-    # Market Start Date (The "founding" of your fake site)
-    SITE_START_DATE = datetime.now() - timedelta(days=730)  # 2 years ago
+    # Start of "The Site" history
+    SITE_START_DATE = datetime.now() - timedelta(days=730)
 
-    print("🚀 Starting Data Generation with Growth Simulation...")
+    print("🚀 Starting Realistic Market Simulation...")
 
-    for prod_data in tqdm(product_sizes, desc="Processing Products"):
+    for prod_data in tqdm(product_sizes, desc="Processing Market"):
         p_id, s_id, retail, b_id, p_name, release_date = prod_data
         retail = float(retail) if retail else 150.00
 
-        # Determine when this specific item could have started selling
-        # It can't sell before the site existed, and it can't sell before it was released.
+        # 1. Determine Timeline
         item_start_date = SITE_START_DATE
         if release_date:
-            # release_date might be a date object or string depending on connector
             if isinstance(release_date, str):
                 release_date = datetime.strptime(release_date, '%Y-%m-%d')
-            # Convert date to datetime
-            if isinstance(release_date, datetime):
-                pass
-            else:
+            if not isinstance(release_date, datetime):
                 release_date = datetime.combine(release_date, datetime.min.time())
 
             if release_date > item_start_date:
                 item_start_date = release_date
 
-        # If item released in the future (relative to now), skip sales
+        # Skip future items
         if item_start_date > datetime.now():
             continue
 
-        # Calculate the window of availability in days
-        availability_window = (datetime.now() - item_start_date).days
-        if availability_window < 1:
-            availability_window = 1
+        days_available = (datetime.now() - item_start_date).days
+        if days_available < 1: days_available = 1
+
+        # 2. Determine Volume based on Hype
+        hype_mult = calculate_hype_score(b_id, p_name)
+
+        # Base volume: 2 to 12 sales per year
+        base_sales = random.randint(2, 12) * (days_available / 365.0)
+
+        # Apply Hype Multiplier
+        target_sales = int(base_sales * hype_mult)
+
+        # Floor and Ceiling
+        if target_sales < 1: target_sales = 1  # At least 1 sale if it's been out
+        if target_sales > 600: target_sales = 600  # Cap to prevent explosion
+
+        # If item is very new (<30 days), scale down strictly but allow high freq
+        if days_available < 30:
+            target_sales = int(target_sales * (days_available / 30.0))
+            if target_sales < 1: target_sales = 1
 
         # Iterate Conditions
         for condition in ['new', 'used', 'worn']:
+            # Condition rarity: New is most common, Worn is least
+            if condition == 'new':
+                condition_sales = int(target_sales * 0.7)
+            elif condition == 'used':
+                condition_sales = int(target_sales * 0.25)
+            else:
+                condition_sales = int(target_sales * 0.05)
 
-            # --- 1. PRICE LOGIC ---
-            base_mult = 0.8 + (random.random() * 1.0)  # 0.8 - 1.8
+            if condition_sales == 0 and random.random() < 0.3:
+                condition_sales = 1
 
-            # Hype Logic
-            if b_id in [13, 19, 3, 6, 7, 8]:
-                base_mult = 1.2 + (random.random() * 1.8)
+            # --- Price Logic ---
+            base_price_mult = 0.8 + (random.random() * 0.6)  # Base volatility
+            if hype_mult > 2.0:
+                base_price_mult = 1.5 + (random.random() * 2.0)  # Hype creates premium
 
-            hype_keywords = ['Travis Scott', 'The Ten', 'Lost & Found', 'Shattered Backboard', 'SB Dunk High', 'Kobe',
-                             'Off-White']
-            if any(k in p_name for k in hype_keywords):
-                base_mult = 2.5 + (random.random() * 4.5)
+            if condition == 'used': base_price_mult *= 0.7
+            if condition == 'worn': base_price_mult *= 0.4
 
-            if condition == 'used':
-                base_mult *= (0.5 + random.random() * 0.3)
-            elif condition == 'worn':
-                base_mult *= (0.2 + random.random() * 0.3)
+            last_sale_price = round(retail * base_price_mult, 2)
 
-            initial_price = round(retail * base_mult, 2)
-            last_sale_price = initial_price
-
-            # --- 2. GENERATE PAST SALES (Growth Curve) ---
-            # Scale number of sales by how long the item has been out?
-            # Optional: give newer items fewer sales? Let's keep it simple: 15-30 sales per item
-            num_sales = random.randint(15, 30)
-
-            # If the item is BRAND new (e.g. released last week), reduce sales count reasonably
-            if availability_window < 30:
-                num_sales = random.randint(1, 5)
-
-            # Generate Dates with Linear Growth Bias
+            # --- Generate Sales ---
             sale_dates = []
-            for _ in range(num_sales):
-                # SQRT(Random) biases the result towards 1.0 (The end of the timeline)
-                # This creates a "Linear Growth" curve for volume.
+            for _ in range(condition_sales):
+                # Linear Growth Distribution (Square Root)
+                # 0.0 = Start Date, 1.0 = Today
                 normalized_time = math.sqrt(random.random())
 
-                days_offset = int(normalized_time * availability_window)
+                days_offset = int(normalized_time * days_available)
                 sale_date = item_start_date + timedelta(days=days_offset)
 
-                # Add a random time of day
+                # Add random time
                 sale_date = sale_date.replace(
-                    hour=random.randint(0, 23),
+                    hour=random.randint(8, 22),  # Sales mostly during day
                     minute=random.randint(0, 59),
                     second=random.randint(0, 59)
                 )
 
-                if sale_date > datetime.now():
-                    sale_date = datetime.now()
-
+                if sale_date > datetime.now(): sale_date = datetime.now()
                 sale_dates.append(sale_date)
 
-            # Sort dates chronologically so the price walk makes sense
             sale_dates.sort()
 
             for current_date in sale_dates:
-                # Random Users
                 buyer = random.choice(user_ids)
                 seller = random.choice(user_ids)
-                while seller == buyer:
-                    seller = random.choice(user_ids)
+                while seller == buyer: seller = random.choice(user_ids)
 
-                # Random Walk Price
-                price_walk = 0.95 + (random.random() * 0.1)
-                sale_price = round(last_sale_price * price_walk, 2)
+                # Price Walk (Brownian Motion)
+                # Hype items have more volatility (0.08 vs 0.03)
+                volatility = 0.08 if hype_mult > 2 else 0.03
+                change_pct = 1.0 + ((random.random() - 0.5) * 2 * volatility)
 
-                # Fees
+                sale_price = round(last_sale_price * change_pct, 2)
+                if sale_price < 10: sale_price = 10  # Minimum price
+
+                # Calc Fees
                 seller_fee = round(sale_price * seller_fee_pct, 2)
                 seller_payout = sale_price - seller_fee
                 buyer_fee = round(sale_price * buyer_fee_pct, 2)
@@ -206,23 +232,27 @@ def generate_market_data():
 
                 order_id = str(uuid.uuid4())
 
-                # BUFFERING
                 orders_buffer.append((
                     order_id, buyer, seller, p_id, s_id, condition, sale_price,
                     buyer_fee, fee_id, buyer_final, seller_fee, fee_id, seller_payout,
                     'completed', current_date, current_date
                 ))
 
+                # Only add addresses for ~30% of orders to save DB space/time,
+                # or 100% if you need them for the frontend.
+                # Assuming you need them for order details:
                 addresses_buffer.append((
-                    buyer, order_id, 'shipping', 'Dummy User', '123 Market St',
-                    'Fakeville', 'CA', '90210', 'USA'
+                    buyer, order_id, 'shipping', 'Dummy Buyer', '123 Street',
+                    'City', 'ST', '00000', 'USA'
                 ))
 
+                # Listings (Historical Sold)
                 listings_buffer.append((
                     seller, p_id, s_id, 'sale', sale_price, fee_id, condition,
                     'sold', current_date, current_date
                 ))
 
+                # Transactions
                 transactions_buffer.append((
                     buyer, order_id, -buyer_final, 'completed', 'account_balance',
                     'purchase_funds', current_date
@@ -236,35 +266,34 @@ def generate_market_data():
                 ))
                 user_balance_deltas[seller] = user_balance_deltas.get(seller, 0.0) + seller_payout
 
-                portfolio_buffer.append((
-                    str(uuid.uuid4()), buyer, p_id, s_id, current_date.date(), sale_price, condition
-                ))
+                # Only ~20% of buyers keep it in "Portfolio" (Active collection)
+                if random.random() < 0.2:
+                    portfolio_buffer.append((
+                        str(uuid.uuid4()), buyer, p_id, s_id, current_date.date(), sale_price, condition
+                    ))
 
                 last_sale_price = sale_price
 
-            # --- 3. ACTIVE MARKET (Bids/Asks) ---
-            # These are always "Recent", so we distribute them in the last 30 days
-            for _ in range(random.randint(3, 5)):
-                ask_seller = random.choice(user_ids)
-                ask_price = round(last_sale_price * (1.02 + random.random() * 0.13), 2)
-                ask_date = datetime.now() - timedelta(days=random.randint(0, 30))
+            # --- Active Market (Bids/Asks) ---
+            # More active listings for hype items
+            num_listings = random.randint(1, 3)
+            if hype_mult > 3: num_listings = random.randint(5, 12)
 
+            for _ in range(num_listings):
+                # Ask
+                ask_price = round(last_sale_price * (1.0 + random.random() * 0.15), 2)
                 listings_buffer.append((
-                    ask_seller, p_id, s_id, 'sale', ask_price, fee_id, condition,
-                    'active', ask_date, ask_date
+                    random.choice(user_ids), p_id, s_id, 'sale', ask_price, fee_id, condition,
+                    'active', datetime.now(), datetime.now()
                 ))
 
-            for _ in range(random.randint(3, 5)):
-                bid_buyer = random.choice(user_ids)
-                bid_amount = round(last_sale_price * (0.85 + random.random() * 0.13), 2)
-                bid_fee = round(bid_amount * buyer_fee_pct, 2)
-                bid_total = bid_amount + bid_fee
-                bid_date = datetime.now() - timedelta(days=random.randint(0, 30))
-
+                # Bid
+                bid_price = round(last_sale_price * (1.0 - random.random() * 0.15), 2)
+                bid_fee = round(bid_price * buyer_fee_pct, 2)
                 bids_buffer.append((
-                    str(uuid.uuid4()), bid_buyer, p_id, s_id, condition, bid_amount,
-                    bid_fee, fee_id, bid_total, 'active', 'account_balance',
-                    bid_date, bid_date
+                    str(uuid.uuid4()), random.choice(user_ids), p_id, s_id, condition, bid_price,
+                    bid_fee, fee_id, bid_price + bid_fee, 'active', 'account_balance',
+                    datetime.now(), datetime.now()
                 ))
 
     # --- 4. EXECUTE ---
