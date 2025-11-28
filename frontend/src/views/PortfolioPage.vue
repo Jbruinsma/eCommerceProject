@@ -368,7 +368,6 @@ thead th {
     line-height: 1.3;
   }
 
-  /* Last Child (Actions) */
   tbody td:last-child {
     border-bottom: none;
     padding-top: 1rem;

@@ -23,75 +23,48 @@ END //
 
 DROP PROCEDURE IF EXISTS retrieveAllPortfolioItemsByUserId;
 
-CREATE PROCEDURE retrieveAllPortfolioItemsByUserId(
-    IN input_user_id CHAR(36)
-)
-
+CREATE PROCEDURE retrieveAllPortfolioItemsByUserId(IN input_user_id CHAR(36))
 BEGIN
     SELECT
         pi.*,
         p.name AS product_name,
         p.image_url AS product_image_url,
         s.size_value,
-
-
         (
-            SELECT
-                sale_price
-            FROM
-                orders
-            WHERE
-                product_id = pi.product_id
-              AND
-                size_id = pi.size_id
-              AND
-                product_condition = pi.item_condition
-              AND
-                order_status = 'completed'
-            ORDER BY
-                created_at DESC
+            SELECT sale_price
+            FROM orders
+            WHERE product_id = pi.product_id
+              AND size_id = pi.size_id
+              AND product_condition = pi.item_condition
+              AND order_status = 'completed'
+            ORDER BY created_at DESC
             LIMIT 1
         ) AS estimated_current_value,
 
         (
-            SELECT
-                DATE_FORMAT(created_at, '%Y-%m-%d')
-            FROM
-                orders
-            WHERE
-                product_id = pi.product_id
-              AND
-                size_id = pi.size_id
-              AND
-                product_condition = pi.item_condition
-              AND
-                order_status = 'completed'
-            ORDER BY
-                created_at DESC
+            SELECT DATE_FORMAT(created_at, '%Y-%m-%d')
+            FROM orders
+            WHERE product_id = pi.product_id
+              AND size_id = pi.size_id
+              AND product_condition = pi.item_condition
+              AND order_status = 'completed'
+            ORDER BY created_at DESC
             LIMIT 1
         ) AS last_sale_date,
 
         (
             (
-                # Calculate the "current value" of an item
-                SELECT
-                    o.sale_price
-                FROM
-                    orders o
-                WHERE
-                    o.product_id = pi.product_id
-                  AND
-                    o.size_id = pi.size_id
-                  AND
-                    o.product_condition = pi.item_condition
-                  AND
-                    o.order_status = 'completed'
+                SELECT o.sale_price
+                FROM orders o
+                WHERE o.product_id = pi.product_id
+                  AND o.size_id = pi.size_id
+                  AND o.product_condition = pi.item_condition
+                  AND o.order_status = 'completed'
                 ORDER BY o.created_at DESC
                 LIMIT 1
             )
                 -
             (
-                # Determine the acquisition price based on acquisition date
                 IF(pi.acquisition_date IS NOT NULL, (
                 SELECT o.sale_price
                 FROM orders o
@@ -106,10 +79,8 @@ BEGIN
         ) AS profit_loss
     FROM
         portfolio_items pi
-            JOIN
-            products p ON pi.product_id = p.product_id
-            JOIN
-            sizes s ON pi.size_id = s.size_id
+            JOIN products p ON pi.product_id = p.product_id
+            JOIN sizes s ON pi.size_id = s.size_id
     WHERE
         pi.user_id = input_user_id
     ORDER BY
