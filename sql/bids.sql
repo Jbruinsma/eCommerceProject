@@ -34,62 +34,25 @@ BEGIN
     SET total_payment = input_bid_amount + bid_transaction_fee;
 
     INSERT INTO addresses(
-                          user_id,
-                          purpose,
-                          name,
-                          address_line_1,
-                          address_line_2,
-                          city,
-                          state,
-                          zip_code,
-                          country
+                          user_id, purpose, name, address_line_1, address_line_2, city, state, zip_code, country
     )
     VALUES (
-            input_user_id,
-            'shipping',
-            input_name,
-            input_address_line1,
-            input_address_line2,
-            input_city,
-            input_state,
-            input_zip_code,
-            input_country
+            input_user_id,'shipping',input_name,input_address_line1,
+            input_address_line2,input_city,input_state,input_zip_code,input_country
     );
 
     SET address_record_id = (SELECT address_id FROM addresses WHERE user_id = input_user_id ORDER BY created_at DESC LIMIT 1);
 
     INSERT INTO bids(
-                    bid_id,
-                    user_id,
-                    address_id,
-                    product_id,
-                    size_id,
-                    product_condition,
-                    bid_amount,
-                    transaction_fee,
-                    fee_structure_id,
-                    total_bid_amount,
-                    bid_status,
-                    payment_origin,
-                    created_at,
-                    updated_at
-        )
-
-        VALUES (
-                new_bid_id,
-                input_user_id,
-                address_record_id,
-                input_product_id,
-                (SELECT size_id FROM sizes WHERE size_id IN (SELECT size_id FROM products_sizes WHERE product_id = input_product_id) AND size_value = input_product_size),
-                input_product_condition,
-                input_bid_amount,
-                bid_transaction_fee,
-                input_fee_structure_id,
-                total_payment,
-                'active',
-                input_payment_origin,
-                CURRENT_TIMESTAMP,
-                CURRENT_TIMESTAMP
+                     bid_id, user_id, address_id, product_id, size_id, product_condition, bid_amount, transaction_fee,
+                     fee_structure_id, total_bid_amount, bid_status, payment_origin, created_at, updated_at
+    )
+    VALUES (
+            new_bid_id,input_user_id,address_record_id,input_product_id,
+            (SELECT size_id FROM sizes WHERE size_id IN (SELECT size_id FROM products_sizes WHERE product_id = input_product_id) AND size_value = input_product_size),
+            input_product_condition,input_bid_amount,bid_transaction_fee,
+            input_fee_structure_id,total_payment,'active',
+            input_payment_origin,CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
                );
 
     SELECT *
