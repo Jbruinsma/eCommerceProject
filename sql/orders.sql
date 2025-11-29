@@ -135,16 +135,12 @@ BEGIN
     DECLARE new_order_id CHAR(36);
     DECLARE calculated_seller_id CHAR(36);
     DECLARE calculated_product_id INT UNSIGNED;
-
     DECLARE calculated_size_id INT UNSIGNED;
     DECLARE calculated_product_condition ENUM('new', 'used');
-
     DECLARE calculated_sale_price DECIMAL(10,2);
-
     DECLARE calculated_buyer_transaction_fee_percentage DECIMAL(10,4);
     DECLARE calculated_buyer_transaction_fee DECIMAL(10,2);
     DECLARE calculated_final_buyer_price DECIMAL(10,2);
-
     DECLARE calculated_seller_fee_structure_id INT UNSIGNED;
     DECLARE calculated_seller_transaction_fee_percentage DECIMAL(10,4);
     DECLARE calculated_seller_transaction_fee DECIMAL(10,2);
@@ -152,37 +148,19 @@ BEGIN
 
     SET new_order_id = UUID();
 
-    SELECT user_id INTO calculated_seller_id
-    FROM listings
-    WHERE listing_id = input_listing_id;
-
-    SELECT product_id INTO calculated_product_id
-    FROM listings
-    WHERE listing_id = input_listing_id;
-
-    SELECT size_id INTO calculated_size_id
-    FROM listings
-    WHERE listing_id = input_listing_id;
-
-    SELECT item_condition INTO calculated_product_condition
-    FROM listings
-    WHERE listing_id = input_listing_id;
-
-    SELECT price INTO calculated_sale_price
-    FROM listings
-    WHERE listing_id = input_listing_id;
-
+    SELECT user_id INTO calculated_seller_id FROM listings WHERE listing_id = input_listing_id;
+    SELECT product_id INTO calculated_product_id FROM listings WHERE listing_id = input_listing_id;
+    SELECT size_id INTO calculated_size_id FROM listings WHERE listing_id = input_listing_id;
+    SELECT item_condition INTO calculated_product_condition FROM listings WHERE listing_id = input_listing_id;
+    SELECT price INTO calculated_sale_price FROM listings WHERE listing_id = input_listing_id;
     SELECT buyer_fee_percentage INTO calculated_buyer_transaction_fee_percentage
-    FROM fee_structures
-    WHERE id = input_buyer_transaction_fee_structure_id;
+                                FROM fee_structures WHERE id = input_buyer_transaction_fee_structure_id;
 
     SET calculated_buyer_transaction_fee = ROUND((calculated_sale_price * calculated_buyer_transaction_fee_percentage), 2);
-
     SET calculated_final_buyer_price = calculated_sale_price + calculated_buyer_transaction_fee;
 
     SELECT fee_structure_id INTO calculated_seller_fee_structure_id
-    FROM listings
-    WHERE listing_id = input_listing_id;
+    FROM listings WHERE listing_id = input_listing_id;
 
     SELECT seller_fee_percentage INTO calculated_seller_transaction_fee_percentage
     FROM fee_structures
@@ -191,44 +169,16 @@ BEGIN
     SET calculated_seller_transaction_fee = ROUND((calculated_sale_price * calculated_seller_transaction_fee_percentage), 2);
     SET calculated_seller_final_payout = ROUND((calculated_sale_price - calculated_seller_transaction_fee), 2);
 
-    INSERT INTO orders(
-                       order_id,
-                       address_id,
-                       buyer_id,
-                       seller_id,
-                       product_id,
-                       size_id,
-                       product_condition,
-                       sale_price,
-                       buyer_transaction_fee,
-                       buyer_fee_structure_id,
-                       buyer_final_price,
-                       seller_transaction_fee,
-                       seller_fee_structure_id,
-                       seller_final_payout,
-                       order_status,
-                       created_at,
-                       updated_at
-        )
-        VALUES(
-               new_order_id,
-                input_address_id,
-                input_buyer_id,
-                calculated_seller_id,
-                calculated_product_id,
-               calculated_size_id,
-                calculated_product_condition,
-                calculated_sale_price,
-               calculated_buyer_transaction_fee,
-               input_buyer_transaction_fee_structure_id,
-                calculated_final_buyer_price,
-                calculated_seller_transaction_fee,
-                calculated_seller_fee_structure_id,
-                calculated_seller_final_payout,
-                'paid',
-                CURRENT_TIMESTAMP,
-                CURRENT_TIMESTAMP
-              );
+    INSERT INTO orders
+    VALUES(
+           new_order_id,input_address_id,input_buyer_id,calculated_seller_id,
+           calculated_product_id,calculated_size_id,calculated_product_condition,
+           calculated_sale_price,calculated_buyer_transaction_fee,
+           input_buyer_transaction_fee_structure_id,
+           calculated_final_buyer_price,calculated_seller_transaction_fee,
+           calculated_seller_fee_structure_id,calculated_seller_final_payout,
+           'paid',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP
+          );
 
     UPDATE addresses
     SET order_id = new_order_id
