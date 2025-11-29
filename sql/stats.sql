@@ -40,9 +40,9 @@ BEGIN
 
 end //
 
-DROP PROCEDURE IF EXISTS retrieveMonthlyTopSellingProducts;
+DROP PROCEDURE IF EXISTS retrieveMonthlyTopSellingProduct;
 
-CREATE PROCEDURE retrieveMonthlyTopSellingProducts()
+CREATE PROCEDURE retrieveMonthlyTopSellingProduct()
 
 BEGIN
 
