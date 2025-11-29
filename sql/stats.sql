@@ -26,22 +26,17 @@ CREATE PROCEDURE retrieveTopSellingProducts()
 BEGIN
 
     SELECT
-    COUNT(o.product_id) AS total_sales,
-    p.name,
-    s.size_value,
-    o.product_condition,
-    p.image_url
-FROM
-    orders o
-JOIN
-    ecommerce.sizes s ON o.size_id = s.size_id
-JOIN
-    ecommerce.products p ON o.product_id = p.product_id
-GROUP BY
-    p.name, s.size_value, o.product_condition, p.image_url
-ORDER BY
-    total_sales DESC
-    LIMIT 10;
+        COUNT(o.product_id) AS total_sales,
+        p.name,
+        s.size_value,
+        o.product_condition,
+        p.image_url
+    FROM orders o
+        JOIN ecommerce.sizes s ON o.size_id = s.size_id
+        JOIN ecommerce.products p ON o.product_id = p.product_id
+    GROUP BY p.name, s.size_value, o.product_condition, p.image_url
+    ORDER BY
+        total_sales DESC LIMIT 10;
 
 end //
 
@@ -102,7 +97,7 @@ BEGIN
         sales_month
     LIMIT 1;
 
-end //
+END //
 
 DROP PROCEDURE IF EXISTS retrieveSalesByCategory;
 

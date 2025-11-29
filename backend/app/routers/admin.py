@@ -199,7 +199,7 @@ async def get_analytics(session: AsyncSession = Depends(get_session)):
     result = await session.execute(statement)
     top_selling_products_rows = result.mappings().all()
 
-    statement = text("CALL retrieveMonthlyTopSellingProducts();")
+    statement = text("CALL retrieveMonthlyTopSellingProduct();")
     result = await session.execute(statement)
     monthly_top_selling_products_rows = result.mappings().all()
 
