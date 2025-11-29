@@ -54,12 +54,9 @@ BEGIN
         o.product_condition,
         p.image_url,
         COUNT(*) AS total_sales
-    FROM
-        orders o
-    JOIN
-        products p ON o.product_id = p.product_id
-    JOIN
-        sizes s ON o.size_id = s.size_id
+    FROM orders o
+    JOIN products p ON o.product_id = p.product_id
+    JOIN sizes s ON o.size_id = s.size_id
     GROUP BY
         sales_month,
         p.name,
