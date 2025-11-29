@@ -5,7 +5,7 @@
     <ul class="nav-links" :class="{ 'is-open': isMenuOpen }">
       <li class="nav-customization"><a href="/search?category=sneakers">Sneakers</a></li>
       <li class="nav-customization"><a href="/search?category=apparel">Apparel</a></li>
-      <li class="nav-customization"><a href="/search?category=collectibles">Collectibles</a></li>
+      <li class="nav-customization"><a href="/search?category=Accessory">Accessories</a></li>
     </ul>
 
     <div class="nav-icons">

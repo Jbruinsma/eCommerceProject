@@ -6,6 +6,7 @@
         <ul>
           <li><a href="/search?category=sneakers">Sneakers</a></li>
           <li><a href="/search?category=apparel">Apparel</a></li>
+          <li><a href="/search?category=Accessory">Accessories</a></li>
         </ul>
       </div>
 
