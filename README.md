@@ -2,29 +2,43 @@
 
 Built for CSCI 300, Fall 2025.
 
-A full-stack e-commerce platform built with **FastAPI** (Python) and **Vue 3** (JavaScript). This application supports user authentication, product listings, a bidding system, portfolio management, and order processing.
+A full-stack e-commerce application built with **FastAPI** (Python) and **Vue 3** (JavaScript).
 
-It is configured for **Local Network Development**, allowing you to run the server on your laptop and access the full application (frontend and backend) from any device on your Wi-Fi network (like your phone).
+This project is configured for **Local Network Development**, meaning you can run the server on your laptop and access the full application from any device on your Wi-Fi (like your phone) without manual IP configuration.
 
-## Tech Stack
+## Project Structure
 
-* **Backend:** Python 3.10+, FastAPI, SQLAlchemy (Async), MySQL (aiomysql)
-* **Frontend:** Vue 3, Vite, Pinia (State Management), Tailwind CSS (implied/if used)
-* **Database:** MySQL
+* **`backend/`**: The REST API handling database connections, authentication, and business logic.
+* **`frontend/`**: The Vue 3 User Interface.
 
-## Quick Start Guide
+## Quick Start (Run Everything)
 
-### 1. Database Setup
-Ensure you have a local MySQL server running and create a database (e.g., `ecommerce_db`).
+You need to run the backend and frontend simultaneously in two separate terminal windows.
 
-### 2. Backend Setup
-Navigate to the `backend/` folder:
-```bash
-cd backend
-python -m venv .venv
-# Activate Virtual Env (Windows)
-.venv\Scripts\activate
-# Activate Virtual Env (Mac/Linux)
-source .venv/bin/activate
+### Prerequisites
+* **MySQL Server** running locally.
+* **Node.js** (v20+) and **Python** (v3.10+) installed.
 
-pip install -r requirements.txt
+### Step 1: Start the Backend
+1.  Navigate to the backend folder: `cd backend`
+2.  Create/Activate virtual environment:
+    * **Win:** `python -m venv .venv` then `.venv\Scripts\activate`
+    * **Mac/Linux:** `python3 -m venv .venv` then `source .venv/bin/activate`
+3.  Install dependencies: `pip install -r requirements.txt`
+4.  Start the server (Accessible on Wi-Fi):
+    ```bash
+    uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ```
+
+### Step 2: Start the Frontend
+1.  Navigate to the frontend folder: `cd frontend`
+2.  Install dependencies: `npm install`
+3.  Start the dev server:
+    ```bash
+    npm run dev
+    ```
+
+## How to Access on Mobile
+1.  Look at the **Frontend Terminal** output. It will show a "Network" URL, e.g., `http://192.168.1.15:5173`.
+2.  Enter that URL in your phone's browser.
+3.  The app automatically detects your IP and connects to the backend API smoothly.

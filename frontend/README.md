@@ -1,44 +1,25 @@
-# frontend
+# E-Commerce Frontend (Vue 3 + Vite)
 
-This template should help get you started developing with Vue 3 in Vite.
+A modern Single Page Application (SPA) built with **Vue 3**, **Vite**, and **Pinia**.
 
-## Recommended IDE Setup
+## Key Features
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+### Zero-Config Wi-Fi Access
+This project uses a smart API client (`src/utils/api.js`) that automatically determines the backend URL.
+* **Localhost:** If you visit `localhost:5173`, it calls `localhost:8000`.
+* **Wi-Fi:** If you visit `192.168.x.x:5173`, it calls `192.168.x.x:8000`.
 
-## Recommended Browser Setup
+This means you don't need to hardcode IP addresses in your `.env` file to test on mobile devices.
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Development Commands
 
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
+| Command | Description |
+| :--- | :--- |
+| `npm install` | Installs all dependencies listed in `package.json`. |
+| `npm run dev` | Starts the development server. Accessible on your local IP (`host: true`). |
+| `npm run build` | Compiles and minifies the app for production. |
+| `npm run lint` | Runs ESLint to check for code quality issues. |
 
 ## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+* **State Management:** Pinia (with persistence).
+* **Routing:** Vue Router.

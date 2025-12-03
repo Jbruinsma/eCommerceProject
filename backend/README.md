@@ -1,25 +1,30 @@
-# Backend (FastAPI + async MySQL)
+# E-Commerce Backend (FastAPI)
 
-This backend is a minimal FastAPI application using SQLAlchemy async + aiomysql to connect to a local MySQL server.
+This is the REST API service powered by **FastAPI** and **SQLAlchemy (Async)**. It handles data persistence, user authentication, and transaction processing.
 
-Quick start
+## Configuration
+The application uses `python-dotenv` to manage settings.
 
-1. Copy and edit `.env.example` to `.env` with your local DB credentials.
-2. Create a virtualenv and install dependencies:
+1.  Create a `.env` file in this directory.
+2.  Add your database credentials:
+    ```ini
+    DATABASE_URL=mysql+aiomysql://user:password@localhost/your_db_name
+    SECRET_KEY=your_super_secret_key
+    ```
 
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-```
+## API Endpoints
+The application (`app/main.py`) exposes the following modules:
 
-3. Run the app from the repository root:
+* **Auth (`/auth`)**: Login and JWT token generation.
+* **Users (`/users`)**: User profile management and registration.
+* **Products (`/products`)**: Product catalog and inventory.
+* **Listings (`/listings`)**: Marketplace listings created by users.
+* **Bids (`/bids`)**: Auction and bidding system logic.
+* **Orders (`/orders`)**: Order processing and history.
+* **Portfolio (`/portfolio`)**: User asset tracking.
+* **Admin (`/admin`)**: Administrative dashboard data.
+* **Search (`/search`)**: Product search functionality.
+* **Fees (`/fees`)**: Transaction fee calculations.
 
-```bash
-cd backend
-uvicorn app.main:app --reload --port 8000
-```
-
-Notes
-- This project uses SQLAlchemy async + aiomysql. For production, use migrations (Alembic) and secure secret/credentials management.
-
+## 📡 Networking
+The server is configured in `main.py` to allow Cross-Origin (CORS) requests from any origin (`allow_origins=["*"]`). This enables the frontend to communicate with the backend even when accessed via a different IP address on the local network.
