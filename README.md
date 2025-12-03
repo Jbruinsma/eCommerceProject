@@ -1,4 +1,6 @@
-# E-Commerce Project
+# "The Valut": an E-Commerce Project
+
+Built for CSCI 300, Fall 2025.
 
 A full-stack e-commerce platform built with **FastAPI** (Python) and **Vue 3** (JavaScript). This application supports user authentication, product listings, a bidding system, portfolio management, and order processing.
 
