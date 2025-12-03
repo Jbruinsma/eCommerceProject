@@ -3,22 +3,21 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..pydantic_models.edited_bid import EditedBid
+from ..pydantic_models.error_message import ErrorMessage
 from ..pydantic_models.message import Message
 from ..pydantic_models.new_bid_info import NewBidInfo
 
 from ..db import get_session
 
-from ..pydantic_models.error_message import ErrorMessage
 from ..utils.bids import process_bids
 
-
-states = [
+states = {
     "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
     "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
     "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
     "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
     "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
-]
+}
 
 router = APIRouter(prefix="/bids", tags=["bids"])
 
@@ -190,7 +189,6 @@ async def create_bid(new_bid_info: NewBidInfo, user_uuid: str, session: AsyncSes
 
 @router.get("/{product_id")
 async def get_bids(product_id: str, session: AsyncSession = Depends(get_session)):
-    statement = text("CALL getBidsByProductId(:input_product_id);")
-    result = await session.execute(statement, {"input_product_id": product_id})
+    result = await session.execute(text("CALL getBidsByProductId(:input_product_id);"), {"input_product_id": product_id})
     rows = result.mappings().all()
     return list(rows)

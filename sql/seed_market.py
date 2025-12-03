@@ -58,7 +58,8 @@ def fetch_existing_data(cursor):
 
 def calculate_hype_score(brand_id, product_name):
     """
-    Returns a multiplier (1.0 to 10.0) representing demand/volume.
+    Returns a multiplier representing PRICE PREMIUM (Hype).
+    This now affects Price Volatility and Value, NOT Volume.
     """
     score = 1.0
 
@@ -66,7 +67,7 @@ def calculate_hype_score(brand_id, product_name):
     # Nike(12), Jordan(8), Supreme(19), Off-White(13), Balenciaga(3), BAPE(4)
     hype_brands = {
         8: 3.0,  # Jordan
-        12: 1.5,  # Nike (General)
+        12: 1.2,  # Nike (General) - Lowered base to distinguish GRs
         13: 4.0,  # Off-White
         19: 3.5,  # Supreme
         3: 2.0,  # Balenciaga
@@ -89,10 +90,11 @@ def calculate_hype_score(brand_id, product_name):
     if 'lost & found' in name_lower: score *= 2.0
     if 'black cat' in name_lower: score *= 2.0
     if 'yeezy' in name_lower: score *= 2.0
+    if 'chicago' in name_lower: score *= 1.5
 
     # Random "Viral" Factor (Some random items just blow up)
     if random.random() < 0.05:  # 5% chance
-        score *= 3.0
+        score *= 2.0
 
     return score
 
@@ -148,18 +150,36 @@ def generate_market_data():
         days_available = (datetime.now() - item_start_date).days
         if days_available < 1: days_available = 1
 
-        # 2. Determine Volume based on Hype
-        hype_mult = calculate_hype_score(b_id, p_name)
+        # 2. Determine Hype vs Volume Logic
+        hype_score = calculate_hype_score(b_id, p_name)
 
-        # Base volume: 2 to 12 sales per year
-        base_sales = random.randint(2, 12) * (days_available / 365.0)
+        # Base Volume: Random baseline
+        base_sales = random.randint(5, 15) * (days_available / 365.0)
 
-        # Apply Hype Multiplier
-        target_sales = int(base_sales * hype_mult)
+        # Volume Adjustments based on Hype & Retail
+        # LOGIC CHANGE:
+        # High Hype = Scarcity = LOWER Volume
+        # Low Hype / Low Retail = GR = HIGHER Volume
 
-        # Floor and Ceiling
-        if target_sales < 1: target_sales = 1  # At least 1 sale if it's been out
-        if target_sales > 600: target_sales = 600  # Cap to prevent explosion
+        volume_mult = 1.0
+
+        if hype_score > 2.5:
+            # Super Hype (Travis Scott, Off-White, Box Logos) -> Rare
+            volume_mult = 0.3
+        elif hype_score > 1.5:
+            # Mid Hype (Jordans, Collabs) -> Semi-Rare
+            volume_mult = 0.8
+        else:
+            # GR / Essentials / Vans / Converse -> High Volume
+            volume_mult = 3.0
+            if retail < 100:
+                volume_mult = 4.0  # Cheap GRs sell the most
+
+        target_sales = int(base_sales * volume_mult)
+
+        # Safety clamps
+        if target_sales < 1 and random.random() < 0.5: target_sales = 1  # Even rare items sell once
+        if target_sales > 800: target_sales = 800  # Cap volume
 
         # If item is very new (<30 days), scale down strictly but allow high freq
         if days_available < 30:
@@ -176,32 +196,33 @@ def generate_market_data():
             else:
                 condition_sales = int(target_sales * 0.05)
 
-            if condition_sales == 0 and random.random() < 0.3:
+            if condition_sales == 0 and random.random() < 0.2:
                 condition_sales = 1
 
             # --- Price Logic ---
-            base_price_mult = 0.8 + (random.random() * 0.6)  # Base volatility
-            if hype_mult > 2.0:
-                base_price_mult = 1.5 + (random.random() * 2.0)  # Hype creates premium
+            # Hype affects PRICE multiplier, not volume
+            base_price_mult = 0.8 + (random.random() * 0.4)  # GR starts around retail
 
-            if condition == 'used': base_price_mult *= 0.7
-            if condition == 'worn': base_price_mult *= 0.4
+            if hype_score > 1.5:
+                # Hype items start well above retail
+                base_price_mult = 1.2 + (random.random() * (hype_score / 2))
+
+            if condition == 'used': base_price_mult *= 0.75
+            if condition == 'worn': base_price_mult *= 0.45
 
             last_sale_price = round(retail * base_price_mult, 2)
 
-            # --- Generate Sales ---
+            # --- Generate Historical Sales ---
             sale_dates = []
             for _ in range(condition_sales):
                 # Linear Growth Distribution (Square Root)
-                # 0.0 = Start Date, 1.0 = Today
                 normalized_time = math.sqrt(random.random())
-
                 days_offset = int(normalized_time * days_available)
                 sale_date = item_start_date + timedelta(days=days_offset)
 
-                # Add random time
+                # Randomize time of day
                 sale_date = sale_date.replace(
-                    hour=random.randint(8, 22),  # Sales mostly during day
+                    hour=random.randint(8, 22),
                     minute=random.randint(0, 59),
                     second=random.randint(0, 59)
                 )
@@ -217,12 +238,12 @@ def generate_market_data():
                 while seller == buyer: seller = random.choice(user_ids)
 
                 # Price Walk (Brownian Motion)
-                # Hype items have more volatility (0.08 vs 0.03)
-                volatility = 0.08 if hype_mult > 2 else 0.03
+                # Hype items have more volatility (0.08 vs 0.02)
+                volatility = 0.08 if hype_score > 2 else 0.02
                 change_pct = 1.0 + ((random.random() - 0.5) * 2 * volatility)
 
                 sale_price = round(last_sale_price * change_pct, 2)
-                if sale_price < 10: sale_price = 10  # Minimum price
+                if sale_price < 15: sale_price = 15  # Minimum price floor
 
                 # Calc Fees
                 seller_fee = round(sale_price * seller_fee_pct, 2)
@@ -238,15 +259,13 @@ def generate_market_data():
                     'completed', current_date, current_date
                 ))
 
-                # Only add addresses for ~30% of orders to save DB space/time,
-                # or 100% if you need them for the frontend.
-                # Assuming you need them for order details:
+                # Add address
                 addresses_buffer.append((
                     buyer, order_id, 'shipping', 'Dummy Buyer', '123 Street',
                     'City', 'ST', '00000', 'USA'
                 ))
 
-                # Listings (Historical Sold)
+                # Historical Listing (Sold)
                 listings_buffer.append((
                     seller, p_id, s_id, 'sale', sale_price, fee_id, condition,
                     'sold', current_date, current_date
@@ -266,7 +285,7 @@ def generate_market_data():
                 ))
                 user_balance_deltas[seller] = user_balance_deltas.get(seller, 0.0) + seller_payout
 
-                # Only ~20% of buyers keep it in "Portfolio" (Active collection)
+                # Portfolio (20% chance buyer keeps it)
                 if random.random() < 0.2:
                     portfolio_buffer.append((
                         str(uuid.uuid4()), buyer, p_id, s_id, current_date.date(), sale_price, condition
@@ -274,25 +293,50 @@ def generate_market_data():
 
                 last_sale_price = sale_price
 
-            # --- Active Market (Bids/Asks) ---
-            # More active listings for hype items
-            num_listings = random.randint(1, 3)
-            if hype_mult > 3: num_listings = random.randint(5, 12)
+            # --- 3. Active Market (Bids/Asks) ---
+            # LOGIC CHANGE: STRICT SPREAD ENFORCEMENT
+            # Ensure Highest Bid < Lowest Ask
 
+            # Determine Spread Center (Last Sale)
+            spread_center = last_sale_price
+
+            # Calculate strict boundaries (1% to 5% spread from center)
+            min_ask_price = round(spread_center * (1.0 + random.uniform(0.01, 0.05)), 2)
+            max_bid_price = round(spread_center * (1.0 - random.uniform(0.01, 0.05)), 2)
+
+            # Sanity Check (Should mathematically be safe, but just in case)
+            if max_bid_price >= min_ask_price:
+                max_bid_price = min_ask_price - 1.0
+
+            # Determine Active Volume (Hype items have MORE active listings/bids, even if sales are lower)
+            num_listings = random.randint(1, 3)
+            if hype_score > 3: num_listings = random.randint(5, 15)
+
+            # Generate Asks (All >= min_ask_price)
             for _ in range(num_listings):
-                # Ask
-                ask_price = round(last_sale_price * (1.0 + random.random() * 0.15), 2)
+                # Skew towards the min_ask (most competitive)
+                ask_val = min_ask_price + (random.random() * (min_ask_price * 0.15))
+                ask_val = round(ask_val, 2)
+
                 listings_buffer.append((
-                    random.choice(user_ids), p_id, s_id, 'sale', ask_price, fee_id, condition,
+                    random.choice(user_ids), p_id, s_id, 'sale', ask_val, fee_id, condition,
                     'active', datetime.now(), datetime.now()
                 ))
 
-                # Bid
-                bid_price = round(last_sale_price * (1.0 - random.random() * 0.15), 2)
-                bid_fee = round(bid_price * buyer_fee_pct, 2)
+            # Generate Bids (All <= max_bid_price)
+            for _ in range(num_listings):
+                # Skew towards the max_bid (most competitive)
+                bid_val = max_bid_price - (random.random() * (max_bid_price * 0.15))
+                bid_val = round(bid_val, 2)
+
+                # Minimum bid floor
+                if bid_val < 5: bid_val = 5
+
+                bid_fee = round(bid_val * buyer_fee_pct, 2)
+
                 bids_buffer.append((
-                    str(uuid.uuid4()), random.choice(user_ids), p_id, s_id, condition, bid_price,
-                    bid_fee, fee_id, bid_price + bid_fee, 'active', 'account_balance',
+                    str(uuid.uuid4()), random.choice(user_ids), p_id, s_id, condition, bid_val,
+                    bid_fee, fee_id, bid_val + bid_fee, 'active', 'account_balance',
                     datetime.now(), datetime.now()
                 ))
 

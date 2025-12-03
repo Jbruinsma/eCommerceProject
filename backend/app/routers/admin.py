@@ -49,6 +49,46 @@ def identify_identifier(val: str) -> str:
     return "unknown"
 
 
+@router.get("/analytics")
+async def get_analytics(session: AsyncSession = Depends(get_session)):
+    statement = text("CALL calculateTotalRevenue();")
+    result = await session.execute(statement)
+    total_revenue_row = result.mappings().all()
+
+    statement = text("CALL retrieveTopSellingProducts();")
+    result = await session.execute(statement)
+    top_selling_products_rows = result.mappings().all()
+
+    statement = text("CALL retrieveMonthlyTopSellingProduct();")
+    result = await session.execute(statement)
+    monthly_top_selling_products_rows = result.mappings().all()
+
+    statement = text("CALL retrieveSalesByCategory();")
+    result = await session.execute(statement)
+    sales_by_category_rows = result.mappings().all()
+
+    statement = text("CALL calculateCustomerBreakdown();")
+    result = await session.execute(statement)
+    customer_breakdown_rows = result.mappings().all()
+
+    statement = text("CALL retrieveAverageOrderValue();")
+    result = await session.execute(statement)
+    average_order_value_row = result.mappings().first()
+
+    statement = text("CALL retrieveTotalOrders();")
+    result = await session.execute(statement)
+    total_orders_row = result.mappings().first()
+
+    return {
+        "revenue": list(total_revenue_row),
+        "topSellingProducts": list(top_selling_products_rows),
+        "monthlyTopSellingProducts": list(monthly_top_selling_products_rows),
+        "salesByCategory": list(sales_by_category_rows),
+        "customerBreakdown": list(customer_breakdown_rows),
+        "averageCompletedOrderValue": average_order_value_row.average_completed_order_value if average_order_value_row else None,
+        "totalOrders": total_orders_row.total_orders if total_orders_row else None,
+    }
+
 @router.get("/{user_identifier:path}/balance")
 async def get_balance(user_identifier: str, session: AsyncSession = Depends(get_session)):
     try:
@@ -188,46 +228,6 @@ async def modify_order(user_identifier: str, order_id: str, updated_order: Updat
     if not updated_order_row:
         return ErrorMessage(message="Order status could not be updated", error="OrderUpdateFailed")
     return dict(updated_order_row)
-
-@router.get("/analytics")
-async def get_analytics(session: AsyncSession = Depends(get_session)):
-    statement = text("CALL calculateTotalRevenue();")
-    result = await session.execute(statement)
-    total_revenue_row = result.mappings().all()
-
-    statement = text("CALL retrieveTopSellingProducts();")
-    result = await session.execute(statement)
-    top_selling_products_rows = result.mappings().all()
-
-    statement = text("CALL retrieveMonthlyTopSellingProduct();")
-    result = await session.execute(statement)
-    monthly_top_selling_products_rows = result.mappings().all()
-
-    statement = text("CALL retrieveSalesByCategory();")
-    result = await session.execute(statement)
-    sales_by_category_rows = result.mappings().all()
-
-    statement = text("CALL calculateCustomerBreakdown();")
-    result = await session.execute(statement)
-    customer_breakdown_rows = result.mappings().all()
-
-    statement = text("CALL retrieveAverageOrderValue();")
-    result = await session.execute(statement)
-    average_order_value_row = result.mappings().first()
-
-    statement = text("CALL retrieveTotalOrders();")
-    result = await session.execute(statement)
-    total_orders_row = result.mappings().first()
-
-    return {
-        "revenue": list(total_revenue_row),
-        "topSellingProducts": list(top_selling_products_rows),
-        "monthlyTopSellingProducts": list(monthly_top_selling_products_rows),
-        "salesByCategory": list(sales_by_category_rows),
-        "customerBreakdown": list(customer_breakdown_rows),
-        "averageCompletedOrderValue": average_order_value_row.average_completed_order_value if average_order_value_row else None,
-        "totalOrders": total_orders_row.total_orders if total_orders_row else None,
-    }
 
 async def retrieve_uuid_and_email(user_identifier: str, session: AsyncSession = Depends(get_session)):
     if not user_identifier:

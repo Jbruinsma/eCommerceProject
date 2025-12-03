@@ -252,6 +252,8 @@ async function fetchDashboardData() {
   try {
     const analyticsData = await fetchFromAPI('/admin/analytics')
 
+    console.log(analyticsData)
+
     if (analyticsData) {
       if (analyticsData.revenue && Array.isArray(analyticsData.revenue)) {
         revenueOverTime.value = analyticsData.revenue
@@ -298,7 +300,7 @@ async function fetchDashboardData() {
     isLoading.value = false
 
     // Wait for DOM update after loading finishes to render charts
-    nextTick(() => {
+    await nextTick(() => {
       if (revenueOverTime.value.length > 0) renderRevenueChart(revenueOverTime.value)
       if (customerBreakdown.value.length > 0) renderCustomerChart(customerBreakdown.value)
     })
